@@ -394,7 +394,7 @@
           <div class="setting-row"><label>主动最慢(分钟)</label><input id="autoMax" type="number" value="120"></div>
           <div class="setting-row"><label>通话语音延迟(秒)</label><input id="callVoiceDelay" type="number" step="0.5" value="3"></div>
           <div class="setting-row"><label>通话自动语音延迟(秒)</label><input id="autoVoiceDelay" type="number" step="0.5" value="10"></div>
-          <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💓按钮</span></div>
+          <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💞按钮</span></div>
           <div><strong>回复条数概率(1~5条)总和100%</strong></div>
           <div class="setting-row"><label>1条%</label><input id="probCount1" type="number" value="40"></div>
           <div class="setting-row"><label>2条%</label><input id="probCount2" type="number" value="30"></div>
@@ -520,55 +520,44 @@
         <div class="intimacy-actions-wrap left" id="intimacyActionsLeft"></div>
         <!-- 右侧行为按钮 -->
         <div class="intimacy-actions-wrap right" id="intimacyActionsRight"></div>
-        <!-- 人形轮廓（医学风格中性人体轮廓） -->
+        <!-- 人形轮廓（纯外轮廓线，简洁轻量） -->
         <div class="intimacy-figure" id="intimacyFigure">
-          <svg viewBox="0 0 200 400" width="180" height="360" xmlns="http://www.w3.org/2000/svg">
-            <!-- 发光光晕 -->
-            <circle class="inner-line" cx="100" cy="52" r="44" fill="none" stroke="rgba(255,120,180,0.10)" stroke-width="10"/>
+          <svg viewBox="0 0 200 420" width="180" height="378" xmlns="http://www.w3.org/2000/svg">
             <!-- 头部轮廓 -->
-            <ellipse class="head-path" cx="100" cy="52" rx="34" ry="38"/>
+            <ellipse class="head-path" cx="100" cy="52" rx="32" ry="36" fill="rgba(255,120,180,0.12)"/>
             <!-- 耳朵 -->
-            <ellipse class="inner-line" cx="66" cy="52" rx="5" ry="8" fill="rgba(255,120,180,0.08)"/>
-            <ellipse class="inner-line" cx="134" cy="52" rx="5" ry="8" fill="rgba(255,120,180,0.08)"/>
-            <!-- 眼睛 -->
-            <ellipse cx="86" cy="48" rx="5" ry="4" fill="rgba(255,120,180,0.2)"/>
-            <ellipse cx="114" cy="48" rx="5" ry="4" fill="rgba(255,120,180,0.2)"/>
-            <!-- 鼻梁线 -->
-            <path d="M100 48 L100 60" stroke="rgba(255,150,200,0.35)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-            <!-- 嘴 -->
-            <path d="M90 66 Q100 71 110 66" fill="none" stroke="rgba(255,150,200,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+            <ellipse class="inner-line" cx="68" cy="52" rx="4" ry="7" fill="rgba(255,120,180,0.08)"/>
+            <ellipse class="inner-line" cx="132" cy="52" rx="4" ry="7" fill="rgba(255,120,180,0.08)"/>
             <!-- 脖子 -->
             <line class="inner-line" x1="100" y1="88" x2="100" y2="110"/>
-            <!-- 身体外轮廓（一体化流畅线条） -->
-            <path class="body-path" d="M100 110 L68 120 L52 130 L48 140 L48 150 L56 148 L68 146 L64 170 L58 200 L54 220 L54 250 L146 250 L146 220 L142 200 L136 170 L132 146 L144 148 L152 150 L152 140 L148 130 L132 120 Z"/>
-            <!-- 肩部弧线 -->
-            <path class="inner-line" d="M68 120 Q100 112 132 120" stroke-width="1.5" fill="none" stroke="rgba(255,150,200,0.3)"/>
-            <!-- 锁骨 -->
-            <path class="inner-line" d="M72 130 Q100 138 128 130" stroke-width="1.2" fill="none" stroke="rgba(255,150,200,0.25)"/>
-            <!-- 胸廓弧线 -->
-            <path class="inner-line" d="M60 160 Q80 166 100 162 Q120 166 140 160" stroke-width="1" fill="none" stroke="rgba(255,150,200,0.2)"/>
-            <path class="inner-line" d="M56 180 Q80 188 100 184 Q120 188 144 180" stroke-width="1" fill="none" stroke="rgba(255,150,200,0.2)"/>
-            <!-- 腰线 -->
-            <path class="inner-line" d="M54 220 Q100 226 146 220" stroke-width="1.2" fill="none" stroke="rgba(255,150,200,0.2)"/>
-            <!-- 肚脐 -->
-            <circle cx="100" cy="200" r="2" fill="rgba(255,150,200,0.15)"/>
+            <!-- 身体外轮廓（一体化） -->
+            <path class="body-path" d="
+              M100 110 
+              L70 118 L56 126 L50 136 L50 148 L60 146 L72 144 
+              L68 164 L62 188 L56 210 L52 230 L52 258 
+              L148 258 L148 230 L144 210 L138 188 L132 164 
+              L128 144 L140 146 L150 148 L150 136 L144 126 L130 118 
+              Z
+            " fill="rgba(255,120,180,0.12)"/>
+            <!-- 骨盆弧线 -->
+            <path class="inner-line" d="M54 244 Q100 250 146 244" stroke-width="1.2" fill="none"/>
             <!-- 左臂 -->
-            <path class="inner-line" d="M54 132 L38 162 L32 192 L30 222"/>
+            <path class="inner-line" d="M56 126 L40 158 L34 190 L32 220"/>
             <!-- 右臂 -->
-            <path class="inner-line" d="M146 132 L162 162 L168 192 L170 222"/>
+            <path class="inner-line" d="M144 126 L160 158 L166 190 L168 220"/>
             <!-- 手 -->
-            <ellipse class="inner-line" cx="29" cy="226" rx="6" ry="5" fill="rgba(255,120,180,0.1)"/>
-            <ellipse class="inner-line" cx="171" cy="226" rx="6" ry="5" fill="rgba(255,120,180,0.1)"/>
+            <ellipse class="inner-line" cx="31" cy="224" rx="6" ry="5" fill="rgba(255,120,180,0.08)"/>
+            <ellipse class="inner-line" cx="169" cy="224" rx="6" ry="5" fill="rgba(255,120,180,0.08)"/>
             <!-- 左腿 -->
-            <path class="inner-line" d="M72 250 L64 306 L58 360"/>
+            <path class="inner-line" d="M70 258 L62 316 L56 372"/>
             <!-- 右腿 -->
-            <path class="inner-line" d="M128 250 L136 306 L142 360"/>
+            <path class="inner-line" d="M130 258 L138 316 L144 372"/>
             <!-- 膝盖 -->
-            <ellipse class="inner-line" cx="64" cy="306" rx="7" ry="5" fill="rgba(255,120,180,0.08)"/>
-            <ellipse class="inner-line" cx="136" cy="306" rx="7" ry="5" fill="rgba(255,120,180,0.08)"/>
+            <ellipse class="inner-line" cx="62" cy="316" rx="7" ry="5" fill="rgba(255,120,180,0.06)"/>
+            <ellipse class="inner-line" cx="138" cy="316" rx="7" ry="5" fill="rgba(255,120,180,0.06)"/>
             <!-- 脚 -->
-            <path class="inner-line" d="M44 358 L58 358 L70 366 L58 370 L44 366 Z" fill="rgba(255,120,180,0.08)"/>
-            <path class="inner-line" d="M130 358 L142 358 L156 366 L142 370 L130 366 Z" fill="rgba(255,120,180,0.08)"/>
+            <path class="inner-line" d="M42 370 L56 370 L68 378 L56 382 L42 378 Z" fill="rgba(255,120,180,0.08)"/>
+            <path class="inner-line" d="M132 370 L144 370 L158 378 L144 382 L132 378 Z" fill="rgba(255,120,180,0.08)"/>
           </svg>
         </div>
       </div>
@@ -871,6 +860,7 @@
         momentNextAt: momentNextAt || null,
         noteNextAt: noteNextAt || null,
         transferNextAt: transferNextAt || null,
+        intimacyOtherNextAt: intimacyOtherNextAt || null,
         moments: [],
         intimacy: intimacyRunning ? {
           running: true,
@@ -1005,6 +995,8 @@
       if (typeof st.momentNextAt === 'number') momentNextAt = st.momentNextAt;
       if (typeof st.noteNextAt === 'number') noteNextAt = st.noteNextAt;
       if (typeof st.transferNextAt === 'number') transferNextAt = st.transferNextAt;
+      // 恢复对方主动亲密互动的下次触发时间（白屏/重启后补偿并继续计时）
+      if (typeof st.intimacyOtherNextAt === 'number') intimacyOtherNextAt = st.intimacyOtherNextAt;
     } catch (e) {
       console.warn('恢复运行时状态失败', e);
     }
@@ -1869,7 +1861,7 @@ window.handleTransferCardClick = function(card, msgId) {
     const heartWrap = document.getElementById('intimacyHeartWrap');
     if (btn) {
       if (state.intimacyEnabled) {
-        btn.textContent = '💓';
+        btn.textContent = '💞';
         btn.title = '亲密互动';
         btn.style.color = '#e91e63';
       } else {
@@ -3692,8 +3684,9 @@ async function handleTransferAction(msg, action) {
   function hideIntimacyModal() {
     document.getElementById('intimacyModalOverlay').classList.add('hidden');
   }
+  // 亲密互动弹窗：只能通过点击弹窗内的按钮关闭，点击遮罩无效（避免误点关闭邀请弹窗）
   document.getElementById('intimacyModalOverlay').onclick = (e) => {
-    if (e.target === document.getElementById('intimacyModalOverlay')) hideIntimacyModal();
+    e.stopPropagation();
   };
   document.getElementById('intimacyActionModalOverlay').onclick = (e) => {
     if (e.target === document.getElementById('intimacyActionModalOverlay')) {
@@ -3750,7 +3743,7 @@ async function handleTransferAction(msg, action) {
       const text = `${state.myName} 对 ${state.otherName} 使用了${action}（${modeName}），持续${duration}分种`;
       showIntimacyFloatingText(text);
       addIntimacyTapMessage(text);
-      // 每次重新选择/开始都显示小字（上面addIntimacyTapMessage），"开始了"已删除
+      // 每次点击开始都显示小字（含重新开始），"开始了"已删除
 
       setIntimacyHeart(true, modeIdx);
       scheduleIntimacyPassiveEvent();
@@ -3758,9 +3751,10 @@ async function handleTransferAction(msg, action) {
       if (window._intimacyTimeout) clearTimeout(window._intimacyTimeout);
       window._intimacyTimeout = setTimeout(() => endIntimacy('timeout'), intimacyDurationMs);
 
-      document.getElementById('intimacyStartBtn').disabled = true;
+      // 用户主动方：开始按钮保持可用（可重新开始），始终显示"💕 开始"
+      document.getElementById('intimacyStartBtn').disabled = false;
+      document.getElementById('intimacyStartBtn').textContent = '💕 开始';
       document.getElementById('intimacyEndBtn').disabled = false;
-      document.getElementById('intimacyStartBtn').textContent = '💕 进行中';
       document.getElementById('intimacyProvokeBtn').disabled = true;
       document.getElementById('intimacyContinueBtn').disabled = true;
       document.getElementById('intimacyMercyBtn').disabled = true;
@@ -3878,7 +3872,7 @@ async function handleTransferAction(msg, action) {
           endIntimacy('escape');
         } else {
           if (Math.random() < 0.9) {
-            addIntimacyTapMessage(`💬 ${state.otherName} 把您抓了回来`);
+            addIntimacyTapMessage(`💬 逃跑失败，您被 ${state.otherName} 抓了回来`);
           } else {
             addIntimacyTapMessage(`💬 ${state.otherName} 放过了您`);
             endIntimacy('escape');
@@ -3903,14 +3897,39 @@ async function handleTransferAction(msg, action) {
     }, interval);
   }
 
+  // 对方主动亲密互动的下次触发时间戳（用于白屏/重启恢复，机制同朋友圈/便签/转账）
+  let intimacyOtherNextAt = null;
+
   function scheduleOtherIntimacy() {
     const HOUR = 60 * 60 * 1000;
-    const check = () => {
-      if (intimacyRunning) { setTimeout(check, HOUR); return; }
+    const now = Date.now();
+    // 启动时先补偿错过的整点（如 1:20 关闭、6:40 重启 → 补 2:20~6:20 共5次随机；随机到多次则只补偿触发一次）
+    if (intimacyOtherNextAt && intimacyOtherNextAt <= now) {
+      const missed = Math.floor((now - intimacyOtherNextAt) / HOUR) + 1;
+      let triggered = false;
+      for (let i = 0; i < missed; i++) {
+        try {
+          if (!triggered && Math.random() < 0.05) {
+            triggerOtherIntimacy();
+            triggered = true;
+          }
+        } catch (e) {}
+      }
+      intimacyOtherNextAt += missed * HOUR;
+      saveRuntimeState();
+    }
+    if (!intimacyOtherNextAt) { intimacyOtherNextAt = now + HOUR; saveRuntimeState(); }
+    const tick = () => {
+      if (intimacyRunning) {
+        setTimeout(tick, HOUR);
+        return;
+      }
       if (Math.random() < 0.05) triggerOtherIntimacy();
-      setTimeout(check, HOUR);
+      intimacyOtherNextAt += HOUR;
+      saveRuntimeState();
+      setTimeout(tick, HOUR);
     };
-    setTimeout(check, HOUR);
+    setTimeout(tick, Math.max(0, intimacyOtherNextAt - now));
   }
 
   function triggerOtherIntimacy() {
@@ -3965,8 +3984,9 @@ async function handleTransferAction(msg, action) {
     document.getElementById('intimacyContinueBtn').disabled = false;
     document.getElementById('intimacyMercyBtn').disabled = false;
     document.getElementById('intimacyEscapeBtn').disabled = false;
+    // 对方主动方进行中：开始按钮禁用，用户只能点被动方四个按钮
     document.getElementById('intimacyStartBtn').disabled = true;
-    document.getElementById('intimacyStartBtn').textContent = '💕 进行中';
+    document.getElementById('intimacyStartBtn').textContent = '💕 开始';
     document.getElementById('intimacyEndBtn').disabled = true;
 
     // 设置持续时间定时器（超时后70%概率重新随机继续）
@@ -4086,12 +4106,14 @@ async function handleTransferAction(msg, action) {
     };
     document.getElementById('intimacyMercyBtn').onclick = () => {
       if (intimacyRunning && intimacyActiveRole === 'other') {
+        addIntimacyTapMessage(`💬 您向 ${state.otherName} 求饶了`);
         handlePassiveEvent('求饶', 'me');
         triggerOtherReply();
       }
     };
     document.getElementById('intimacyEscapeBtn').onclick = () => {
       if (intimacyRunning && intimacyActiveRole === 'other') {
+        addIntimacyTapMessage(`💬 您企图逃跑`);
         handlePassiveEvent('逃跑', 'me');
         triggerOtherReply();
       }
@@ -4142,13 +4164,15 @@ async function handleTransferAction(msg, action) {
           document.getElementById('intimacyContinueBtn').disabled = false;
           document.getElementById('intimacyMercyBtn').disabled = false;
           document.getElementById('intimacyEscapeBtn').disabled = false;
+          // 对方主动方进行中：开始按钮禁用，用户只能点被动方四个按钮
           document.getElementById('intimacyStartBtn').disabled = true;
-          document.getElementById('intimacyStartBtn').textContent = '💕 进行中';
+          document.getElementById('intimacyStartBtn').textContent = '💕 开始';
           document.getElementById('intimacyEndBtn').disabled = true;
           scheduleOtherEndIntimacy();
         } else {
-          document.getElementById('intimacyStartBtn').disabled = true;
-          document.getElementById('intimacyStartBtn').textContent = '💕 进行中';
+          // 用户主动方进行中：开始按钮保持可用（可重新开始），始终显示"💕 开始"
+          document.getElementById('intimacyStartBtn').disabled = false;
+          document.getElementById('intimacyStartBtn').textContent = '💕 开始';
           document.getElementById('intimacyEndBtn').disabled = false;
           document.getElementById('intimacyProvokeBtn').disabled = true;
           document.getElementById('intimacyContinueBtn').disabled = true;
