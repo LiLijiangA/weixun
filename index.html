@@ -255,15 +255,16 @@
     .intimacy-header .close-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 10px; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
     .intimacy-body { flex: 1; overflow-y: auto; position: relative; padding: 10px; display: flex; flex-direction: column; }
     /* 人形区域 */
-    .intimacy-figure-area { position: relative; height: 58vh; min-height: 400px; flex-shrink: 0; }
+    .intimacy-figure-area { position: relative; flex: 1; min-height: 360px; overflow: hidden; }
     .intimacy-heart-progress { position: absolute; top: 6px; right: 10px; width: 76px; height: 76px; z-index: 3; }
     .intimacy-heart-progress svg { width: 100%; height: 100%; }
     .intimacy-heart-num { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 15px; font-weight: 700; color: #ffeaf3; text-shadow: 0 0 4px rgba(255, 80, 140, 0.8); }
-    .intimacy-figure { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1.15); cursor: pointer; z-index: 2; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
-    .intimacy-figure .body-path { fill: rgba(255, 120, 180, 0.22); stroke: #ff7ab0; stroke-width: 2.5; stroke-linejoin: round; transition: fill 0.2s; }
+    .intimacy-figure { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 2; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
+    .intimacy-figure .body-path { fill: rgba(255, 120, 180, 0.22); stroke: #ff7ab0; stroke-width: 14; stroke-linejoin: round; transition: fill 0.2s; }
     .intimacy-figure .head-path { fill: rgba(255, 120, 180, 0.22); stroke: #ff7ab0; stroke-width: 2.5; transition: fill 0.2s; }
     .intimacy-figure .inner-line { stroke: rgba(255, 150, 190, 0.55); stroke-width: 1.5; stroke-linecap: round; fill: none; }
-    .intimacy-figure.hover .body-path, .intimacy-figure.hover .head-path { fill: rgba(255, 80, 160, 0.38); }
+    .intimacy-figure.hover img { filter: brightness(1.2) drop-shadow(0 0 8px rgba(255,80,160,0.5)); }
+    .intimacy-figure img { max-height: 90%; max-width: 90%; width: auto; height: auto; display: block; margin: 0 auto; }
     .intimacy-plus-one { position: absolute; font-size: 20px; font-weight: 700; color: #ffd9e8; text-shadow: 0 0 8px rgba(255, 100, 170, 0.9); pointer-events: none; z-index: 10; animation: plusOneAnim 2s forwards; }
     @keyframes plusOneAnim { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-70px) scale(1.6); } }
     /* 行为按钮 */
@@ -522,43 +523,9 @@
         <div class="intimacy-actions-wrap right" id="intimacyActionsRight"></div>
         <!-- 人形轮廓（纯外轮廓线，简洁轻量） -->
         <div class="intimacy-figure" id="intimacyFigure">
-          <svg viewBox="0 0 200 420" width="180" height="378" xmlns="http://www.w3.org/2000/svg">
-            <!-- 头部轮廓 -->
-            <ellipse class="head-path" cx="100" cy="52" rx="32" ry="36" fill="rgba(255,120,180,0.12)"/>
-            <!-- 耳朵 -->
-            <ellipse class="inner-line" cx="68" cy="52" rx="4" ry="7" fill="rgba(255,120,180,0.08)"/>
-            <ellipse class="inner-line" cx="132" cy="52" rx="4" ry="7" fill="rgba(255,120,180,0.08)"/>
-            <!-- 脖子 -->
-            <line class="inner-line" x1="100" y1="88" x2="100" y2="110"/>
-            <!-- 身体外轮廓（一体化） -->
-            <path class="body-path" d="
-              M100 110 
-              L70 118 L56 126 L50 136 L50 148 L60 146 L72 144 
-              L68 164 L62 188 L56 210 L52 230 L52 258 
-              L148 258 L148 230 L144 210 L138 188 L132 164 
-              L128 144 L140 146 L150 148 L150 136 L144 126 L130 118 
-              Z
-            " fill="rgba(255,120,180,0.12)"/>
-            <!-- 骨盆弧线 -->
-            <path class="inner-line" d="M54 244 Q100 250 146 244" stroke-width="1.2" fill="none"/>
-            <!-- 左臂 -->
-            <path class="inner-line" d="M56 126 L40 158 L34 190 L32 220"/>
-            <!-- 右臂 -->
-            <path class="inner-line" d="M144 126 L160 158 L166 190 L168 220"/>
-            <!-- 手 -->
-            <ellipse class="inner-line" cx="31" cy="224" rx="6" ry="5" fill="rgba(255,120,180,0.08)"/>
-            <ellipse class="inner-line" cx="169" cy="224" rx="6" ry="5" fill="rgba(255,120,180,0.08)"/>
-            <!-- 左腿 -->
-            <path class="inner-line" d="M70 258 L62 316 L56 372"/>
-            <!-- 右腿 -->
-            <path class="inner-line" d="M130 258 L138 316 L144 372"/>
-            <!-- 膝盖 -->
-            <ellipse class="inner-line" cx="62" cy="316" rx="7" ry="5" fill="rgba(255,120,180,0.06)"/>
-            <ellipse class="inner-line" cx="138" cy="316" rx="7" ry="5" fill="rgba(255,120,180,0.06)"/>
-            <!-- 脚 -->
-            <path class="inner-line" d="M42 370 L56 370 L68 378 L56 382 L42 378 Z" fill="rgba(255,120,180,0.08)"/>
-            <path class="inner-line" d="M132 370 L144 370 L158 378 L144 382 L132 378 Z" fill="rgba(255,120,180,0.08)"/>
-          </svg>
+          <img src="人体轮廓裁剪.svg" alt="人体轮廓" style="display:block; margin:0 auto;">
+
+
         </div>
       </div>
       <!-- 强度模式 + 时长 -->
@@ -4015,6 +3982,7 @@ async function handleTransferAction(msg, action) {
   }
 
   function initIntimacy() {
+    intimacyScore = state.intimacyScore || 0;
     const figure = document.getElementById('intimacyFigure');
     if (figure) {
       figure.onclick = (e) => {
@@ -4022,7 +3990,8 @@ async function handleTransferAction(msg, action) {
         state.intimacyScore = intimacyScore;
         updateHeartProgress();
 
-        const rect = figure.getBoundingClientRect();
+        const area = document.getElementById('intimacyFigureArea');
+        const rect = (area || figure).getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const plus = document.createElement('div');
@@ -4030,7 +3999,6 @@ async function handleTransferAction(msg, action) {
         plus.textContent = '+1';
         plus.style.left = (x - 10) + 'px';
         plus.style.top = (y - 10) + 'px';
-        const area = document.getElementById('intimacyFigureArea');
         if (area) {
           area.appendChild(plus);
           setTimeout(() => { if (plus.parentNode) plus.remove(); }, 2000);
