@@ -3554,6 +3554,7 @@ async function handleTransferAction(msg, action) {
   let intimacyOtherActiveTimer = null;
   let intimacyOtherEndTimer = null;
   let intimacyCountdownTimer = null;
+  let intimacyOneMinTimer = null;
   let intimacyScore = 0;
   let intimacyStartedShown = false;
   const INTIMACY_MAX_SCORE = 520;
@@ -3742,6 +3743,7 @@ async function handleTransferAction(msg, action) {
 
       setIntimacyHeart(true, modeIdx);
       scheduleIntimacyPassiveEvent();
+      scheduleOneMinPassiveEvent();
       // 清除旧 timeout
       if (window._intimacyTimeout) clearTimeout(window._intimacyTimeout);
       window._intimacyTimeout = setTimeout(() => endIntimacy('timeout'), intimacyDurationMs);
@@ -3777,6 +3779,7 @@ async function handleTransferAction(msg, action) {
     if (intimacyPassiveTimer) { clearTimeout(intimacyPassiveTimer); intimacyPassiveTimer = null; }
     if (intimacyOtherEndTimer) { clearTimeout(intimacyOtherEndTimer); intimacyOtherEndTimer = null; }
     if (window._intimacyTimeout) { clearTimeout(window._intimacyTimeout); window._intimacyTimeout = null; }
+    if (intimacyOneMinTimer) { clearTimeout(intimacyOneMinTimer); intimacyOneMinTimer = null; }
 
     if (reason === 'timeout' && intimacyActiveRole === 'me') {
       const event = PASSIVE_EVENTS[Math.floor(Math.random() * PASSIVE_EVENTS.length)];
@@ -3895,6 +3898,19 @@ async function handleTransferAction(msg, action) {
 
   // 对方主动亲密互动的下次触发时间戳（用于白屏/重启恢复，机制同朋友圈/便签/转账）
   let intimacyOtherNextAt = null;
+
+  function scheduleOneMinPassiveEvent() {
+    if (!intimacyRunning || intimacyActiveRole !== 'me') return;
+    if (intimacyOneMinTimer) clearTimeout(intimacyOneMinTimer);
+    const remain = intimacyDurationMs - (Date.now() - intimacyStartAt);
+    const delay = remain - 60 * 1000; // 提前1分钟触发
+    if (delay <= 0) return; // 不足1分钟不调度
+    intimacyOneMinTimer = setTimeout(() => {
+      if (!intimacyRunning || intimacyActiveRole !== 'me') return;
+      const event = PASSIVE_EVENTS[Math.floor(Math.random() * PASSIVE_EVENTS.length)];
+      handlePassiveEvent(event, intimacyOppRole);
+    }, delay);
+  }
 
   function scheduleOtherIntimacy() {
     const HOUR = 60 * 60 * 1000;
@@ -4155,6 +4171,7 @@ async function handleTransferAction(msg, action) {
         if (window._intimacyTimeout) clearTimeout(window._intimacyTimeout);
         window._intimacyTimeout = setTimeout(() => endIntimacy('timeout'), remain);
         scheduleIntimacyPassiveEvent();
+        if (intimacyActiveRole === 'me') scheduleOneMinPassiveEvent();
 
         if (intimacyActiveRole === 'other') {
           document.getElementById('intimacyProvokeBtn').disabled = false;
