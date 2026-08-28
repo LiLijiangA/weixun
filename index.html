@@ -3763,7 +3763,7 @@ async function handleTransferAction(msg, action) {
       saveAll();
       saveRuntimeState();
     } else {
-      const text = `${state.otherName} 拒绝了本次亲密互动`;
+      const text = `${state.otherName} 拒绝了本次${action}互动`;
       showIntimacyFloatingText(text);
       addIntimacyTapMessage(text);
     }
@@ -3963,7 +3963,7 @@ async function handleTransferAction(msg, action) {
       };
       document.getElementById('intimacyModalRejectBtn').onclick = () => {
         hideIntimacyModal();
-        addIntimacyTapMessage(`💬 您拒绝了 ${state.otherName} 的亲密互动邀请`);
+        addIntimacyTapMessage(`💬 ${state.myName} 拒绝了本次${action}互动`);
       };
     }
   }
