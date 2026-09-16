@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>微讯</title>
+  <!-- ===== PWA 声明（安装为 App / 全屏 / 图标）===== -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ededed">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="微讯">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #e5e5e5; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
@@ -604,41 +613,94 @@
 <script>
 (async function(){
   "use strict";
-  // ==================== 后台保活机制 ====================
-  let kaCtx = null, kaSrc = null, kaGain = null;
-  function initKeepAlive() {
-    const audioEl = document.getElementById('keepAliveAudio');
-    if (audioEl) {
-      audioEl.loop = true;
-      audioEl.volume = 0.001;
-      audioEl.play().catch(e => console.log('保活音频自动播放被阻止', e));
-    }
-    try {
-      if (!kaCtx) {
-        kaCtx = new (window.AudioContext || window.webkitAudioContext)();
-        kaSrc = kaCtx.createOscillator();
-        kaGain = kaCtx.createGain();
-        kaGain.gain.value = 0.00001;
-        kaSrc.connect(kaGain);
-        kaGain.connect(kaCtx.destination);
-        kaSrc.start();
-      }
-      if (kaCtx.state === 'suspended') kaCtx.resume();
-    } catch(e) {}
-    setInterval(() => {
-      const a = document.getElementById('keepAliveAudio');
-      if (a && a.paused) a.play().catch(()=>{});
-      if (kaCtx && kaCtx.state === 'suspended') kaCtx.resume();
-    }, 25000);
+  // ==================== 后台保活机制（指数退避 + 音频焦点感知 + MediaSession + wakeLock）====================
+  let kaEl = null, kaTimer = null, kaPauseStreak = 0, kaWakeSentinel = null;
+  // 保活音频：极轻正弦波（近静音），让浏览器认为"正在播放媒体"→ 豁免后台冻结
+  function kaDataUrl() {
+    const sr = 8000, n = sr, buf = new Float32Array(n);
+    for (let i = 0; i < n; i++) buf[i] = 0.002 * Math.sin(2 * Math.PI * 220 * i / sr);
+    const wav = new ArrayBuffer(44 + n * 2), dv = new DataView(wav);
+    const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+    ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE');
+    ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    ws(36, 'data'); dv.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) dv.setInt16(44 + i * 2, buf[i] * 32767, true);
+    const parts = []; for (let i = 0; i < wav.byteLength; i++) parts.push(String.fromCharCode(new Uint8Array(wav)[i]));
+    return 'data:audio/wav;base64,' + btoa(parts.join(''));
   }
+  // 通知栏媒体条：大幅提升后台存活率（Chrome 把有活跃媒体会话的页面视为"正在播放"）
+  function kaSetMediaSession() {
+    try {
+      if (!('mediaSession' in navigator)) return;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: '微讯后台保活', artist: '微讯', album: '后台运行中'
+      });
+      navigator.mediaSession.setActionHandler('play', () => { if (kaEl) kaEl.play(); });
+      navigator.mediaSession.setActionHandler('pause', () => { if (kaEl) kaEl.pause(); });
+    } catch (e) {}
+  }
+  function kaMarkPlayed() { kaPauseStreak = 0; }
+  // 指数退避补播：被外部打断后按 5s→10s→20s→40s→60s 封顶重试，后台隐藏时封顶 20s
+  function kaSchedule() {
+    if (!kaEl || kaTimer) return;
+    kaPauseStreak++;
+    let d = Math.min(5000 * Math.pow(2, Math.min(kaPauseStreak - 1, 4)), 60000);
+    if (document.visibilityState === 'hidden' && d > 20000) d = 20000;
+    kaTimer = setTimeout(() => {
+      kaTimer = null;
+      if (!kaEl) return;
+      const p = kaEl.play(); if (p && p.catch) p.catch(() => {});
+    }, d);
+  }
+  function kaStart() {
+    if (kaEl) return;
+    try {
+      const el = document.createElement('audio');
+      el.loop = true;
+      el.volume = 0.05;   // 低但非静音（近零会被 Chrome 无声节流）
+      el.src = kaDataUrl();
+      el.setAttribute('playsinline', '');
+      el.addEventListener('play', kaMarkPlayed);
+      el.addEventListener('pause', () => { if (kaEl && !kaTimer) kaSchedule(); });
+      const playIt = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+      playIt();
+      kaEl = el;
+      kaSetMediaSession();
+      if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').then((s) => { kaWakeSentinel = s; }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+  function kaStop() {
+    if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
+    if (kaEl) { try { kaEl.pause(); } catch (e) {} kaEl = null; }
+    if (kaWakeSentinel) { try { kaWakeSentinel.release(); } catch (e) {} kaWakeSentinel = null; }
+  }
+  // 首次交互启动保活
   function startKeepAliveOnTouch() {
-    initKeepAlive();
+    kaStart();
     document.body.removeEventListener('touchstart', startKeepAliveOnTouch);
     document.body.removeEventListener('click', startKeepAliveOnTouch);
   }
   document.body.addEventListener('touchstart', startKeepAliveOnTouch, { once: true });
   document.body.addEventListener('click', startKeepAliveOnTouch, { once: true });
-  setTimeout(initKeepAlive, 100);
+  // 回前台自愈：恢复音频 + 媒体条 + wakeLock
+  function kaResumeOnForeground() {
+    if (!kaEl) return;
+    if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
+    kaPauseStreak = 0;
+    const p = kaEl.play(); if (p && p.catch) p.catch(() => {});
+    if (kaWakeSentinel && kaWakeSentinel.released && 'wakeLock' in navigator) {
+      navigator.wakeLock.request('screen').then((s) => { kaWakeSentinel = s; }).catch(() => {});
+    }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') kaResumeOnForeground();
+    else if (kaEl && kaTimer) { clearTimeout(kaTimer); kaTimer = null; kaSchedule(); } // 切后台立即补播
+  });
+  window.addEventListener('focus', kaResumeOnForeground);
+  window.addEventListener('pageshow', kaResumeOnForeground);
 
   // ==================== 主动消息补救机制 ====================
   let nextActiveTime = null;
@@ -4632,6 +4694,33 @@ pinyinGroups.push(VALID_PINYIN[randomIndex] + tone);
     if (state.notifyEnabled) requestNotificationPermission();
   }
   init();
+  // ==================== PWA：SW 注册 + 后台推送 ====================
+  // 注册 Service Worker（离线缓存 + periodicsync 后台推送）
+  setTimeout(() => {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      // 尝试注册后台同步（页面全关后浏览器定期唤醒弹通知）
+      try {
+        const ps = reg.periodicSync || (navigator.serviceWorker.ready && navigator.serviceWorker.ready.then(r => r.periodicSync));
+        if (ps && ps.register) ps.register('weixun-psync', { minInterval: 60 * 60 * 1000 }).catch(() => {});
+      } catch (e) {}
+      // 写入推送快照（从字卡库随机选若干条，供 SW 离线弹通知）
+      try {
+        const cards = (state.wordCards || []).filter(c => c && c.trim());
+        const texts = cards.slice(0, 100).map((t) => ({ t: String(t).slice(0, 80) }));
+        if (texts.length) {
+          const snap = { texts, name: state.otherName || 'TA', ts: Date.now() };
+          const req = indexedDB.open('weixun-psync', 1);
+          req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
+          req.onsuccess = () => { const db = req.result; const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(snap, 'weixun-psync-snap'); };
+        }
+      } catch (e) {}
+    }).catch(() => {});
+  }, 1500);
+  // 点击通知 → 聚焦微讯页面
+  if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'weixun-open') { try { document.getElementById('headerSettingsBtn').click(); } catch (err) {} }
+  });
 })();
 </script>
 </body>
