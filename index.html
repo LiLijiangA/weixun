@@ -413,7 +413,7 @@
           <div class="setting-row"><label>4条%</label><input id="probCount4" type="number" value="10"></div>
           <div class="setting-row"><label>5条%</label><input id="probCount5" type="number" value="5"></div>
         </div>
-        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div></div>
+        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">开启后通知栏显示媒体条，后台更不易被冻结（更耗电）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
@@ -679,7 +679,7 @@
   }
   // 首次交互启动保活
   function startKeepAliveOnTouch() {
-    kaStart();
+    if (state.keepAliveEnabled) kaStart();
     document.body.removeEventListener('touchstart', startKeepAliveOnTouch);
     document.body.removeEventListener('click', startKeepAliveOnTouch);
   }
@@ -1177,7 +1177,7 @@
       probSticker: state.probSticker, probEmoji: state.probEmoji,
       probVoice: state.probVoice, autoMin: state.autoMin, autoMax: state.autoMax,
       probCount: state.probCount, soundIndex: state.soundIndex,
-      volume: state.volume, notifyEnabled: state.notifyEnabled,
+      volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
       notes: state.notes, wordCards: state.wordCards, emojis: state.emojis,
       defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
       defaultChoiceCount: state.defaultChoiceCount,
@@ -1200,7 +1200,7 @@
     wordCards:[], emojis:[], stickers:[], voiceLibrary:[],
     replyDelay:5, probWord:83, probSticker:10, probEmoji:5, probVoice:2,
     bgImageId:'', bgImage:'', videoBgId:'', videoBg:'',
-    soundIndex:0, volume:0.8, notifyEnabled:false,
+    soundIndex:0, volume:0.8, notifyEnabled:false, keepAliveEnabled:false,
     autoMin:30, autoMax:120,
     probCount:[40,30,15,10,5],
     notes:[], notesUnread:false, lastNoteTime:null,
@@ -1482,7 +1482,15 @@ window.handleTransferCardClick = function(card, msgId) {
   function formatDateTime(ts) { const d = new Date(ts); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
   function formatDuration(sec) { const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60; return h>0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
 
-  function requestNotificationPermission() { if (!("Notification"in window)) return; if (Notification.permission === "granted") return; if (Notification.permission !== "denied") Notification.requestPermission(); }
+  function requestNotificationPermission() {
+    if (!("Notification"in window)) { if (typeof showAlert === 'function') showAlert('当前浏览器不支持通知'); return; }
+    if (Notification.permission === "granted") { if (typeof showAlert === 'function') showAlert('通知已开启'); return; }
+    if (Notification.permission === "denied") { if (typeof showAlert === 'function') showAlert('通知被拒绝，请在浏览器设置中允许'); return; }
+    Notification.requestPermission().then(function(p) {
+      if (p === "granted") { if (typeof showAlert === 'function') showAlert('通知已开启'); }
+      else if (p === "denied") { if (typeof showAlert === 'function') showAlert('通知被拒绝，请在浏览器设置中允许'); }
+    }).catch(function(){});
+  }
   function showNotification(title, body, icon) { 
     if (!("Notification"in window) || Notification.permission !== "granted" || !state.notifyEnabled) return; 
     if (!document.hidden) return; 
@@ -1648,7 +1656,7 @@ window.handleTransferCardClick = function(card, msgId) {
         state.probSticker = s.probSticker || 10; state.probEmoji = s.probEmoji || 5; state.probVoice = s.probVoice || 2;
         state.autoMin = s.autoMin !== undefined ? s.autoMin : 30; state.autoMax = s.autoMax !== undefined ? s.autoMax : 120;
         state.probCount = s.probCount || [40,30,15,10,5];
-        state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false;
+        state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.callVoiceDelay !== undefined) state.callVoiceDelay = s.callVoiceDelay;
         if (s.autoVoiceIntervalDelay !== undefined) state.autoVoiceIntervalDelay = s.autoVoiceIntervalDelay;
@@ -1667,6 +1675,7 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.soundIndex !== undefined) state.soundIndex = s.soundIndex;
         if (s.volume !== undefined) state.volume = s.volume;
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
+        if (s.keepAliveEnabled !== undefined) state.keepAliveEnabled = s.keepAliveEnabled;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.callVoiceDelay !== undefined) state.callVoiceDelay = s.callVoiceDelay;
         if (s.autoVoiceIntervalDelay !== undefined) state.autoVoiceIntervalDelay = s.autoVoiceIntervalDelay;
@@ -1919,6 +1928,7 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('soundSelect').value = state.soundIndex;
     document.getElementById('volumeSlider').value = state.volume;
     document.getElementById('notifyEnabled').checked = state.notifyEnabled;
+    document.getElementById('keepAliveEnabled').checked = state.keepAliveEnabled;
     document.getElementById('autoMin').value = state.autoMin;
     document.getElementById('autoMax').value = state.autoMax;
     document.getElementById('callVoiceDelay').value = state.callVoiceDelay;
@@ -3580,7 +3590,7 @@ async function handleTransferAction(msg, action) {
         probSticker: state.probSticker, probEmoji: state.probEmoji, probVoice: state.probVoice,
         autoMin: state.autoMin, autoMax: state.autoMax,
         probCount: state.probCount,
-        soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled,
+        soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         callVoiceDelay: state.callVoiceDelay,
         autoVoiceIntervalDelay: state.autoVoiceIntervalDelay
@@ -4335,7 +4345,8 @@ async function handleTransferAction(msg, action) {
       state.probEmoji = +document.getElementById('probEmoji').value; 
       state.probVoice = +document.getElementById('probVoice').value; 
       state.soundIndex = +document.getElementById('soundSelect').value; 
-      state.notifyEnabled = document.getElementById('notifyEnabled').checked; 
+      state.notifyEnabled = document.getElementById('notifyEnabled').checked;
+      state.keepAliveEnabled = document.getElementById('keepAliveEnabled').checked; 
       state.autoMin = +document.getElementById('autoMin').value; 
       state.autoMax = +document.getElementById('autoMax').value; 
       state.callVoiceDelay = +document.getElementById('callVoiceDelay').value; 
@@ -4346,9 +4357,17 @@ async function handleTransferAction(msg, action) {
       updateUI(); 
       document.getElementById('settingsOverlay').classList.add('hidden'); 
       if (state.notifyEnabled) requestNotificationPermission(); 
+      // 后台保活开关：开启则启动（通知栏显示媒体条），关闭则停止
+      if (state.keepAliveEnabled) { kaStart(); } else { kaStop(); }
       scheduleNextActive(); 
     }
     document.getElementById('closeSettingsGeneral').onclick = saveSettings;
+    document.getElementById('testNotifyBtn').onclick = () => {
+      if (!("Notification"in window)) { showAlert('当前浏览器不支持通知'); return; }
+      if (Notification.permission !== "granted") { requestNotificationPermission(); return; }
+      try { new Notification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true }); }
+      catch (e) { new Notification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', silent: true }); }
+    };
     document.getElementById('closeSettingsWordcard').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsVoice').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsSearch').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
