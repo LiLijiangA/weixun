@@ -611,6 +611,10 @@
 <script>
 (async function(){
   "use strict";
+  // 全局图片缓存：避免每次渲染都全量加载 IndexedDB
+  let imgCache = {};
+  let imgCacheReady = false;
+
   // ==================== 后台保活机制（Web Audio API + 指数退避）====================
   let kaCtx = null, kaOsc = null, kaGain = null, kaTimer = null, kaPauseStreak = 0;
   // 使用 Web Audio API (AudioContext + OscillatorNode) 代替 <audio> 元素：
@@ -745,6 +749,7 @@
           if (!db.objectStoreNames.contains(VOICE_STORE)) db.createObjectStore(VOICE_STORE, { keyPath: 'id' });
           if (!db.objectStoreNames.contains(MOMENTS_STORE)) db.createObjectStore(MOMENTS_STORE, { keyPath: 'id' });
           if (!db.objectStoreNames.contains(FAVORITES_STORE)) db.createObjectStore(FAVORITES_STORE, { keyPath: 'id' });
+          if (!db.objectStoreNames.contains('runtime')) db.createObjectStore('runtime', { keyPath: 'key' });
         } catch (e) { console.warn('openDB upgrade error:', e); }
       };
       req.onsuccess = e => { db = e.target.result; resolve(db); };
@@ -794,12 +799,14 @@
       const tx = db.transaction(IMG_STORE, 'readwrite');
       const store = tx.objectStore(IMG_STORE);
       store.put({ key, dataURL });
-      tx.oncomplete = resolve;
+      tx.oncomplete = () => { imgCache[key] = dataURL; imgCacheReady = true; resolve(); };
       tx.onerror = (e) => { handleStorageWriteError(e && e.target && e.target.error || e); reject(e); };
       tx.onabort = (e) => { handleStorageWriteError(e && e.target && e.target.error || e); reject(e); };
     });
   }
   async function loadAllImagesFromDB() {
+    // 如果缓存已准备好，直接返回（避免重复全量加载）
+    if (imgCacheReady && Object.keys(imgCache).length > 0) return imgCache;
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(IMG_STORE, 'readonly');
@@ -808,6 +815,9 @@
       req.onsuccess = () => {
         const map = {};
         (req.result || []).forEach(item => { map[item.key] = item.dataURL; });
+        // 更新全局缓存
+        imgCache = map;
+        imgCacheReady = true;
         resolve(map);
       };
       req.onerror = reject;
@@ -819,7 +829,7 @@
       const tx = db.transaction(IMG_STORE, 'readwrite');
       const store = tx.objectStore(IMG_STORE);
       store.delete(key);
-      tx.oncomplete = resolve;
+      tx.oncomplete = () => { delete imgCache[key]; resolve(); };
     });
   }
   // ==================== 收藏夹（对方收藏的我的消息） ====================
@@ -863,35 +873,66 @@
 
   // ==================== 运行时状态持久化（重载恢复视频通话/朋友圈回复） ====================
   const RT_STATE_KEY = 'wc_runtime_state';
-  function saveRuntimeState() {
-    try {
-      const st = {
-        video: videoActive ? { start: videoStart, hangupAt: autoHangupDeadline || null } : null,
-        activeNextAt: nextActiveTime || null,
-        momentNextAt: momentNextAt || null,
-        noteNextAt: noteNextAt || null,
-        transferNextAt: transferNextAt || null,
-        intimacyOtherNextAt: intimacyOtherNextAt || null,
-        moments: [],
-        intimacy: intimacyRunning ? {
-          running: true,
-          activeRole: intimacyActiveRole,
-          oppRole: intimacyOppRole,
-          startAt: intimacyStartAt,
-          durationMs: intimacyDurationMs,
-          actionName: intimacyActionName,
-          score: intimacyScore,
-          modeIdx: parseInt(document.getElementById('intimacyModeSlider')?.value) || 0
-        } : null
-      };
-      momentReplyDeadlines.forEach((replyAt, momentId) => {
-        st.moments.push({ momentId, replyAt });
-      });
-      localStorage.setItem(RT_STATE_KEY, JSON.stringify(st));
-    } catch (e) { console.warn('保存运行时状态失败', e); }
+  let rtStateTimer = null;
+  // 运行时状态改用 IndexedDB + debounce（避免频繁同步阻塞 localStorage）
+  async function saveRuntimeState() {
+    if (rtStateTimer) clearTimeout(rtStateTimer);
+    rtStateTimer = setTimeout(async () => {
+      try {
+        const st = {
+          video: videoActive ? { start: videoStart, hangupAt: autoHangupDeadline || null } : null,
+          activeNextAt: nextActiveTime || null,
+          momentNextAt: momentNextAt || null,
+          noteNextAt: noteNextAt || null,
+          transferNextAt: transferNextAt || null,
+          intimacyOtherNextAt: intimacyOtherNextAt || null,
+          moments: [],
+          intimacy: intimacyRunning ? {
+            running: true,
+            activeRole: intimacyActiveRole,
+            oppRole: intimacyOppRole,
+            startAt: intimacyStartAt,
+            durationMs: intimacyDurationMs,
+            actionName: intimacyActionName,
+            score: intimacyScore,
+            modeIdx: parseInt(document.getElementById('intimacyModeSlider')?.value) || 0
+          } : null
+        };
+        momentReplyDeadlines.forEach((replyAt, momentId) => {
+          st.moments.push({ momentId, replyAt });
+        });
+        if (!db) await openDB();
+        const tx = db.transaction('runtime', 'readwrite');
+        const store = tx.objectStore('runtime');
+        store.put({ key: RT_STATE_KEY, value: st });
+        tx.oncomplete = () => {};
+        tx.onerror = (e) => { console.warn('保存运行时状态失败', e); };
+      } catch (e) { console.warn('保存运行时状态失败', e); }
+    }, 200); // 200ms debounce
   }
-  function loadRuntimeState() {
+  async function loadRuntimeState() {
     try {
+      // 优先从 IndexedDB 读取（新格式），localStorage 作为兼容回退
+      if (db) {
+        const tx = db.transaction('runtime', 'readonly');
+        const store = tx.objectStore('runtime');
+        const req = store.get(RT_STATE_KEY);
+        return new Promise((resolve) => {
+          req.onsuccess = () => {
+            const result = req.result;
+            if (result && result.value) { resolve(result.value); }
+            else {
+              // 回退到 localStorage（旧格式）
+              const raw = localStorage.getItem(RT_STATE_KEY);
+              resolve(raw ? JSON.parse(raw) : null);
+            }
+          };
+          req.onerror = () => {
+            const raw = localStorage.getItem(RT_STATE_KEY);
+            resolve(raw ? JSON.parse(raw) : null);
+          };
+        });
+      }
       const raw = localStorage.getItem(RT_STATE_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
@@ -905,9 +946,9 @@
   const momentReplyDeadlines = new Map();
 
   // 重载后恢复进行中的视频通话和朋友圈评论自动回复
-  function restoreRuntimeState() {
+  async function restoreRuntimeState() {
     try {
-      const st = loadRuntimeState();
+      const st = await loadRuntimeState();
       if (!st) return;
       const now = Date.now();
       // 恢复视频通话
@@ -1877,7 +1918,7 @@ window.handleTransferCardClick = function(card, msgId) {
   async function saveAll() {
     saveStateToSettings();
     await saveAllImages();
-    await saveMessagesToDB(messages);
+    // 消息已通过 appendMessageToDB 增量保存，此处不再全量重写
     await storeData(VOICE_STORE, state.voiceLibrary);
     await storeData(MOMENTS_STORE, state.moments);
   }
@@ -2621,8 +2662,10 @@ window.handleTransferCardClick = function(card, msgId) {
   
   let curDate = '';
   
-  // 先加载图片缓存（这里改成 await，确保拿到数据）
-  const imgCache = await loadAllImagesFromDB();
+  // 使用全局 imgCache，避免每次全量加载 IndexedDB
+  if (!imgCacheReady || Object.keys(imgCache).length === 0) {
+    await loadAllImagesFromDB();
+  }
   
   // 循环生成 HTML（使用 imgCache）
   for (let m of renderMsgs) {
@@ -4197,9 +4240,9 @@ async function handleTransferAction(msg, action) {
     updateHeartProgress();
   }
 
-  function restoreIntimacyState() {
+  async function restoreIntimacyState() {
     try {
-      const st = loadRuntimeState();
+      const st = await loadRuntimeState();
       if (!st || !st.intimacy) return;
       const now = Date.now();
       const i = st.intimacy;
@@ -4262,6 +4305,8 @@ async function handleTransferAction(msg, action) {
 
   async function init() {
     await loadStorage();
+    // 初始化全局图片缓存，避免后续渲染时重复全量加载
+    await loadAllImagesFromDB();
     cancelQuoteBtn.onclick = () => { pendingQuoteId = null; quotePreviewBar.classList.add('hidden'); };
     clearChatHistoryBtn.onclick = clearChatHistory;
     const wipeBtn = document.getElementById('wipeAllDataBtn');
@@ -4270,9 +4315,9 @@ async function handleTransferAction(msg, action) {
     if (refreshStorageBtnEl) refreshStorageBtnEl.onclick = refreshStorageInfo;
     refreshStorageInfo();
     // 恢复重载前的运行时状态（视频通话 / 朋友圈回复定时器 / 主动消息 / 亲密互动）
-    restoreRuntimeState();
+    await restoreRuntimeState();
     // 恢复亲密互动状态
-    restoreIntimacyState();
+    await restoreIntimacyState();
     // 启动朋友圈/便签/转账主动触发调度器（支持白屏恢复补随机）
     startMomentScheduler();
     startNoteScheduler();
