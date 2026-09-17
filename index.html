@@ -608,73 +608,57 @@
   </div>
 </div>
 
-<audio id="keepAliveAudio" loop style="display:none" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
-  <!-- 静音背景保活 - 移除音频焦点，避免触发通知栏媒体条 -->
-  <div id="keepAliveDummy" style="display:none;"></div>
-
 <script>
 (async function(){
   "use strict";
-  // ==================== 后台保活机制（指数退避 + 音频焦点感知 + MediaSession + wakeLock）====================
-  let kaEl = null, kaTimer = null, kaPauseStreak = 0;
-  // 保活音频：极轻正弦波（近静音），让浏览器认为"正在播放媒体"→ 豁免后台冻结
-  function kaDataUrl() {
-    const sr = 44100, n = sr, buf = new Float32Array(n);
-    for (let i = 0; i < n; i++) buf[i] = 0.02 * Math.sin(2 * Math.PI * 18000 * i / sr);
-    const wav = new ArrayBuffer(44 + n * 2), dv = new DataView(wav);
-    const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
-    ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE');
-    ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
-    dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
-    ws(36, 'data'); dv.setUint32(40, n * 2, true);
-    for (let i = 0; i < n; i++) dv.setInt16(44 + i * 2, buf[i] * 32767, true);
-    const parts = []; for (let i = 0; i < wav.byteLength; i++) parts.push(String.fromCharCode(new Uint8Array(wav)[i]));
-    return 'data:audio/wav;base64,' + btoa(parts.join(''));
-  }
-  // 移除媒体会话API，防止触发通知栏媒体条
-  function kaSetMediaSession() {
-    try {
-      if (!('mediaSession' in navigator)) return;
-      // 完全禁用媒体会话，避免系统识别为音频播放
-      navigator.mediaSession.metadata = null;
-      navigator.mediaSession.setActionHandler('play', () => {});
-      navigator.mediaSession.setActionHandler('pause', () => {});
-      navigator.mediaSession.setActionHandler('previoustrack', () => {});
-      navigator.mediaSession.setActionHandler('nexttrack', () => {});
-    } catch (e) {}
-  }
+  // ==================== 后台保活机制（Web Audio API + 指数退避）====================
+  let kaCtx = null, kaOsc = null, kaGain = null, kaTimer = null, kaPauseStreak = 0;
+  // 使用 Web Audio API (AudioContext + OscillatorNode) 代替 <audio> 元素：
+  // - Chrome 仍会认为页面有活跃音频上下文 → 豁免后台冻结
+  // - AudioContext 不生成 MediaSession → 不触发通知栏媒体条/灵动岛
   function kaMarkPlayed() { kaPauseStreak = 0; }
   // 指数退避补播：被外部打断后按 5s→10s→20s→40s→60s 封顶重试，后台隐藏时封顶 20s
   function kaSchedule() {
-    if (!kaEl || kaTimer) return;
+    if (!kaCtx || kaTimer) return;
     kaPauseStreak++;
     let d = Math.min(5000 * Math.pow(2, Math.min(kaPauseStreak - 1, 4)), 60000);
     if (document.visibilityState === 'hidden' && d > 20000) d = 20000;
     kaTimer = setTimeout(() => {
       kaTimer = null;
-      if (!kaEl) return;
-      const p = kaEl.play(); if (p && p.catch) p.catch(() => {});
+      if (!kaCtx) return;
+      // 后台时 AudioContext 可能被挂起，需要 resume
+      if (kaCtx.state === 'suspended') {
+        kaCtx.resume().then(() => {}).catch(() => {});
+      }
+      kaPauseStreak = 0;
+      kaSchedule(); // 继续下一次定时
     }, d);
   }
   function kaStart() {
-    if (kaEl) return;
+    if (kaCtx) return;
     try {
-      const el = document.createElement('audio');
-      el.loop = true;
-      el.muted = true;    // 彻底静音，阻止灵动岛触发
-      el.src = kaDataUrl();
-      el.setAttribute('playsinline', '');
-      el.addEventListener('play', kaMarkPlayed);
-      el.addEventListener('pause', () => { if (kaEl && !kaTimer) kaSchedule(); });
-      const playIt = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
-      playIt();
-      kaEl = el;
-      // wakeLock 仅在未静音时请求，现在静音不需要
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 18000; // 超声波，人耳听不到
+      gain.gain.value = 0; // 完全静音
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      kaCtx = ctx;
+      kaOsc = osc;
+      kaGain = gain;
+      kaSchedule();
     } catch (e) {}
   }
   function kaStop() {
     if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
-    if (kaEl) { try { kaEl.pause(); } catch (e) {} kaEl = null; }
+    try { if (kaOsc) kaOsc.stop(); } catch (e) {}
+    try { if (kaCtx) kaCtx.close(); } catch (e) {}
+    kaCtx = kaOsc = kaGain = null;
   }
   // 首次交互启动保活
   function startKeepAliveOnTouch() {
@@ -684,16 +668,19 @@
   }
   document.body.addEventListener('touchstart', startKeepAliveOnTouch, { once: true });
   document.body.addEventListener('click', startKeepAliveOnTouch, { once: true });
-  // 回前台自愈：恢复音频播放
+  // 回前台自愈：恢复 AudioContext
   function kaResumeOnForeground() {
-    if (!kaEl) return;
+    if (!kaCtx) return;
     if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
     kaPauseStreak = 0;
-    const p = kaEl.play(); if (p && p.catch) p.catch(() => {});
+    if (kaCtx.state === 'suspended') {
+      kaCtx.resume().then(() => {}).catch(() => {});
+    }
+    kaSchedule();
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') kaResumeOnForeground();
-    else if (kaEl && kaTimer) { clearTimeout(kaTimer); kaTimer = null; kaSchedule(); } // 切后台立即补播
+    else if (kaCtx && kaTimer) { clearTimeout(kaTimer); kaTimer = null; kaSchedule(); } // 切后台立即补播
   });
   window.addEventListener('focus', kaResumeOnForeground);
   window.addEventListener('pageshow', kaResumeOnForeground);
@@ -739,8 +726,6 @@
         patchedScheduleNextActive();
       }
     }
-    const a = document.getElementById('keepAliveAudio');
-    if (a && a.paused) a.play().catch(()=>{});
     if (kaCtx && kaCtx.state === 'suspended') kaCtx.resume();
   });
 
