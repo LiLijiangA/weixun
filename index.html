@@ -617,8 +617,8 @@
   let kaEl = null, kaTimer = null, kaPauseStreak = 0, kaWakeSentinel = null;
   // 保活音频：极轻正弦波（近静音），让浏览器认为"正在播放媒体"→ 豁免后台冻结
   function kaDataUrl() {
-    const sr = 8000, n = sr, buf = new Float32Array(n);
-    for (let i = 0; i < n; i++) buf[i] = 0.002 * Math.sin(2 * Math.PI * 220 * i / sr);
+    const sr = 44100, n = sr, buf = new Float32Array(n);
+    for (let i = 0; i < n; i++) buf[i] = 0.02 * Math.sin(2 * Math.PI * 18000 * i / sr);
     const wav = new ArrayBuffer(44 + n * 2), dv = new DataView(wav);
     const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
     ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE');
@@ -1494,11 +1494,21 @@ window.handleTransferCardClick = function(card, msgId) {
   function showNotification(title, body, icon) { 
     if (!("Notification"in window) || Notification.permission !== "granted" || !state.notifyEnabled) return; 
     if (!document.hidden) return; 
-    try { 
-      new Notification(title, { body: body, icon: icon || state.otherAvatar, silent: true }); 
-    } catch (e) { 
-      new Notification(title, { body: body, silent: true }); 
-    } 
+    const opts = { body: body, silent: true, urgency: 'high', badge: 'icon.svg' };
+    if (icon) opts.icon = icon;
+    try {
+      if ('serviceWorker' in navigator && navigator.serviceWorker) {
+        navigator.serviceWorker.ready.then(function (reg) {
+          reg.showNotification(title, opts).catch(function () {
+            try { new Notification(title, opts); } catch (e) {}
+          });
+        }).catch(function () {
+          try { new Notification(title, opts); } catch (e) {}
+        });
+      } else {
+        try { new Notification(title, opts); } catch (e) {}
+      }
+    } catch (e) {}
   }
   function notifyNewMessage(sender, type, content) { 
     let body = ''; 
@@ -4356,17 +4366,32 @@ async function handleTransferAction(msg, action) {
       saveAll(); 
       updateUI(); 
       document.getElementById('settingsOverlay').classList.add('hidden'); 
-      if (state.notifyEnabled) requestNotificationPermission(); 
+      if (state.notifyEnabled) {
+        requestNotificationPermission();
+        // 开启通知时自动联动开启后台保活（后台消息要靠页面定时器产生，休眠则消息不产生）
+        if (!state.keepAliveEnabled) {
+          state.keepAliveEnabled = true;
+          document.getElementById('keepAliveEnabled').checked = true;
+        }
+      }
       // 后台保活开关：开启则启动（通知栏显示媒体条），关闭则停止
       if (state.keepAliveEnabled) { kaStart(); } else { kaStop(); }
       scheduleNextActive(); 
     }
     document.getElementById('closeSettingsGeneral').onclick = saveSettings;
-    document.getElementById('testNotifyBtn').onclick = () => {
+    document.getElementById('testNotifyBtn').onclick = async () => {
       if (!("Notification"in window)) { showAlert('当前浏览器不支持通知'); return; }
-      if (Notification.permission !== "granted") { requestNotificationPermission(); return; }
-      try { new Notification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true }); }
-      catch (e) { new Notification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', silent: true }); }
+      if (Notification.permission === "denied") { showAlert('通知已被拒绝，请在浏览器/系统设置中允许微讯发送通知'); return; }
+      if (Notification.permission !== "granted") {
+        const p = await Notification.requestPermission();
+        if (p !== "granted") { showAlert('通知权限未授予，无法发送通知。请在浏览器设置中允许'); return; }
+      }
+      try {
+        new Notification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true });
+        showAlert('测试通知已发送 ✓');
+      } catch (e) {
+        showAlert('通知发送失败：' + (e && e.message ? e.message : e));
+      }
     };
     document.getElementById('closeSettingsWordcard').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsVoice').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
