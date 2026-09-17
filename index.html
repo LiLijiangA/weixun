@@ -658,7 +658,7 @@
     try {
       const el = document.createElement('audio');
       el.loop = true;
-      el.volume = 0.05;   // 低但非静音（近零会被 Chrome 无声节流）
+      el.volume = 0.01;   // 极低音量（避免触发灵动岛，样本非零仍可保活）
       el.src = kaDataUrl();
       el.setAttribute('playsinline', '');
       el.addEventListener('play', kaMarkPlayed);
@@ -666,7 +666,6 @@
       const playIt = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
       playIt();
       kaEl = el;
-      kaSetMediaSession();
       if ('wakeLock' in navigator) {
         navigator.wakeLock.request('screen').then((s) => { kaWakeSentinel = s; }).catch(() => {});
       }
@@ -1483,12 +1482,11 @@ window.handleTransferCardClick = function(card, msgId) {
   function formatDuration(sec) { const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60; return h>0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
 
   function requestNotificationPermission() {
-    if (!("Notification"in window)) { if (typeof showAlert === 'function') showAlert('当前浏览器不支持通知'); return; }
-    if (Notification.permission === "granted") { if (typeof showAlert === 'function') showAlert('通知已开启'); return; }
+    if (!("Notification"in window)) return;
+    if (Notification.permission === "granted") return;
     if (Notification.permission === "denied") { if (typeof showAlert === 'function') showAlert('通知被拒绝，请在浏览器设置中允许'); return; }
     Notification.requestPermission().then(function(p) {
-      if (p === "granted") { if (typeof showAlert === 'function') showAlert('通知已开启'); }
-      else if (p === "denied") { if (typeof showAlert === 'function') showAlert('通知被拒绝，请在浏览器设置中允许'); }
+      if (p === "denied") { if (typeof showAlert === 'function') showAlert('通知被拒绝，请在浏览器设置中允许'); }
     }).catch(function(){});
   }
   function showNotification(title, body, icon) { 
@@ -1499,14 +1497,8 @@ window.handleTransferCardClick = function(card, msgId) {
     try {
       if ('serviceWorker' in navigator && navigator.serviceWorker) {
         navigator.serviceWorker.ready.then(function (reg) {
-          reg.showNotification(title, opts).catch(function () {
-            try { new Notification(title, opts); } catch (e) {}
-          });
-        }).catch(function () {
-          try { new Notification(title, opts); } catch (e) {}
-        });
-      } else {
-        try { new Notification(title, opts); } catch (e) {}
+          reg.showNotification(title, opts).catch(function () {});
+        }).catch(function () {});
       }
     } catch (e) {}
   }
@@ -4387,8 +4379,19 @@ async function handleTransferAction(msg, action) {
         if (p !== "granted") { showAlert('通知权限未授予，无法发送通知。请在浏览器设置中允许'); return; }
       }
       try {
-        new Notification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true });
-        showAlert('测试通知已发送 ✓');
+        if ('serviceWorker' in navigator && navigator.serviceWorker) {
+          navigator.serviceWorker.ready.then(function (reg) {
+            reg.showNotification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true, urgency: 'high', badge: 'icon.svg' }).then(function () {
+              showAlert('测试通知已发送 ✓');
+            }).catch(function (err) {
+              showAlert('通知发送失败：' + (err && err.message ? err.message : err));
+            });
+          }).catch(function (err) {
+            showAlert('通知发送失败（SW 不可用）：' + (err && err.message ? err.message : err));
+          });
+        } else {
+          showAlert('当前环境不支持 Service Worker，无法发送通知');
+        }
       } catch (e) {
         showAlert('通知发送失败：' + (e && e.message ? e.message : e));
       }
