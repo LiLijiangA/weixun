@@ -413,7 +413,7 @@
           <div class="setting-row"><label>4条%</label><input id="probCount4" type="number" value="10"></div>
           <div class="setting-row"><label>5条%</label><input id="probCount5" type="number" value="5"></div>
         </div>
-        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">开启后通知栏显示媒体条，后台更不易被冻结（更耗电）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
+        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">静音保活，不显示通知栏媒体条（更省电）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
@@ -609,12 +609,14 @@
 </div>
 
 <audio id="keepAliveAudio" loop style="display:none" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
+  <!-- 静音背景保活 - 移除音频焦点，避免触发通知栏媒体条 -->
+  <div id="keepAliveDummy" style="display:none;"></div>
 
 <script>
 (async function(){
   "use strict";
   // ==================== 后台保活机制（指数退避 + 音频焦点感知 + MediaSession + wakeLock）====================
-  let kaEl = null, kaTimer = null, kaPauseStreak = 0, kaWakeSentinel = null;
+  let kaEl = null, kaTimer = null, kaPauseStreak = 0;
   // 保活音频：极轻正弦波（近静音），让浏览器认为"正在播放媒体"→ 豁免后台冻结
   function kaDataUrl() {
     const sr = 44100, n = sr, buf = new Float32Array(n);
@@ -629,15 +631,16 @@
     const parts = []; for (let i = 0; i < wav.byteLength; i++) parts.push(String.fromCharCode(new Uint8Array(wav)[i]));
     return 'data:audio/wav;base64,' + btoa(parts.join(''));
   }
-  // 通知栏媒体条：大幅提升后台存活率（Chrome 把有活跃媒体会话的页面视为"正在播放"）
+  // 移除媒体会话API，防止触发通知栏媒体条
   function kaSetMediaSession() {
     try {
       if (!('mediaSession' in navigator)) return;
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: '微讯后台保活', artist: '微讯', album: '后台运行中'
-      });
-      navigator.mediaSession.setActionHandler('play', () => { if (kaEl) kaEl.play(); });
-      navigator.mediaSession.setActionHandler('pause', () => { if (kaEl) kaEl.pause(); });
+      // 完全禁用媒体会话，避免系统识别为音频播放
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.setActionHandler('play', () => {});
+      navigator.mediaSession.setActionHandler('pause', () => {});
+      navigator.mediaSession.setActionHandler('previoustrack', () => {});
+      navigator.mediaSession.setActionHandler('nexttrack', () => {});
     } catch (e) {}
   }
   function kaMarkPlayed() { kaPauseStreak = 0; }
@@ -658,7 +661,7 @@
     try {
       const el = document.createElement('audio');
       el.loop = true;
-      el.volume = 0.01;   // 极低音量（避免触发灵动岛，样本非零仍可保活）
+      el.muted = true;    // 彻底静音，阻止灵动岛触发
       el.src = kaDataUrl();
       el.setAttribute('playsinline', '');
       el.addEventListener('play', kaMarkPlayed);
@@ -666,15 +669,12 @@
       const playIt = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
       playIt();
       kaEl = el;
-      if ('wakeLock' in navigator) {
-        navigator.wakeLock.request('screen').then((s) => { kaWakeSentinel = s; }).catch(() => {});
-      }
+      // wakeLock 仅在未静音时请求，现在静音不需要
     } catch (e) {}
   }
   function kaStop() {
     if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
     if (kaEl) { try { kaEl.pause(); } catch (e) {} kaEl = null; }
-    if (kaWakeSentinel) { try { kaWakeSentinel.release(); } catch (e) {} kaWakeSentinel = null; }
   }
   // 首次交互启动保活
   function startKeepAliveOnTouch() {
@@ -684,15 +684,12 @@
   }
   document.body.addEventListener('touchstart', startKeepAliveOnTouch, { once: true });
   document.body.addEventListener('click', startKeepAliveOnTouch, { once: true });
-  // 回前台自愈：恢复音频 + 媒体条 + wakeLock
+  // 回前台自愈：恢复音频播放
   function kaResumeOnForeground() {
     if (!kaEl) return;
     if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
     kaPauseStreak = 0;
     const p = kaEl.play(); if (p && p.catch) p.catch(() => {});
-    if (kaWakeSentinel && kaWakeSentinel.released && 'wakeLock' in navigator) {
-      navigator.wakeLock.request('screen').then((s) => { kaWakeSentinel = s; }).catch(() => {});
-    }
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') kaResumeOnForeground();
@@ -1491,8 +1488,13 @@ window.handleTransferCardClick = function(card, msgId) {
   }
   function showNotification(title, body, icon) { 
     if (!("Notification"in window) || Notification.permission !== "granted" || !state.notifyEnabled) return; 
-    if (!document.hidden) return; 
-    const opts = { body: body, silent: true, urgency: 'high', badge: 'icon.svg' };
+    // 允许前台弹窗：即使页面在前台，也能弹屏幕顶部通知
+    const opts = { 
+      body: body, 
+      requireInteraction: false,  // 自动消失，避免和页面内容冲突
+      urgency: 'high', 
+      badge: 'icon.svg' 
+    };
     if (icon) opts.icon = icon;
     try {
       if ('serviceWorker' in navigator && navigator.serviceWorker) {
