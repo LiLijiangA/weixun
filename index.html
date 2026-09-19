@@ -317,6 +317,22 @@
     .intimacy-modal-btn-primary { background: #ff4d88; color: #fff; font-weight: 600; }
     .intimacy-modal-btn-ok { background: rgba(255, 255, 255, 0.18); color: #ffd9e8; }
     .intimacy-modal-btn-warn { background: #c2185b; color: #fff; }
+    /* ==================== 词典拼句 ==================== */
+    .message-bubble.dict-msg { padding-right: 22px; }
+    .message-bubble.dict-msg::after { content: '拼'; position: absolute; right: 4px; bottom: 4px; font-size: 10px; line-height: 1; color: rgba(0, 0, 0, 0.3); user-select: none; }
+    .dict-group { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+    .dict-group-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: #f7f7f9; padding: 6px 8px; flex-wrap: wrap; }
+    .dict-group-head .dg-toggle { font-size: 14px; font-weight: 600; cursor: pointer; user-select: none; }
+    .dict-group-head .dg-btns button { padding: 2px 8px; font-size: 12px; margin-left: 4px; border: 1px solid #ccc; background: #fff; border-radius: 12px; }
+    .dict-words { max-height: 200px; overflow: auto; padding: 4px 6px; }
+    .dict-word-item { display: flex; align-items: center; justify-content: space-between; padding: 4px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+    .dict-word-item .dw-left { display: flex; align-items: center; gap: 8px; }
+    .dict-word-item button { background: none; border: none; font-size: 14px; cursor: pointer; }
+    .dict-group-foot { padding: 6px 8px; background: #fafafa; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 6px; }
+    .dict-group-foot input.dg-single { flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 6px; }
+    .dict-group-foot textarea { width: 100%; min-height: 50px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+    .dict-group-foot button { align-self: flex-start; }
+    .dict-collapsed .dict-words, .dict-collapsed .dict-group-foot { display: none; }
   </style>
 </head>
 <body>
@@ -388,6 +404,7 @@
       <div class="settings-tabs">
         <div class="settings-tab active" data-stab="general">通用</div>
         <div class="settings-tab" data-stab="wordcard">字卡库</div>
+        <div class="settings-tab" data-stab="dict">词典拼句</div>
         <div class="settings-tab" data-stab="voice">语音库</div>
         <div class="settings-tab" data-stab="search">查找</div>
         <div class="settings-tab" data-stab="bg">背景</div>
@@ -406,6 +423,8 @@
           <div class="setting-row"><label>通话语音延迟(秒)</label><input id="callVoiceDelay" type="number" step="0.5" value="3"></div>
           <div class="setting-row"><label>通话自动语音延迟(秒)</label><input id="autoVoiceDelay" type="number" step="0.5" value="10"></div>
           <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💞按钮</span></div>
+          <div class="setting-row"><label>🧩 词典拼句</label><input type="checkbox" id="dictToggle" checked> <span style="font-size:13px;color:#888;">开启后对方可随机拼句回复</span></div>
+          <div class="setting-row"><label>拼句概率%</label><input id="dictProb" type="number" min="0" max="100" value="30"> <span style="font-size:12px;color:#888;">占字卡消息比例，剩余为字卡库</span></div>
           <div><strong>回复条数概率(1~5条)总和100%</strong></div>
           <div class="setting-row"><label>1条%</label><input id="probCount1" type="number" value="40"></div>
           <div class="setting-row"><label>2条%</label><input id="probCount2" type="number" value="30"></div>
@@ -414,7 +433,7 @@
           <div class="setting-row"><label>5条%</label><input id="probCount5" type="number" value="5"></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">静音保活，不显示通知栏媒体条（更省电）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
-        <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
+        <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
         <button id="closeSettingsGeneral" class="close-settings-btn">保存并关闭</button>
@@ -428,6 +447,20 @@
         <button id="batchAddWordcards">批量添加</button>
         <p>📇 总数: <span id="wordcardCount">0</span></p>
         <button id="closeSettingsWordcard" class="close-settings-btn">关闭</button>
+      </div>
+      <div id="settingsDict" class="hidden">
+        <h4 style="margin-bottom:8px;">🧩 词典拼句</h4>
+        <p style="font-size:12px;color:#888;margin-bottom:10px;">对方每次拼句时，会先随机抽取一个句式结构，再从对应分组中各自随机抽一个词组合成句子。</p>
+        <input type="text" id="dictSearch" placeholder="🔍 搜索词语" class="wordcard-search">
+        <div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;">
+          <button id="dictExpandAll">展开全部</button>
+          <button id="dictCollapseAll">折叠全部</button>
+          <button id="dictDedupeAll">全库去重</button>
+        </div>
+        <div id="dictSummary" style="font-size:13px;color:#555;margin-bottom:10px;background:#f7f7f9;border-radius:8px;padding:8px;"></div>
+        <div id="dictGroupList"></div>
+        <p>🧩 词语总数: <span id="dictTotalCount">0</span></p>
+        <button id="closeSettingsDict" class="close-settings-btn">关闭</button>
       </div>
       <div id="settingsVoice" class="hidden">
         <h4>🔊 语音库管理</h4>
@@ -1212,10 +1245,53 @@
       intimacySelectedAction: state.intimacySelectedAction,
       intimacyScore: state.intimacyScore,
       intimacyMode: state.intimacyMode,
-      intimacyDuration: state.intimacyDuration
+      intimacyDuration: state.intimacyDuration,
+      dictEnabled: state.dictEnabled,
+      dictProb: state.dictProb,
+      dictGroups: state.dictGroups
     };
     try { localStorage.setItem('wc_ultra_settings', JSON.stringify(s)); } catch (e) { console.warn('保存设置失败', e); }
   }
+
+  // ==================== 词典拼句：内置分组词语 + 句式结构 ====================
+  const DICT_GROUPS_META = [
+    { key:'subj', name:'🙋 主语·人称', words:['我','你','咱们','我们','人家','宝贝','亲爱的','小可爱','老公','老婆','大家','他','她'] },
+    { key:'perObj', name:'👤 宾语·人称', words:['你','我','他','她','大家','宝贝','亲'] },
+    { key:'time', name:'⏰ 时间', words:['今天','明天','昨天','现在','待会儿','一会儿','等会儿','马上','早上','中午','下午','晚上','今晚','这周末','下周','周末','周末晚上','明天中午','过两天','下个月'] },
+    { key:'place', name:'📍 地点', words:['家里','公司','学校','公园','超市','商场','餐厅','电影院','咖啡店','地铁站','楼下','床上','沙发上','海边','山上','菜市场','便利店','小吃街','健身房','图书馆','甜品店','奶茶店'] },
+    { key:'prep', name:'🚶 方位词', words:['去','来','在','到','回'] },
+    { key:'verbWant', name:'💭 谓语·意愿', words:['想吃','想喝','想买','想看','想去','想要','想玩','喜欢吃','喜欢喝','喜欢','最爱','打算','准备','要','想吃点','想尝尝','想试试'] },
+    { key:'verbAct', name:'🏃 谓语·动作', words:['吃','喝','买','看','做','尝','点','逛','玩','带','接','送','煮','订','拿','打包','收拾','挑','试试','研究'] },
+    { key:'verbS', name:'🤔 谓语·认知', words:['觉得','感觉','发现','看','认为'] },
+    { key:'verbD', name:'🎁 谓语·双宾', words:['给','送','借','留','分','请','教','告诉','带','买','点','拿'] },
+    { key:'obj', name:'🍲 宾语·食物物品', words:['火锅','烧烤','奶茶','咖啡','炸鸡','寿司','蛋糕','冰淇淋','水果','零食','外卖','泡面','啤酒','可乐','麻辣烫','串串','小笼包','面条','饺子','甜品','巧克力','西瓜','烤冷面','螺蛳粉','糖葫芦','煎饼','蛋炒饭','小龙虾','披萨','汉堡','薯条','关东煮','豆浆','油条','烤肉','炒饭','鸡爪','鸭脖','板栗','烤红薯','酸奶','布丁','杨枝甘露','麻辣香锅','盖浇饭','包子'] },
+    { key:'objAct', name:'🎬 宾语·活动', words:['电影','电视剧','游戏','球赛','歌','动漫','综艺','短视频','直播','拼图','摩天轮','卡丁车'] },
+    { key:'adj', name:'✨ 形容词·评价', words:['好吃','好喝','好玩','好看','舒服','开心','幸福','满足','可爱','温柔','靠谱','有意思','香','甜','辣','爽','累','困','无聊','安静','热闹','暖和','凉快','浪漫','贴心','惊艳','上头','温柔可爱'] },
+    { key:'adv', name:'📈 副词·程度', words:['特别','超级','非常','真的','好','挺','太','有点','稍微','相当','贼','格外','真'] },
+    { key:'mood', name:'💬 语气词', words:['呀','呢','吧','啊','哦','啦','嘛','哈','哇','嘿','嘿嘿','嘻嘻'] },
+    { key:'quant', name:'🔢 数量', words:['一个','一杯','一份','一点','一顿','一碗','一瓶','两杯','一些','好多','半份','一大杯','一小份'] },
+    { key:'compl', name:'➕ 补语', words:['一下','一顿','个够','好不好','怎么样','好吗','回去','过来','出来','起来'] },
+    { key:'conn', name:'🔗 连接词', words:['顺便','然后','要不','不如','其实','反正','而且','对了','话说','不然','干脆','恰好'] }
+  ];
+  // 句式结构：slots 按顺序从对应分组中各抽一个词
+  const DICT_PATTERNS = [
+    { name:'主谓宾', slots:['subj','verbWant','obj'] },
+    { name:'主谓宾·动作', slots:['subj','verbAct','obj'] },
+    { name:'主谓双宾', slots:['subj','verbD','perObj','quant','obj'] },
+    { name:'主谓宾补', slots:['subj','verbAct','obj','compl'] },
+    { name:'时间+主谓宾', slots:['time','subj','verbWant','obj'] },
+    { name:'主谓宾+时间', slots:['subj','time','verbWant','obj'] },
+    { name:'主谓+评价', slots:['subj','adv','adj','mood'] },
+    { name:'主+觉得+宾+评价', slots:['subj','verbS','obj','adj','mood'] },
+    { name:'时间+主+方位+地点+动作+宾', slots:['time','subj','prep','place','verbAct','obj'] },
+    { name:'主+方位+地点+动作+活动', slots:['subj','prep','place','verbAct','objAct'] },
+    { name:'连接词+主谓宾', slots:['conn','subj','verbWant','obj'] },
+    { name:'时间+主谓双宾', slots:['time','subj','verbD','perObj','quant','obj'] },
+    { name:'宾+评价', slots:['obj','adv','adj','mood'] },
+    { name:'主+方位+地点+语气', slots:['subj','prep','place','mood'] },
+    { name:'时间+主+评价', slots:['time','subj','adv','adj','mood'] },
+    { name:'主谓宾+连接+主谓宾', slots:['subj','verbWant','obj','conn','subj','verbWant','objAct'] }
+  ];
 
   let state = {
     myName:'我', myAvatarId:'', myAvatar:'', otherName:'对方', otherAvatarId:'', otherAvatar:'',
@@ -1237,7 +1313,10 @@
     intimacySelectedAction: "亲亲",
     intimacyScore: 0,
     intimacyMode: 0,
-    intimacyDuration: 10
+    intimacyDuration: 10,
+    dictEnabled: true,
+    dictProb: 30,
+    dictGroups: {}
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
 const VALID_PINYIN = [
@@ -1709,7 +1788,25 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.callVoiceDelay !== undefined) state.callVoiceDelay = s.callVoiceDelay;
         if (s.autoVoiceIntervalDelay !== undefined) state.autoVoiceIntervalDelay = s.autoVoiceIntervalDelay;
+        if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
+        if (s.dictProb !== undefined) state.dictProb = s.dictProb;
+        if (s.dictGroups && typeof s.dictGroups === 'object' && !Array.isArray(s.dictGroups)) {
+          Object.keys(s.dictGroups).forEach(k => {
+            const v = s.dictGroups[k];
+            if (!Array.isArray(v)) return;
+            const words = v.map(w => String(w).trim()).filter(Boolean);
+            state.dictGroups[k] = mode === 'overwrite' ? words : [...new Set([...(state.dictGroups[k] || []), ...words])];
+          });
+        }
       }
+    }
+    if (sections.dictGroups && typeof sections.dictGroups === 'object' && !Array.isArray(sections.dictGroups)) {
+      const src = sections.dictGroups;
+      Object.keys(src).forEach(k => {
+        if (!Array.isArray(src[k])) return;
+        const words = src[k].map(w => String(w).trim()).filter(Boolean);
+        state.dictGroups[k] = mode === 'overwrite' ? words : [...new Set([...(state.dictGroups[k] || []), ...words])];
+      });
     }
     if (sections.wordCards) state.wordCards = mode === 'overwrite' ? sections.wordCards : [...new Set([...state.wordCards, ...sections.wordCards])];
     if (sections.emojis) state.emojis = mode === 'overwrite' ? sections.emojis : [...new Set([...state.emojis, ...sections.emojis])];
@@ -1858,6 +1955,13 @@ window.handleTransferCardClick = function(card, msgId) {
     if (state.intimacyScore === undefined) state.intimacyScore = 0;
     if (state.intimacyMode === undefined) state.intimacyMode = 0;
     if (state.intimacyDuration === undefined) state.intimacyDuration = 10;
+    // 词典拼句字段默认值
+    if (state.dictEnabled === undefined) state.dictEnabled = true;
+    if (state.dictProb === undefined) state.dictProb = 30;
+    if (!state.dictGroups || typeof state.dictGroups !== 'object' || Array.isArray(state.dictGroups)) state.dictGroups = {};
+    DICT_GROUPS_META.forEach(m => {
+      if (!Array.isArray(state.dictGroups[m.key]) || !state.dictGroups[m.key].length) state.dictGroups[m.key] = [...m.words];
+    });
     try { messages = await loadMessagesFromDB(); } catch (e) { messages = []; console.warn('加载消息失败', e); }
     nextId = messages.reduce((max, m) => Math.max(max, m.id || 0), 0) + 1;
     // 恢复 lastMsgTime（页面重载后主动回复/主动消息机制需要它）
@@ -1964,6 +2068,8 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('callVoiceDelay').value = state.callVoiceDelay;
     document.getElementById('autoVoiceDelay').value = state.autoVoiceIntervalDelay;
     document.getElementById('intimacyToggle').checked = state.intimacyEnabled;
+    document.getElementById('dictToggle').checked = state.dictEnabled !== false;
+    document.getElementById('dictProb').value = state.dictProb === undefined ? 30 : state.dictProb;
     document.getElementById('probCount1').value = state.probCount[0];
     document.getElementById('probCount2').value = state.probCount[1];
     document.getElementById('probCount3').value = state.probCount[2];
@@ -1974,6 +2080,7 @@ window.handleTransferCardClick = function(card, msgId) {
     if (state.notesUnread) notesBadge.classList.remove('hidden'); else notesBadge.classList.add('hidden');
     document.getElementById('momentsBadge').classList.toggle('hidden', !state.momentsUnread);
     updateWordcardUI();
+    updateDictUI();
     renderMessages(true);
     renderVoiceLibraryUI();
     renderNotesList(false);
@@ -1981,6 +2088,142 @@ window.handleTransferCardClick = function(card, msgId) {
   }
 
   function updateWordcardUI() { document.getElementById('wordcardCount').textContent = state.wordCards.length; renderWordcardList(); }
+
+  // ==================== 词典拼句：设置页管理 ====================
+  const dictSelected = new Set();   // "groupKey:index"
+  const dictCollapsed = new Set();  // 折叠的分组 key
+  function dictCurFilter() { const el = document.getElementById('dictSearch'); return el ? el.value : ''; }
+  function updateDictUI() { renderDictUI(dictCurFilter()); }
+  function renderDictUI(filter = '') {
+    const list = document.getElementById('dictGroupList');
+    if (!list) return;
+    const f = String(filter || '').trim().toLowerCase();
+    let total = 0;
+    const summary = [];
+    let html = '';
+    DICT_GROUPS_META.forEach(m => {
+      if (!Array.isArray(state.dictGroups[m.key])) state.dictGroups[m.key] = [];
+      const arr = state.dictGroups[m.key];
+      total += arr.length;
+      summary.push(`${m.name} <b>${arr.length}</b>`);
+      const shown = arr.map((w, i) => ({ w, i })).filter(o => !f || String(o.w).toLowerCase().includes(f));
+      const collapsed = dictCollapsed.has(m.key);
+      html += `<div class="dict-group${collapsed ? ' dict-collapsed' : ''}">
+        <div class="dict-group-head">
+          <span class="dg-toggle" data-act="toggle" data-key="${m.key}">${collapsed ? '▸' : '▾'} ${m.name} (${shown.length}${f && shown.length !== arr.length ? '/' + arr.length : ''})</span>
+          <span class="dg-btns">
+            <button data-act="gsel" data-key="${m.key}">全选</button>
+            <button data-act="gdel" data-key="${m.key}">删除选中</button>
+            <button data-act="gdedupe" data-key="${m.key}">去重</button>
+          </span>
+        </div>
+        <div class="dict-words">`;
+      if (!shown.length) html += `<div style="color:#999;font-size:13px;padding:6px;">（暂无词语）</div>`;
+      shown.forEach(o => {
+        const sid = m.key + ':' + o.i;
+        html += `<div class="dict-word-item"><div class="dw-left"><input type="checkbox" class="dict-cb" data-key="${m.key}" data-i="${o.i}"${dictSelected.has(sid) ? ' checked' : ''}><span>${escapeHtml(o.w)}</span></div><div><button data-act="edit" data-key="${m.key}" data-i="${o.i}">✏️</button><button data-act="del" data-key="${m.key}" data-i="${o.i}">🗑️</button></div></div>`;
+      });
+      html += `</div>
+        <div class="dict-group-foot">
+          <div style="display:flex;gap:6px;"><input class="dg-single" data-key="${m.key}" placeholder="新增单条词语"><button data-act="add" data-key="${m.key}">添加</button></div>
+          <textarea class="dg-batch" data-key="${m.key}" placeholder="批量添加，每行一条"></textarea>
+          <button data-act="batch" data-key="${m.key}">批量添加</button>
+        </div>
+      </div>`;
+    });
+    list.innerHTML = html;
+    const totalEl = document.getElementById('dictTotalCount');
+    if (totalEl) totalEl.textContent = total;
+    const sumEl = document.getElementById('dictSummary');
+    if (sumEl) sumEl.innerHTML = summary.join(' · ') + `<br>共 ${DICT_GROUPS_META.length} 个分组 / ${total} 个词语`;
+  }
+  async function dictAfterEdit() { updateDictUI(); await saveAll(); }
+  function bindDictUI() {
+    const list = document.getElementById('dictGroupList');
+    if (!list) return;
+    list.onchange = e => {
+      const cb = e.target;
+      if (!cb.classList || !cb.classList.contains('dict-cb')) return;
+      const sid = cb.dataset.key + ':' + cb.dataset.i;
+      if (cb.checked) dictSelected.add(sid); else dictSelected.delete(sid);
+    };
+    list.onclick = async e => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const act = btn.dataset.act, key = btn.dataset.key;
+      const arr = state.dictGroups[key];
+      if (!Array.isArray(arr)) return;
+      if (act === 'toggle') { dictCollapsed.has(key) ? dictCollapsed.delete(key) : dictCollapsed.add(key); renderDictUI(dictCurFilter()); return; }
+      if (act === 'gsel') {
+        const allSel = arr.length > 0 && arr.every((_, i) => dictSelected.has(key + ':' + i));
+        arr.forEach((_, i) => allSel ? dictSelected.delete(key + ':' + i) : dictSelected.add(key + ':' + i));
+        renderDictUI(dictCurFilter()); return;
+      }
+      if (act === 'gdel') {
+        const idx = arr.map((_, i) => i).filter(i => dictSelected.has(key + ':' + i));
+        if (!idx.length) { showAlert('请先勾选要删除的词语'); return; }
+        idx.sort((a, b) => b - a).forEach(i => { arr.splice(i, 1); });
+        dictSelected.clear();
+        await dictAfterEdit(); return;
+      }
+      if (act === 'gdedupe') {
+        const old = arr.length;
+        state.dictGroups[key] = [...new Set(arr.map(w => String(w).trim()).filter(Boolean))];
+        dictSelected.clear();
+        if (old === state.dictGroups[key].length) showAlert('该分组无重复词语');
+        else showAlert(`已删除 ${old - state.dictGroups[key].length} 个重复词语`);
+        await dictAfterEdit(); return;
+      }
+      if (act === 'edit') {
+        const i = +btn.dataset.i;
+        const nv = await showPrompt('编辑词语', arr[i]);
+        if (nv !== null && nv.trim()) { arr[i] = nv.trim(); await dictAfterEdit(); }
+        return;
+      }
+      if (act === 'del') {
+        arr.splice(+btn.dataset.i, 1);
+        dictSelected.clear();
+        await dictAfterEdit(); return;
+      }
+      if (act === 'add') {
+        const input = list.querySelector(`input.dg-single[data-key="${key}"]`);
+        const v = input ? input.value.trim() : '';
+        if (!v) return;
+        arr.push(v); input.value = '';
+        await dictAfterEdit(); return;
+      }
+      if (act === 'batch') {
+        const ta = list.querySelector(`textarea.dg-batch[data-key="${key}"]`);
+        if (!ta || !ta.value.trim()) return;
+        let n = 0;
+        ta.value.split('\n').forEach(l => { const t = l.trim(); if (t) { arr.push(t); n++; } });
+        ta.value = '';
+        showAlert(`已添加 ${n} 个词语`);
+        await dictAfterEdit(); return;
+      }
+    };
+    const search = document.getElementById('dictSearch');
+    if (search) search.oninput = e => renderDictUI(e.target.value);
+    const expand = document.getElementById('dictExpandAll');
+    if (expand) expand.onclick = () => { dictCollapsed.clear(); renderDictUI(dictCurFilter()); };
+    const collapse = document.getElementById('dictCollapseAll');
+    if (collapse) collapse.onclick = () => { DICT_GROUPS_META.forEach(m => dictCollapsed.add(m.key)); renderDictUI(dictCurFilter()); };
+    const dedupeAll = document.getElementById('dictDedupeAll');
+    if (dedupeAll) dedupeAll.onclick = async () => {
+      let removed = 0;
+      DICT_GROUPS_META.forEach(m => {
+        const arr = state.dictGroups[m.key] || [];
+        const uniq = [...new Set(arr.map(w => String(w).trim()).filter(Boolean))];
+        removed += arr.length - uniq.length;
+        state.dictGroups[m.key] = uniq;
+      });
+      dictSelected.clear();
+      showAlert(removed ? `全库共删除 ${removed} 个重复词语` : '全库无重复词语');
+      await dictAfterEdit();
+    };
+    const closeDict = document.getElementById('closeSettingsDict');
+    if (closeDict) closeDict.onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
+  }
   function renderWordcardList(filter = '') {
     const list = document.getElementById('wordcardList'), f = filter.toLowerCase();
     list.innerHTML = '';
@@ -2711,8 +2954,7 @@ window.handleTransferCardClick = function(card, msgId) {
       bubbleContent = `<img class="bubble-image" src="${imgUrl}" data-full-img="${m.fullImage ? (imgCache[m.fullImage] || m.fullImage) : imgUrl}">`;
     } else if (m.type === 'dice') {
       bubbleContent = `🎲 骰子摇到了 ${m.content}`;
-    } else if (m.type === 'call') {
-      bubbleContent = `📹 通话时长 ${m.content}`;
+    } else if (m.type === 'call') {      bubbleContent = `📹 通话时长 ${m.content}`;
     } else if (m.type === 'voice') {
       bubbleContent = `<div class="voice-bubble" data-voice-id="${m.id}" data-duration="${m.duration}" data-name="${escapeHtml(m.voiceName || '')}"><span class="voice-icon">🔊</span><span class="voice-duration">${m.duration}s</span></div>`;
       if (m.transcribedText) {
@@ -2739,7 +2981,7 @@ if (m.type === 'image' || m.type === 'sticker') {
 } 
 // 文字、Emoji、骰子、语音等其他类型：保留气泡
 else if (m.type !== 'transfer') {
-  html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="message-bubble ${m.type === 'emoji' ? 'bubble-emoji' : ''}">${bubbleContent}</div>${quoteHtml}</div></div>`;
+  html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="message-bubble ${m.type === 'emoji' ? 'bubble-emoji' : ''}${m.isDict ? ' dict-msg' : ''}">${bubbleContent}</div>${quoteHtml}</div></div>`;
     }
   }
   
@@ -3132,10 +3374,21 @@ function startEmojiRain(emojis, duration = 5) {
     }, state.replyDelay * 1000); 
   }
   
-  function generateReplies() { const count = getRandomCount(); const reps = []; for (let i = 0; i < count; i++) { const type = selectType(); let content, msgType, extra = {}; if (type === 'word' && state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; } else if (type === 'sticker' && state.stickers.length) { const s = state.stickers[Math.floor(Math.random() * state.stickers.length)]; content = s.dataURL; msgType = 'sticker'; } else if (type === 'emoji' && state.emojis.length) { content = state.emojis[Math.floor(Math.random() * state.emojis.length)]; msgType = 'emoji'; } else if (type === 'voice' && state.voiceLibrary.length) { const v = state.voiceLibrary[Math.floor(Math.random() * state.voiceLibrary.length)]; content = v.dataURL; msgType = 'voice'; extra.duration = v.duration; extra.voiceName = v.name; } else { content = '嗯'; msgType = 'text'; } reps.push({ type: msgType, content, quote: Math.random() < 0.15 ? getRandomQuote() : null, extra }); } if (reps.length) startQueue(reps); else typingInd.textContent = ''; }
+  function generateReplies() { const count = getRandomCount(); const reps = []; for (let i = 0; i < count; i++) { const type = selectType(); let content, msgType, extra = {}; if (type === 'word') { const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0)); const useDict = state.dictEnabled !== false && p > 0 && Math.random() * 100 < p; const sent = useDict ? buildDictSentence() : ''; if (sent) { content = sent; msgType = 'text'; extra.isDict = true; } else if (state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; } else { content = '嗯'; msgType = 'text'; } } else if (type === 'sticker' && state.stickers.length) { const s = state.stickers[Math.floor(Math.random() * state.stickers.length)]; content = s.dataURL; msgType = 'sticker'; } else if (type === 'emoji' && state.emojis.length) { content = state.emojis[Math.floor(Math.random() * state.emojis.length)]; msgType = 'emoji'; } else if (type === 'voice' && state.voiceLibrary.length) { const v = state.voiceLibrary[Math.floor(Math.random() * state.voiceLibrary.length)]; content = v.dataURL; msgType = 'voice'; extra.duration = v.duration; extra.voiceName = v.name; } else { content = '嗯'; msgType = 'text'; } reps.push({ type: msgType, content, quote: Math.random() < 0.15 ? getRandomQuote() : null, extra }); } if (reps.length) startQueue(reps); else typingInd.textContent = ''; }
   function getRandomCount() { const p = state.probCount; const sum = p.reduce((a,b) => a + b, 0); if (sum <= 0) return 1; let r = Math.random() * sum, acc = 0; for (let i = 0; i < 5; i++) { acc += p[i]; if (r < acc) return i + 1; } return 1; }
   function selectType() { let w = state.probWord, s = state.probSticker, e = state.probEmoji, v = state.probVoice; const sum = w + s + e + v || 1; const r = Math.random() * sum; if (r < w) return 'word'; else if (r < w + s) return 'sticker'; else if (r < w + s + e) return 'emoji'; else return 'voice'; }
   function getRandomQuote() { const meMsgs = messages.filter(m => m.sender === 'me').slice(-50); return meMsgs.length ? meMsgs[Math.floor(Math.random() * meMsgs.length)].id : null; }
+  // ==================== 词典拼句：生成随机句子 ====================
+  function buildDictSentence() {
+    if (!state.dictGroups) return '';
+    const pat = DICT_PATTERNS[Math.floor(Math.random() * DICT_PATTERNS.length)];
+    const parts = [];
+    pat.slots.forEach(k => {
+      const arr = (state.dictGroups[k] || []).filter(w => w && String(w).trim());
+      if (arr.length) parts.push(arr[Math.floor(Math.random() * arr.length)]);
+    });
+    return parts.length >= 2 ? parts.join(' ') : '';
+  }
   function startQueue(reps) { if (queueActive) { queuedBatches.push(reps); return; } pendingReplies = reps; processQueue(); }
   function processQueue() {
     if (!pendingReplies.length) {
@@ -3625,10 +3878,12 @@ async function handleTransferAction(msg, action) {
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         callVoiceDelay: state.callVoiceDelay,
-        autoVoiceIntervalDelay: state.autoVoiceIntervalDelay
+        autoVoiceIntervalDelay: state.autoVoiceIntervalDelay,
+        dictEnabled: state.dictEnabled, dictProb: state.dictProb
       };
     }
     if (sections.includes('wordCards')) data.sections.wordCards = state.wordCards;
+    if (sections.includes('dictGroups')) data.sections.dictGroups = state.dictGroups;
     if (sections.includes('emojis')) data.sections.emojis = state.emojis;
     if (sections.includes('stickers')) data.sections.stickers = state.stickers.map(s => ({ id: s.id, dataURL: s.dataURL }));
     if (sections.includes('voiceLibrary')) data.sections.voiceLibrary = state.voiceLibrary;
@@ -4348,7 +4603,8 @@ async function handleTransferAction(msg, action) {
     };
     searchInput.oninput = doSearch;
     document.getElementById('headerSettingsBtn').onclick = () => { updateUI(); document.getElementById('settingsOverlay').classList.remove('hidden'); };
-    document.querySelectorAll('.settings-tab').forEach(t => t.onclick = () => { document.querySelectorAll('.settings-tab').forEach(tb => tb.classList.remove('active')); t.classList.add('active'); ['settingsGeneral','settingsWordcard','settingsVoice','settingsSearch','settingsBg'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('settings' + t.dataset.stab.charAt(0).toUpperCase() + t.dataset.stab.slice(1)).classList.remove('hidden'); });
+    document.querySelectorAll('.settings-tab').forEach(t => t.onclick = () => { document.querySelectorAll('.settings-tab').forEach(tb => tb.classList.remove('active')); t.classList.add('active'); ['settingsGeneral','settingsWordcard','settingsDict','settingsVoice','settingsSearch','settingsBg'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('settings' + t.dataset.stab.charAt(0).toUpperCase() + t.dataset.stab.slice(1)).classList.remove('hidden'); if (t.dataset.stab === 'dict') renderDictUI(dictCurFilter()); });
+    bindDictUI();
     document.getElementById('myAvatarUpload').onchange = async e => { const f = e.target.files[0]; if (f) { const u = await compressImage(f, 200, 0.8); const newId = `avatar_me_${Date.now()}`; await saveImageToDB(newId, u); state.myAvatarId = newId; state.myAvatar = u; document.getElementById('myAvatarPreview').src = u; saveAll(); } };
     document.getElementById('otherAvatarUpload').onchange = async e => { const f = e.target.files[0]; if (f) { const u = await compressImage(f, 200, 0.8); const newId = `avatar_other_${Date.now()}`; await saveImageToDB(newId, u); state.otherAvatarId = newId; state.otherAvatar = u; document.getElementById('otherAvatarPreview').src = u; saveAll(); } };
     document.getElementById('bgUpload').onchange = async e => { const f = e.target.files[0]; if (f) { const u = await compressImage(f, 800, 1.0); const newId = `bg_${Date.now()}`; await saveImageToDB(newId, u); state.bgImageId = newId; state.bgImage = u; chatBg.style.backgroundImage = `url(${u})`; document.getElementById('chatBgPreview').src = u; saveAll(); } };
@@ -4386,6 +4642,8 @@ async function handleTransferAction(msg, action) {
       state.callVoiceDelay = +document.getElementById('callVoiceDelay').value; 
       state.autoVoiceIntervalDelay = +document.getElementById('autoVoiceDelay').value; 
       state.intimacyEnabled = document.getElementById('intimacyToggle').checked;
+      state.dictEnabled = document.getElementById('dictToggle').checked;
+      state.dictProb = Math.max(0, Math.min(100, +document.getElementById('dictProb').value || 0)); 
       state.probCount = [+document.getElementById('probCount1').value, +document.getElementById('probCount2').value, +document.getElementById('probCount3').value, +document.getElementById('probCount4').value, +document.getElementById('probCount5').value]; 
       saveAll(); 
       updateUI(); 
