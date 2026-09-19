@@ -431,7 +431,7 @@
           <div class="setting-row"><label>4条%</label><input id="probCount4" type="number" value="10"></div>
           <div class="setting-row"><label>5条%</label><input id="probCount5" type="number" value="5"></div>
         </div>
-        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">静音保活，不显示通知栏媒体条（更省电）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
+        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
@@ -646,55 +646,251 @@
   let imgCache = {};
   let imgCacheReady = false;
 
-  // ==================== 后台保活机制（Web Audio API + 指数退避）====================
-  let kaCtx = null, kaOsc = null, kaGain = null, kaTimer = null, kaPauseStreak = 0;
-  // 使用 Web Audio API (AudioContext + OscillatorNode) 代替 <audio> 元素：
-  // - Chrome 仍会认为页面有活跃音频上下文 → 豁免后台冻结
-  // - AudioContext 不生成 MediaSession → 不触发通知栏媒体条/灵动岛
-  function kaMarkPlayed() { kaPauseStreak = 0; }
-  // 指数退避补播：被外部打断后按 5s→10s→20s→40s→60s 封顶重试，后台隐藏时封顶 20s
+  // ==================== 后台保活机制（音频循环 + MediaSession + WebRTC + WakeLock）====================
+  let kaActive = false;
+  let kaAudio = null, kaTimer = null, kaPauseStreak = 0;
+  let kaHeartbeatTimer = null, kaStableTimer = null, kaFgSignalTimer = null;
+  let kaHeartbeatIdbTimer = null;
+  let kaWakeLock = null;
+  let kaWebrtc = null, kaWebrtcTimer = null, kaWebrtcWatchTimer = null, kaWebrtcBackoff = 30000;
+  const KA_AMP = /iphone|ipad|ipod/i.test(navigator.userAgent) ? 0.002 : 0.02;
+  const KA_VOLUME = 0.05;
+
+  // 1. 生成 18kHz 正弦波 WAV dataURL（人耳不可闻；volume 非 0，避免被判静音而豁免失效）
+  function kaGenDataURL() {
+    const sr = 44100, dur = 1, n = sr * dur;
+    const buf = new ArrayBuffer(44 + n * 2);
+    const dv = new DataView(buf);
+    const wstr = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+    wstr(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); wstr(8, 'WAVE');
+    wstr(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    wstr(36, 'data'); dv.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) {
+      dv.setInt16(44 + i * 2, Math.round(Math.sin(2 * Math.PI * 18000 * i / sr) * KA_AMP * 32767), true);
+    }
+    const bytes = new Uint8Array(buf);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return 'data:audio/wav;base64,' + btoa(bin);
+  }
+
+  // 3. MediaSession（metadata + playbackState='playing' + 空 handler）
+  function kaSetMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: '微讯', artist: '后台保活', album: '', artwork: [] });
+      navigator.mediaSession.playbackState = 'playing';
+      navigator.mediaSession.setActionHandler('play', () => {});
+      navigator.mediaSession.setActionHandler('pause', () => {});
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+    } catch (e) {}
+  }
+  function kaClearMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = 'none';
+      navigator.mediaSession.metadata = null;
+    } catch (e) {}
+  }
+
+  // 2. 创建 <audio loop> 元素并播放，注册 play/pause 事件钩子
+  function kaEnsureAudio() {
+    if (kaAudio) return kaAudio;
+    const a = document.createElement('audio');
+    a.loop = true;
+    a.volume = KA_VOLUME;
+    a.setAttribute('playsinline', '');
+    a.style.cssText = 'display:none;';
+    a.addEventListener('play', () => { kaPauseStreak = 0; kaArmStable(); });
+    a.addEventListener('pause', () => { if (kaActive) kaSchedule(); });
+    a.src = kaGenDataURL();
+    document.body.appendChild(a);
+    kaAudio = a;
+    return a;
+  }
+  function kaPunch() {
+    if (!kaActive) return;
+    if (kaAudio && kaAudio.paused) {
+      const p = kaAudio.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+  }
+
+  // 4. 指数退避补播：5s→60s 封顶，隐藏期钳制 20s，稳定 90s 复位
+  function kaArmStable() {
+    if (kaStableTimer) clearTimeout(kaStableTimer);
+    kaStableTimer = setTimeout(() => { kaPauseStreak = 0; kaStableTimer = null; }, 90000);
+  }
   function kaSchedule() {
-    if (!kaCtx || kaTimer) return;
+    if (!kaActive || kaTimer) return;
     kaPauseStreak++;
     let d = Math.min(5000 * Math.pow(2, Math.min(kaPauseStreak - 1, 4)), 60000);
     if (document.visibilityState === 'hidden' && d > 20000) d = 20000;
-    kaTimer = setTimeout(() => {
-      kaTimer = null;
-      if (!kaCtx) return;
-      // 后台时 AudioContext 可能被挂起，需要 resume
-      if (kaCtx.state === 'suspended') {
-        kaCtx.resume().then(() => {}).catch(() => {});
-      }
-      kaPauseStreak = 0;
-      kaSchedule(); // 继续下一次定时
-    }, d);
+    kaTimer = setTimeout(() => { kaTimer = null; kaPunch(); }, d);
   }
-  function kaStart() {
-    if (kaCtx) return;
+
+  // 5. 5 秒轻心跳（维持媒体状态 + 漏网补排）
+  function kaStartHeartbeat() {
+    kaStopHeartbeat();
+    kaHeartbeatTimer = setInterval(() => {
+      if (!kaActive) return;
+      kaPunch();
+      if ('mediaSession' in navigator) { try { navigator.mediaSession.playbackState = 'playing'; } catch (e) {} }
+      if (!kaTimer && kaAudio && kaAudio.paused) kaSchedule();
+    }, 5000);
+  }
+  function kaStopHeartbeat() {
+    if (kaHeartbeatTimer) { clearInterval(kaHeartbeatTimer); kaHeartbeatTimer = null; }
+  }
+
+  // 11. 后台心跳取证：30s 一拍写 IDB
+  function kaStartIdbHeartbeat() {
+    kaStopIdbHeartbeat();
+    kaHeartbeatIdbTimer = setInterval(() => {
+      if (!kaActive) return;
+      try {
+        const req = indexedDB.open('weixun-ka', 1);
+        req.onupgradeneeded = () => { const d = req.result; if (!d.objectStoreNames.contains('hb')) d.createObjectStore('hb'); };
+        req.onsuccess = () => {
+          const d = req.result;
+          try {
+            const tx = d.transaction('hb', 'readwrite');
+            tx.objectStore('hb').put({ t: Date.now() }, 'beat');
+            tx.oncomplete = () => { try { d.close(); } catch (e) {} };
+          } catch (e) { try { d.close(); } catch (e2) {} }
+        };
+        req.onerror = () => {};
+      } catch (e) {}
+    }, 30000);
+  }
+  function kaStopIdbHeartbeat() {
+    if (kaHeartbeatIdbTimer) { clearInterval(kaHeartbeatIdbTimer); kaHeartbeatIdbTimer = null; }
+  }
+
+  // 8. WakeLock（release 后自动重试，关闭时释放）
+  async function kaAcquireWakeLock() {
     try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 18000; // 超声波，人耳听不到
-      gain.gain.value = 0; // 完全静音
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      kaCtx = ctx;
-      kaOsc = osc;
-      kaGain = gain;
+      if (!('wakeLock' in navigator) || kaWakeLock) return;
+      kaWakeLock = await navigator.wakeLock.request('screen');
+      kaWakeLock.addEventListener('release', () => {
+        kaWakeLock = null;
+        if (kaActive && document.visibilityState === 'visible') kaAcquireWakeLock();
+      });
+    } catch (e) { kaWakeLock = null; }
+  }
+  function kaReleaseWakeLock() {
+    if (kaWakeLock) { try { kaWakeLock.release(); } catch (e) {} kaWakeLock = null; }
+  }
+
+  // 10. WebRTC 页内回环：延迟 10s 建，disconnected 观察 8s，重建退避 30s→15min，后台不重建
+  function kaDestroyWebrtc() {
+    if (kaWebrtcWatchTimer) { clearTimeout(kaWebrtcWatchTimer); kaWebrtcWatchTimer = null; }
+    if (kaWebrtc) { try { kaWebrtc.close(); } catch (e) {} kaWebrtc = null; }
+  }
+  function kaScheduleWebrtcBuild(delay) {
+    if (kaWebrtcTimer) clearTimeout(kaWebrtcTimer);
+    kaWebrtcTimer = setTimeout(() => {
+      kaWebrtcTimer = null;
+      if (!kaActive) return;
+      if (document.visibilityState === 'hidden') return; // 后台不重建
+      kaBuildWebrtc();
+    }, delay);
+  }
+  function kaBuildWebrtc() {
+    try {
+      if (kaWebrtc || !window.RTCPeerConnection) return;
+      const pc = new RTCPeerConnection({ iceServers: [] });
+      pc.createDataChannel('ka');
+      pc.onconnectionstatechange = () => {
+        const st = pc.connectionState;
+        if (st === 'connected') kaWebrtcBackoff = 30000;
+        else if (st === 'disconnected' || st === 'failed') {
+          if (!kaWebrtcWatchTimer) {
+            kaWebrtcWatchTimer = setTimeout(() => {
+              kaWebrtcWatchTimer = null;
+              kaDestroyWebrtc();
+              kaWebrtcBackoff = Math.min(kaWebrtcBackoff * 2, 15 * 60 * 1000);
+              kaScheduleWebrtcBuild(kaWebrtcBackoff);
+            }, 8000);
+          }
+        }
+      };
+      pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {
+        kaDestroyWebrtc();
+        kaWebrtcBackoff = Math.min(kaWebrtcBackoff * 2, 15 * 60 * 1000);
+        kaScheduleWebrtcBuild(kaWebrtcBackoff);
+      });
+      kaWebrtc = pc;
+    } catch (e) {
+      kaWebrtc = null;
+      kaWebrtcBackoff = Math.min(kaWebrtcBackoff * 2, 15 * 60 * 1000);
+      kaScheduleWebrtcBuild(kaWebrtcBackoff);
+    }
+  }
+
+  // 6. 切后台自愈：清退避 + 立即补播 + 最快档排期
+  function kaOnBackground() {
+    if (!kaActive) return;
+    if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
+    kaPauseStreak = 0;
+    kaPunch();
+    kaSchedule();
+  }
+  // 7. 回前台自愈：音频/媒体条/WakeLock 一并恢复，1s 窗口合并触发信号
+  function kaOnForeground() {
+    if (!kaActive) return;
+    if (kaFgSignalTimer) return;
+    kaFgSignalTimer = setTimeout(() => {
+      kaFgSignalTimer = null;
+      if (!kaActive) return;
+      kaPauseStreak = 0;
+      kaPunch();
+      kaAcquireWakeLock();
+      if ('mediaSession' in navigator) { try { navigator.mediaSession.playbackState = 'playing'; } catch (e) {} }
+      if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
       kaSchedule();
+    }, 1000);
+  }
+
+  // 9. 开关：开启启动全部机制，关闭清理全部
+  function kaStart() {
+    if (kaActive) return;
+    kaActive = true;
+    try {
+      kaEnsureAudio();
+      kaSetMediaSession();
+      kaPunch();
+      kaStartHeartbeat();
+      kaStartIdbHeartbeat();
+      kaAcquireWakeLock();
+      kaScheduleWebrtcBuild(10000);
     } catch (e) {}
   }
   function kaStop() {
+    kaActive = false;
     if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
-    try { if (kaOsc) kaOsc.stop(); } catch (e) {}
-    try { if (kaCtx) kaCtx.close(); } catch (e) {}
-    kaCtx = kaOsc = kaGain = null;
+    if (kaStableTimer) { clearTimeout(kaStableTimer); kaStableTimer = null; }
+    if (kaFgSignalTimer) { clearTimeout(kaFgSignalTimer); kaFgSignalTimer = null; }
+    kaStopHeartbeat();
+    kaStopIdbHeartbeat();
+    kaReleaseWakeLock();
+    kaDestroyWebrtc();
+    if (kaWebrtcTimer) { clearTimeout(kaWebrtcTimer); kaWebrtcTimer = null; }
+    kaWebrtcBackoff = 30000;
+    kaClearMediaSession();
+    if (kaAudio) {
+      try { kaAudio.pause(); } catch (e) {}
+      try { kaAudio.removeAttribute('src'); kaAudio.load(); } catch (e) {}
+      if (kaAudio.parentNode) kaAudio.parentNode.removeChild(kaAudio);
+      kaAudio = null;
+    }
+    kaPauseStreak = 0;
   }
+
   // 首次交互启动保活
   function startKeepAliveOnTouch() {
     if (state.keepAliveEnabled) kaStart();
@@ -703,22 +899,32 @@
   }
   document.body.addEventListener('touchstart', startKeepAliveOnTouch, { once: true });
   document.body.addEventListener('click', startKeepAliveOnTouch, { once: true });
-  // 回前台自愈：恢复 AudioContext
-  function kaResumeOnForeground() {
-    if (!kaCtx) return;
-    if (kaTimer) { clearTimeout(kaTimer); kaTimer = null; }
-    kaPauseStreak = 0;
-    if (kaCtx.state === 'suspended') {
-      kaCtx.resume().then(() => {}).catch(() => {});
-    }
-    kaSchedule();
-  }
+
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') kaResumeOnForeground();
-    else if (kaCtx && kaTimer) { clearTimeout(kaTimer); kaTimer = null; kaSchedule(); } // 切后台立即补播
+    if (document.visibilityState === 'visible') kaOnForeground();
+    else kaOnBackground();
   });
-  window.addEventListener('focus', kaResumeOnForeground);
-  window.addEventListener('pageshow', kaResumeOnForeground);
+  window.addEventListener('focus', kaOnForeground);
+  window.addEventListener('pageshow', kaOnForeground);
+  window.addEventListener('pagehide', kaOnBackground);
+
+  // 13. 诊断探针
+  window.__kaProbe = function () {
+    return {
+      active: kaActive,
+      audioPlaying: !!(kaAudio && !kaAudio.paused),
+      audioPaused: !!(kaAudio && kaAudio.paused),
+      pauseStreak: kaPauseStreak,
+      timer: !!kaTimer,
+      heartbeat: !!kaHeartbeatTimer,
+      idbHeartbeat: !!kaHeartbeatIdbTimer,
+      wakeLock: !!kaWakeLock,
+      webrtc: !!(kaWebrtc && (kaWebrtc.connectionState || kaWebrtc.iceConnectionState)),
+      visibility: document.visibilityState,
+      mediaSession: !!(navigator.mediaSession && navigator.mediaSession.playbackState === 'playing'),
+      now: Date.now()
+    };
+  };
 
   // ==================== 主动消息补救机制 ====================
   let nextActiveTime = null;
@@ -761,7 +967,6 @@
         patchedScheduleNextActive();
       }
     }
-    if (kaCtx && kaCtx.state === 'suspended') kaCtx.resume();
   });
 
   // ==================== IndexedDB & 存储逻辑 ====================
