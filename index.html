@@ -113,6 +113,7 @@
     .video-bg { width: 100%; height:150px; background-size: cover; background-position: center; }
     .video-controls { display: flex; justify-content: space-around; padding: 8px; background: rgba(0,0,0,0.5); }
     .video-controls button { background: none; border: none; color: white; font-size: 18px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.2); }
+    .video-controls button.active { background: rgba(7,193,96,0.85); box-shadow: 0 0 0 2px rgba(255,255,255,0.6); }
     .mini-timer { position: absolute; top: 60px; right: 16px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 30px; font-size: 13px; z-index: 51; display: flex; align-items: center; gap: 6px; cursor: pointer; }
     .context-menu { position: fixed; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); padding: 8px 0; z-index: 800; min-width: 120px; }
     .context-menu div { padding: 10px 16px; font-size: 16px; cursor: pointer; }
@@ -420,8 +421,6 @@
           <div class="setting-row"><label>语音条%</label><input id="probVoice" type="number" value="2"></div>
           <div class="setting-row"><label>主动最快(分钟)</label><input id="autoMin" type="number" value="30"></div>
           <div class="setting-row"><label>主动最慢(分钟)</label><input id="autoMax" type="number" value="120"></div>
-          <div class="setting-row"><label>通话语音延迟(秒)</label><input id="callVoiceDelay" type="number" step="0.5" value="3"></div>
-          <div class="setting-row"><label>通话自动语音延迟(秒)</label><input id="autoVoiceDelay" type="number" step="0.5" value="10"></div>
           <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💞按钮</span></div>
           <div class="setting-row"><label>🧩 词典拼句</label><input type="checkbox" id="dictToggle" checked> <span style="font-size:13px;color:#888;">开启后对方可随机拼句回复</span></div>
           <div class="setting-row"><label>拼句概率%</label><input id="dictProb" type="number" min="0" max="100" value="30"> <span style="font-size:12px;color:#888;">占字卡消息比例，剩余为字卡库</span></div>
@@ -520,9 +519,8 @@
     <div class="video-bg" id="videoBg"></div>
     <div class="video-controls">
       <button id="hangupBtn" title="挂断">📵</button>
-      <button id="autoVoiceBtn" title="自动语音">🎙️</button>
       <button id="minimizeVideoBtn" title="缩小">🔽</button>
-      <button id="randomVoiceBtn" title="随机语音">🔊</button>
+      <button id="randomVoiceBtn" title="自动识别说话">🔊</button>
     </div>
   </div>
   <div id="miniTimer" class="mini-timer hidden"><span>📹</span><span id="miniTimerText">00:00</span></div>
@@ -1237,8 +1235,6 @@
       defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
       defaultChoiceCount: state.defaultChoiceCount,
       choiceCustomAnswer: state.choiceCustomAnswer,
-      callVoiceDelay: state.callVoiceDelay,
-      autoVoiceIntervalDelay: state.autoVoiceIntervalDelay,
       lastMsgTime: lastMsgTime,
       intimacyEnabled: state.intimacyEnabled,
       intimacyActions: state.intimacyActions,
@@ -1359,8 +1355,6 @@
     defaultChoiceThinkSeconds: 10,
     defaultChoiceCount: 1,
     choiceCustomAnswer: true,
-    callVoiceDelay: 3,
-    autoVoiceIntervalDelay: 10,
     intimacyEnabled: true,
     intimacyActions: ["亲亲","抱抱","打屁股","乳夹","跳蛋","肛塞"],
     intimacySelectedAction: "亲亲",
@@ -1437,9 +1431,16 @@ window.handleTransferCardClick = function(card, msgId) {
   let momentReplyTimers = new Map();
   let sortedNotesCache = null;
 
-  // 自动语音相关变量
-  let autoVoiceActive = false;
-  let autoVoiceTimer = null;
+  // 自动识别说话相关变量
+  let autoDetectActive = false;
+  let autoDetectStream = null;
+  let autoDetectAnalyser = null;
+  let autoDetectInterval = null;
+  let autoDetectBuf = null;
+  let autoDetectSpoke = false;
+  let autoDetectSilenceSince = 0;
+  let autoDetectPlayingVoice = false;
+  let autoDetectCooldownUntil = 0;
   let currentAutoAudio = null;
 
   const chatMessages = document.getElementById('chatMessages');
@@ -1821,8 +1822,6 @@ window.handleTransferCardClick = function(card, msgId) {
         state.probCount = s.probCount || [40,30,15,10,5];
         state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
-        if (s.callVoiceDelay !== undefined) state.callVoiceDelay = s.callVoiceDelay;
-        if (s.autoVoiceIntervalDelay !== undefined) state.autoVoiceIntervalDelay = s.autoVoiceIntervalDelay;
       } else {
         if (s.myName) state.myName = s.myName; if (s.otherName) state.otherName = s.otherName;
         if (s.myAvatarId) state.myAvatarId = s.myAvatarId; if (s.otherAvatarId) state.otherAvatarId = s.otherAvatarId;
@@ -1840,8 +1839,6 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
         if (s.keepAliveEnabled !== undefined) state.keepAliveEnabled = s.keepAliveEnabled;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
-        if (s.callVoiceDelay !== undefined) state.callVoiceDelay = s.callVoiceDelay;
-        if (s.autoVoiceIntervalDelay !== undefined) state.autoVoiceIntervalDelay = s.autoVoiceIntervalDelay;
         if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
         if (s.dictProb !== undefined) state.dictProb = s.dictProb;
         if (s.dictVersion !== undefined) state.dictVersion = s.dictVersion;
@@ -2004,7 +2001,7 @@ window.handleTransferCardClick = function(card, msgId) {
       console.warn('IndexedDB打开失败，将使用内存模式（数据不持久化）', e);
     }
     const saved = localStorage.getItem('wc_ultra_settings');
-    if (saved) { try { const p = JSON.parse(saved); Object.assign(state, p); if (!state.notes) state.notes = []; if (!state.moments) state.moments = []; if (!state.voiceLibrary) state.voiceLibrary = []; if (!state.unreadMomentIds) state.unreadMomentIds = []; if (state.defaultChoiceThinkSeconds === undefined) state.defaultChoiceThinkSeconds = 10; if (state.defaultChoiceCount === undefined) state.defaultChoiceCount = 1; if (state.choiceCustomAnswer === undefined) state.choiceCustomAnswer = true; if (state.callVoiceDelay === undefined) state.callVoiceDelay = 3; if (state.autoVoiceIntervalDelay === undefined) state.autoVoiceIntervalDelay = 10; } catch(e) {} }
+    if (saved) { try { const p = JSON.parse(saved); Object.assign(state, p); if (!state.notes) state.notes = []; if (!state.moments) state.moments = []; if (!state.voiceLibrary) state.voiceLibrary = []; if (!state.unreadMomentIds) state.unreadMomentIds = []; if (state.defaultChoiceThinkSeconds === undefined) state.defaultChoiceThinkSeconds = 10; if (state.defaultChoiceCount === undefined) state.defaultChoiceCount = 1; if (state.choiceCustomAnswer === undefined) state.choiceCustomAnswer = true; } catch(e) {} }
     // 亲密互动字段默认值（始终设置）
     if (state.intimacyEnabled === undefined) state.intimacyEnabled = true;
     if (!state.intimacyActions || !state.intimacyActions.length) state.intimacyActions = ["亲亲","抱抱","打屁股","乳夹","跳蛋","肛塞"];
@@ -2133,8 +2130,6 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('keepAliveEnabled').checked = state.keepAliveEnabled;
     document.getElementById('autoMin').value = state.autoMin;
     document.getElementById('autoMax').value = state.autoMax;
-    document.getElementById('callVoiceDelay').value = state.callVoiceDelay;
-    document.getElementById('autoVoiceDelay').value = state.autoVoiceIntervalDelay;
     document.getElementById('intimacyToggle').checked = state.intimacyEnabled;
     document.getElementById('dictToggle').checked = state.dictEnabled !== false;
     document.getElementById('dictProb').value = state.dictProb === undefined ? 30 : state.dictProb;
@@ -3607,29 +3602,11 @@ function startEmojiRain(emojis, duration = 5) {
     }
   }
 
-  // ========== 自动语音相关函数 ==========
-  function stopAutoVoice() {
-    if (autoVoiceTimer) {
-      clearTimeout(autoVoiceTimer);
-      autoVoiceTimer = null;
-    }
-    if (currentAutoAudio) {
-      currentAutoAudio.pause();
-      currentAutoAudio = null;
-    }
-    autoVoiceActive = false;
-    const autoBtn = document.getElementById('autoVoiceBtn');
-    if (autoBtn) autoBtn.textContent = '🎙️';
-  }
-
-  function playNextAutoVoice() {
-    if (!autoVoiceActive || !videoActive) {
-      stopAutoVoice();
-      return;
-    }
+  // ========== 自动识别说话相关函数 ==========
+  function playRandomVoice() {
+    if (!videoActive) return;
     if (state.voiceLibrary.length === 0) {
-      addTapMessage('⚠️ 语音库为空，自动语音已停止', 'me');
-      stopAutoVoice();
+      showAlert('语音库为空，请先上传语音。');
       return;
     }
     const randomIndex = Math.floor(Math.random() * state.voiceLibrary.length);
@@ -3640,44 +3617,95 @@ function startEmojiRain(emojis, duration = 5) {
     }
     const audio = new Audio(voice.dataURL);
     currentAutoAudio = audio;
-    audio.play().catch(e => console.warn('自动语音播放失败', e));
-    audio.onended = () => {
-      if (autoVoiceActive && videoActive) {
-        const delayMs = state.autoVoiceIntervalDelay * 1000;
-        autoVoiceTimer = setTimeout(() => {
-          playNextAutoVoice();
-        }, delayMs);
-      } else {
-        stopAutoVoice();
-      }
+    autoDetectPlayingVoice = true;
+    audio.play().catch(e => console.warn('语音播放失败', e));
+    const finishPlayback = () => {
+      autoDetectPlayingVoice = false;
+      currentAutoAudio = null;
+      autoDetectCooldownUntil = Date.now() + 500;
+      autoDetectSpoke = false;
+      autoDetectSilenceSince = 0;
     };
-    audio.onerror = () => {
-      if (autoVoiceActive && videoActive) {
-        const delayMs = state.autoVoiceIntervalDelay * 1000;
-        autoVoiceTimer = setTimeout(() => {
-          playNextAutoVoice();
-        }, delayMs);
-      }
-    };
+    audio.onended = finishPlayback;
+    audio.onerror = finishPlayback;
   }
 
-  function startAutoVoice() {
-    if (autoVoiceActive) {
-      stopAutoVoice();
-      return;
+  function autoDetectTick() {
+    if (!autoDetectActive || !videoActive) { stopAutoDetect(); return; }
+    if (autoDetectPlayingVoice) return;
+    const now = Date.now();
+    if (now < autoDetectCooldownUntil) return;
+    if (!autoDetectAnalyser || !autoDetectBuf) return;
+    autoDetectAnalyser.getByteTimeDomainData(autoDetectBuf);
+    let sum = 0;
+    for (let i = 0; i < autoDetectBuf.length; i++) {
+      const v = (autoDetectBuf[i] - 128) / 128;
+      sum += v * v;
     }
-    if (!videoActive) {
-      addTapMessage('请先开启视频通话', 'me');
-      return;
+    const rms = Math.sqrt(sum / autoDetectBuf.length);
+    if (rms > 0.05) {
+      autoDetectSpoke = true;
+      autoDetectSilenceSince = 0;
+    } else if (autoDetectSpoke) {
+      if (autoDetectSilenceSince === 0) autoDetectSilenceSince = now;
+      if (now - autoDetectSilenceSince >= 1200) {
+        autoDetectSpoke = false;
+        autoDetectSilenceSince = 0;
+        playRandomVoice();
+      }
     }
+  }
+
+  function stopAutoDetect() {
+    autoDetectActive = false;
+    if (autoDetectInterval) { clearInterval(autoDetectInterval); autoDetectInterval = null; }
+    if (autoDetectStream) { autoDetectStream.getTracks().forEach(t => t.stop()); autoDetectStream = null; }
+    autoDetectAnalyser = null;
+    autoDetectBuf = null;
+    autoDetectSpoke = false;
+    autoDetectSilenceSince = 0;
+    autoDetectPlayingVoice = false;
+    if (currentAutoAudio) { currentAutoAudio.pause(); currentAutoAudio = null; }
+    const btn = document.getElementById('randomVoiceBtn');
+    if (btn) btn.classList.remove('active');
+  }
+
+  async function startAutoDetect() {
+    if (autoDetectActive) { stopAutoDetect(); return; }
+    if (!videoActive) { addTapMessage('请先开启视频通话', 'me'); return; }
     if (state.voiceLibrary.length === 0) {
-      addTapMessage('语音库为空，无法自动播放', 'me');
+      showAlert('语音库为空，请先上传语音。');
       return;
     }
-    autoVoiceActive = true;
-    const autoBtn = document.getElementById('autoVoiceBtn');
-    if (autoBtn) autoBtn.textContent = '🔀';
-    playNextAutoVoice();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      if (ctx.state === 'suspended') ctx.resume();
+      const source = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      autoDetectStream = stream;
+      autoDetectAnalyser = analyser;
+      autoDetectBuf = new Uint8Array(analyser.fftSize);
+      autoDetectSpoke = false;
+      autoDetectSilenceSince = 0;
+      autoDetectPlayingVoice = false;
+      autoDetectCooldownUntil = 0;
+      autoDetectActive = true;
+      autoDetectInterval = setInterval(autoDetectTick, 120);
+      const btn = document.getElementById('randomVoiceBtn');
+      if (btn) btn.classList.add('active');
+    } catch (e) {
+      showAlert('无法访问麦克风，请检查权限设置');
+      console.error(e);
+    }
+  }
+
+  function toggleAutoDetect() {
+    if (autoDetectActive) stopAutoDetect();
+    else startAutoDetect();
   }
 
   // 视频通话未接自动挂断
@@ -3751,7 +3779,7 @@ function startEmojiRain(emojis, duration = 5) {
     document.getElementById('miniTimer').classList.add('hidden'); 
     videoActive = false; 
     autoHangupDeadline = null;
-    stopAutoVoice(); 
+    stopAutoDetect(); 
     saveRuntimeState();
   }
 
@@ -3948,8 +3976,6 @@ async function handleTransferAction(msg, action) {
         probCount: state.probCount,
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
-        callVoiceDelay: state.callVoiceDelay,
-        autoVoiceIntervalDelay: state.autoVoiceIntervalDelay,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
       };
     }
@@ -4710,8 +4736,6 @@ async function handleTransferAction(msg, action) {
       state.keepAliveEnabled = document.getElementById('keepAliveEnabled').checked; 
       state.autoMin = +document.getElementById('autoMin').value; 
       state.autoMax = +document.getElementById('autoMax').value; 
-      state.callVoiceDelay = +document.getElementById('callVoiceDelay').value; 
-      state.autoVoiceIntervalDelay = +document.getElementById('autoVoiceDelay').value; 
       state.intimacyEnabled = document.getElementById('intimacyToggle').checked;
       state.dictEnabled = document.getElementById('dictToggle').checked;
       state.dictProb = Math.max(0, Math.min(100, +document.getElementById('dictProb').value || 0)); 
@@ -4789,32 +4813,7 @@ async function handleTransferAction(msg, action) {
     document.getElementById('closeTransferInput').onclick = () => transferInputOverlay.classList.add('hidden');
 
     const randomVoiceBtn = document.getElementById('randomVoiceBtn');
-    if (randomVoiceBtn) {
-      randomVoiceBtn.onclick = () => {
-        if (state.voiceLibrary.length === 0) {
-          showAlert('语音库为空，请先上传语音。');
-          return;
-        }
-        if (autoVoiceActive) stopAutoVoice();
-        const delayMs = state.callVoiceDelay * 1000;
-        setTimeout(() => {
-          if (!videoActive) return;
-          const randomIndex = Math.floor(Math.random() * state.voiceLibrary.length);
-          const voice = state.voiceLibrary[randomIndex];
-          if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-          }
-          const audio = new Audio(voice.dataURL);
-          currentAudio = audio;
-          audio.play().catch(e => console.error('播放语音失败', e));
-          audio.onended = () => { currentAudio = null; };
-        }, delayMs);
-      };
-    }
-
-    const autoVoiceBtn = document.getElementById('autoVoiceBtn');
-    if (autoVoiceBtn) autoVoiceBtn.onclick = startAutoVoice;
+    if (randomVoiceBtn) randomVoiceBtn.onclick = toggleAutoDetect;
 
     document.getElementById('voiceUploadBtn').onclick = () => document.getElementById('voiceUploadInput').click();
     document.getElementById('voiceUploadInput').onchange = async (e) => {
@@ -5048,7 +5047,7 @@ document.getElementById('voiceRecordBtn').onclick = async () => {
   if (autoHangupTimer) clearTimeout(autoHangupTimer);
   if (incomingCallTimer) clearTimeout(incomingCallTimer);
   if (videoTimerInterval) clearInterval(videoTimerInterval);
-  if (autoVoiceTimer) clearTimeout(autoVoiceTimer);
+  if (autoDetectActive) stopAutoDetect();
   // 也清理那些未被变量存储的 setInterval（这部分不改，但上面几个已经够用）
   saveStateToSettings();
 });
