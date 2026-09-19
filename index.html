@@ -1434,6 +1434,8 @@ window.handleTransferCardClick = function(card, msgId) {
   // 自动识别说话相关变量
   let autoDetectActive = false;
   let autoDetectStream = null;
+  let autoDetectCtx = null;
+  let autoDetectSource = null;
   let autoDetectAnalyser = null;
   let autoDetectInterval = null;
   let autoDetectBuf = null;
@@ -3603,6 +3605,30 @@ function startEmojiRain(emojis, duration = 5) {
   }
 
   // ========== 自动识别说话相关函数 ==========
+  async function openAutoDetectMic() {
+    if (autoDetectStream) return true;
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!autoDetectCtx) autoDetectCtx = new Ctx();
+    if (autoDetectCtx.state === 'suspended') autoDetectCtx.resume();
+    const source = autoDetectCtx.createMediaStreamSource(stream);
+    const analyser = autoDetectCtx.createAnalyser();
+    analyser.fftSize = 512;
+    source.connect(analyser);
+    autoDetectStream = stream;
+    autoDetectSource = source;
+    autoDetectAnalyser = analyser;
+    autoDetectBuf = new Uint8Array(analyser.fftSize);
+    return true;
+  }
+
+  function closeAutoDetectMic() {
+    if (autoDetectSource) { try { autoDetectSource.disconnect(); } catch (e) {} autoDetectSource = null; }
+    if (autoDetectStream) { autoDetectStream.getTracks().forEach(t => t.stop()); autoDetectStream = null; }
+    autoDetectAnalyser = null;
+    autoDetectBuf = null;
+  }
+
   function playRandomVoice() {
     if (!videoActive) return;
     if (state.voiceLibrary.length === 0) {
@@ -3611,23 +3637,29 @@ function startEmojiRain(emojis, duration = 5) {
     }
     const randomIndex = Math.floor(Math.random() * state.voiceLibrary.length);
     const voice = state.voiceLibrary[randomIndex];
-    if (currentAutoAudio) {
-      currentAutoAudio.pause();
-      currentAutoAudio = null;
-    }
-    const audio = new Audio(voice.dataURL);
-    currentAutoAudio = audio;
     autoDetectPlayingVoice = true;
-    audio.play().catch(e => console.warn('语音播放失败', e));
+    // 先释放麦克风，让系统退出“通话模式”，语音改走扬声器而非听筒
+    closeAutoDetectMic();
     const finishPlayback = () => {
       autoDetectPlayingVoice = false;
       currentAutoAudio = null;
-      autoDetectCooldownUntil = Date.now() + 500;
       autoDetectSpoke = false;
       autoDetectSilenceSince = 0;
+      if (autoDetectActive && videoActive) {
+        autoDetectCooldownUntil = Date.now() + 500;
+        openAutoDetectMic().catch(e => console.warn('重新打开麦克风失败', e));
+      }
     };
-    audio.onended = finishPlayback;
-    audio.onerror = finishPlayback;
+    // 稍等片刻，确保音频会话切回扬声器后再播放
+    setTimeout(() => {
+      if (!videoActive || !autoDetectActive) return;
+      if (currentAutoAudio) { currentAutoAudio.pause(); currentAutoAudio = null; }
+      const audio = new Audio(voice.dataURL);
+      currentAutoAudio = audio;
+      audio.play().catch(e => console.warn('语音播放失败', e));
+      audio.onended = finishPlayback;
+      audio.onerror = finishPlayback;
+    }, 150);
   }
 
   function autoDetectTick() {
@@ -3659,9 +3691,7 @@ function startEmojiRain(emojis, duration = 5) {
   function stopAutoDetect() {
     autoDetectActive = false;
     if (autoDetectInterval) { clearInterval(autoDetectInterval); autoDetectInterval = null; }
-    if (autoDetectStream) { autoDetectStream.getTracks().forEach(t => t.stop()); autoDetectStream = null; }
-    autoDetectAnalyser = null;
-    autoDetectBuf = null;
+    closeAutoDetectMic();
     autoDetectSpoke = false;
     autoDetectSilenceSince = 0;
     autoDetectPlayingVoice = false;
@@ -3678,23 +3708,13 @@ function startEmojiRain(emojis, duration = 5) {
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      const ctx = new Ctx();
-      if (ctx.state === 'suspended') ctx.resume();
-      const source = ctx.createMediaStreamSource(stream);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 512;
-      source.connect(analyser);
-      autoDetectStream = stream;
-      autoDetectAnalyser = analyser;
-      autoDetectBuf = new Uint8Array(analyser.fftSize);
+      await openAutoDetectMic();
       autoDetectSpoke = false;
       autoDetectSilenceSince = 0;
       autoDetectPlayingVoice = false;
       autoDetectCooldownUntil = 0;
       autoDetectActive = true;
-      autoDetectInterval = setInterval(autoDetectTick, 120);
+      if (!autoDetectInterval) autoDetectInterval = setInterval(autoDetectTick, 120);
       const btn = document.getElementById('randomVoiceBtn');
       if (btn) btn.classList.add('active');
     } catch (e) {
@@ -5051,6 +5071,10 @@ document.getElementById('voiceRecordBtn').onclick = async () => {
   // 也清理那些未被变量存储的 setInterval（这部分不改，但上面几个已经够用）
   saveStateToSettings();
 });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && autoDetectActive) stopAutoDetect();
+    });
 
     renderPanel('emoji');
     checkIdleNote();
