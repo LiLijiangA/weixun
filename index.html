@@ -465,9 +465,9 @@
       <div id="settingsVoice" class="hidden">
         <h4>🔊 语音库管理</h4>
         <input type="text" id="voiceSearchInput" placeholder="🔍 搜索语音" class="wordcard-search" style="margin-bottom:8px;">
-        <div class="voice-hint">💡 提示：支持 mp3、m4a、wav、aac 等格式。如果文件在iOS上显示灰色无法选取，请尝试使用下方的“录制”功能，或将音频转为 .m4a 格式后重试。</div>
+        <div class="voice-hint">💡 提示：仅支持 <b>mp3</b>（推荐）、wav、ogg 格式。m4a / aac（iPhone 录音默认格式）在网页版多数浏览器无法播放，请先用转换工具转成 mp3 再上传。如果文件在iOS上显示灰色无法选取，请使用下方的“录制”功能。</div>
         <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
-          <input type="file" id="voiceUploadInput" accept=".mp3,.m4a,.wav,.aac,.flac,.ogg,audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/aac,audio/flac,audio/ogg" multiple style="display:none;">
+          <input type="file" id="voiceUploadInput" accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" multiple style="display:none;">
           <button id="voiceUploadBtn">📁 上传音频</button>
           <button id="voiceRecordBtn">🎙️ 录制</button>
           <button id="toggleVoiceManageBtn" style="background:#f0f0f0;border:1px solid #ccc;border-radius:4px;padding:4px 8px;font-size:13px;">🗑️ 管理</button>
@@ -1248,30 +1248,54 @@
       intimacyDuration: state.intimacyDuration,
       dictEnabled: state.dictEnabled,
       dictProb: state.dictProb,
-      dictGroups: state.dictGroups
+      dictGroups: state.dictGroups,
+      dictVersion: state.dictVersion
     };
     try { localStorage.setItem('wc_ultra_settings', JSON.stringify(s)); } catch (e) { console.warn('保存设置失败', e); }
   }
 
   // ==================== 词典拼句：内置分组词语 + 句式结构 ====================
+  // 词库版本：版本号变化时把内置词库并入现有分组，让老存档也能拿到新增词语
+  // （注意：升级会把你之前手动删掉的内置词也一并恢复，升级后重新删一次即可）
+  const DICT_VERSION = 3;
   const DICT_GROUPS_META = [
-    { key:'subj', name:'🙋 主语·人称', words:['我','你','咱们','我们','人家','宝贝','亲爱的','小可爱','老公','老婆','大家','他','她'] },
-    { key:'perObj', name:'👤 宾语·人称', words:['你','我','他','她','大家','宝贝','亲'] },
+    { key:'subj', name:'🙋 主语·人称', words:['我','你','咱们','我们','人家','大家','他','她'] },
+    { key:'perObj', name:'👤 宾语·人称', words:['你','我','他','她','大家','亲爱的','宝贝'] },
+    { key:'callName', name:'💞 亲密称呼', words:['宝贝','亲爱的','老公','老婆','小可爱','小笨蛋','小傻瓜','小朋友','小懒猪','小猫咪','我家那位','乖宝','乖乖','大宝贝','我的心尖尖','小星星','小太阳','大坏蛋','傻瓜','我的宝','小甜心','心肝','宝宝','大宝'] },
     { key:'time', name:'⏰ 时间', words:['今天','明天','昨天','现在','待会儿','一会儿','等会儿','马上','早上','中午','下午','晚上','今晚','这周末','下周','周末','周末晚上','明天中午','过两天','下个月'] },
     { key:'place', name:'📍 地点', words:['家里','公司','学校','公园','超市','商场','餐厅','电影院','咖啡店','地铁站','楼下','床上','沙发上','海边','山上','菜市场','便利店','小吃街','健身房','图书馆','甜品店','奶茶店'] },
     { key:'prep', name:'🚶 方位词', words:['去','来','在','到','回'] },
+    { key:'prepLoc', name:'🧭 存放方位', words:['在','放在','落在','藏在','丢在','忘在','挂在','摆在','锁在','塞在'] },
     { key:'verbWant', name:'💭 谓语·意愿', words:['想吃','想喝','想买','想看','想去','想要','想玩','喜欢吃','喜欢喝','喜欢','最爱','打算','准备','要','想吃点','想尝尝','想试试'] },
     { key:'verbAct', name:'🏃 谓语·动作', words:['吃','喝','买','看','做','尝','点','逛','玩','带','接','送','煮','订','拿','打包','收拾','挑','试试','研究'] },
     { key:'verbS', name:'🤔 谓语·认知', words:['觉得','感觉','发现','看','认为'] },
-    { key:'verbD', name:'🎁 谓语·双宾', words:['给','送','借','留','分','请','教','告诉','带','买','点','拿'] },
-    { key:'obj', name:'🍲 宾语·食物物品', words:['火锅','烧烤','奶茶','咖啡','炸鸡','寿司','蛋糕','冰淇淋','水果','零食','外卖','泡面','啤酒','可乐','麻辣烫','串串','小笼包','面条','饺子','甜品','巧克力','西瓜','烤冷面','螺蛳粉','糖葫芦','煎饼','蛋炒饭','小龙虾','披萨','汉堡','薯条','关东煮','豆浆','油条','烤肉','炒饭','鸡爪','鸭脖','板栗','烤红薯','酸奶','布丁','杨枝甘露','麻辣香锅','盖浇饭','包子'] },
-    { key:'objAct', name:'🎬 宾语·活动', words:['电影','电视剧','游戏','球赛','歌','动漫','综艺','短视频','直播','拼图','摩天轮','卡丁车'] },
-    { key:'adj', name:'✨ 形容词·评价', words:['好吃','好喝','好玩','好看','舒服','开心','幸福','满足','可爱','温柔','靠谱','有意思','香','甜','辣','爽','累','困','无聊','安静','热闹','暖和','凉快','浪漫','贴心','惊艳','上头','温柔可爱'] },
+    { key:'verbD', name:'🎁 谓语·双宾', words:['给','送','借','留','分','请','教','告诉','带','买','点','拿','寄'] },
+    { key:'useVerb', name:'🎮 谓语·使用', words:['用','玩','拿','带','借','抢','抱着','揣着','藏着','想买','想玩','想换','想要','想试试','盯着','刷着'] },
+    { key:'giftVerb', name:'🎀 谓语·赠送', words:['准备','挑','买','订','寄','带','塞','藏','偷塞','抱来'] },
+    { key:'touchVerb', name:'🤲 谓语·触碰', words:['摸摸','揉揉','亲亲','抱抱','捏捏','拍拍','蹭蹭','摸摸头','轻抚','捧起','牵住','揽住','靠住','挠挠','拍拍背'] },
+    { key:'kissVerb', name:'💋 谓语·亲密动作', words:['亲亲','抱抱','牵手','搂腰','摸头','捏脸','贴贴','蹭蹭','拥抱','亲吻','撒娇','十指相扣','依偎','抱住','公主抱','举高高','拉手手','摸肚子','拍背','捶背','贴脸','抱紧','亲一口','搂着','靠在怀里'] },
+    { key:'loveVerb', name:'💗 谓语·爱意', words:['爱你','喜欢你','好想你','想你','心疼你','舍不得你','想见你','想念你','想宠你','想黏着你','想陪着你','超级喜欢你','最爱你','想抱着你','想搂着你','想牵你的手','想赖在你身边','离不开你','超喜欢你','想亲你','把你宠上天','想你想到疯'] },
+    { key:'obj', name:'🍲 宾语·食物', words:['火锅','烧烤','奶茶','咖啡','炸鸡','寿司','蛋糕','冰淇淋','水果','零食','外卖','泡面','啤酒','可乐','麻辣烫','串串','小笼包','面条','饺子','甜品','巧克力','西瓜','烤冷面','螺蛳粉','糖葫芦','煎饼','蛋炒饭','小龙虾','披萨','汉堡','薯条','关东煮','豆浆','油条','烤肉','炒饭','鸡爪','鸭脖','板栗','烤红薯','酸奶','布丁','杨枝甘露','麻辣香锅','盖浇饭','包子','烤肠','煎蛋','紫菜包饭','柠檬茶','气泡水','蛋挞','爆米花','冰淇淋球','小蛋糕','热可可','果冻','牛肉面','炸酱面','肉夹馍','卤味','麻辣鸭头','酸辣粉','肠粉','虾饺','生煎','豆花','双皮奶','杨梅','草莓','芒果','荔枝','车厘子','椰子水','奶盖茶','小饼干','辣条','锅巴','瓜子'] },
+    { key:'item', name:'🎒 宾语·物品', words:['手机','电脑','平板','耳机','充电宝','数据线','充电头','雨伞','水杯','保温杯','钥匙','钱包','背包','外套','围巾','手套','帽子','眼镜','口罩','纸巾','抱枕','毯子','小被子','台灯','小夜灯','蜡烛','花','玫瑰','向日葵','满天星','气球','巧克力礼盒','手链','项链','戒指','耳环','香水','口红','护手霜','面膜','护肤品','相机','相框','笔记本','钢笔','书','花盆','加湿器','眼罩','拖鞋','睡衣','行李箱','车票','门票','游戏机','手柄','拼图','积木','玩偶','手办','盲盒','歌单','明信片','信','气球灯','照片','钥匙扣','手机壳','杯子','马克杯','小船票','随身小包','毛绒玩具','婚纱照','情侣装','情侣杯','对戒'] },
+    { key:'objAct', name:'🎬 宾语·活动', words:['电影','电视剧','游戏','球赛','歌','动漫','综艺','短视频','直播','拼图','摩天轮','卡丁车','逛街','散步','旅行','看日出','看海','放烟花','露营','泡温泉','逛夜市','看星星','唱歌','跳舞','做手工','拍照','看电影','吃宵夜'] },
+    { key:'bodyPart', name:'🫦 身体部位', words:['手','小手','手心','肩膀','腰','后背','头发','脸蛋','脸颊','耳朵','脖子','手臂','大腿','额头','嘴唇','眼睛','手指','脚','锁骨','小腹','屁股','胸口','下巴','鼻尖','膝盖','脚踝','手腕','小蛮腰','喉结','酒窝','刘海','耳垂'] },
+    { key:'adj', name:'✨ 形容词·评价', words:['好吃','好喝','好玩','好看','舒服','开心','幸福','满足','靠谱','有意思','香','甜','辣','爽','累','困','无聊','安静','热闹','暖和','凉快','浪漫','贴心','惊艳','上头','准时','划算','新鲜','柔软','顺滑','香喷喷','热乎乎'] },
+    { key:'loveAdj', name:'🥰 形容词·爱意', words:['可爱','温柔','好看','甜甜的','可爱死了','招人喜欢','独一无二','最可爱的','超级疼你','舍不得放','心都化了','甜甜软软','让人心动','乖得不行','软乎乎的','黏人','贴心','温暖','安心','可靠','让我着迷','如假包换的宝贝','我的小幸运','全世界最好','怎么这么可爱','可爱得犯规'] },
+    { key:'flirty', name:'😳 形容词·暧昧', words:['心动','心跳好快','害羞','脸红了','心跳加速','心痒痒','好酥','腿软','脸红心跳','呼吸乱了','心跳漏了一拍','暧昧','缠绵','温柔缱绻','好撩人','要命','上头了','沦陷了','被撩到','心跳砰砰','神魂颠倒','意乱情迷','耳朵软','眼神黏人','气息很近','忍不住想靠近','偷偷咽口水'] },
     { key:'adv', name:'📈 副词·程度', words:['特别','超级','非常','真的','好','挺','太','有点','稍微','相当','贼','格外','真'] },
     { key:'mood', name:'💬 语气词', words:['呀','呢','吧','啊','哦','啦','嘛','哈','哇','嘿','嘿嘿','嘻嘻'] },
     { key:'quant', name:'🔢 数量', words:['一个','一杯','一份','一点','一顿','一碗','一瓶','两杯','一些','好多','半份','一大杯','一小份'] },
     { key:'compl', name:'➕ 补语', words:['一下','一顿','个够','好不好','怎么样','好吗','回去','过来','出来','起来'] },
-    { key:'conn', name:'🔗 连接词', words:['顺便','然后','要不','不如','其实','反正','而且','对了','话说','不然','干脆','恰好'] }
+    { key:'conn', name:'🔗 连接词', words:['顺便','然后','要不','不如','其实','反正','而且','对了','话说','不然','干脆','恰好','顺便说','对了对了','话说回来'] },
+    { key:'intimateVerb', name:'💋 亲密动作·进阶', words:['亲一口','咬一口','挠手心','搂进怀里','抱得很紧','贴着耳朵说话','牵着手不放','捏捏脸','摸摸头','靠在你肩上','趴在你怀里','坐在你腿上','窝在你怀里','勾住手指','十指相扣','摸摸肚子','拍拍后背','吹吹耳朵','下巴搁在肩上','把你搂过来','抱着不撒手','偷偷亲一下','捏着你的手','额头贴额头','把脸埋起来'] },
+    { key:'kinkVerb', name:'🔥 谓语·亲密互动', words:['撩','撩你','亲','吻','咬','舔','蹭','抚摸','抱紧','搂住','压住','按住','捏住','揉','拍','轻咬','吸','逗','勾','缠','贴紧','闷住','咬耳朵','耳语','撒娇','解扣子','拉衣角','钻进怀里'] },
+    { key:'kinkAdj', name:'💓 形容词·暧昧升级', words:['酥麻','发软','发烫','热热的','酥酥的','痒痒的','又羞又痒','呼吸急促','心跳到嗓子眼','手都软了','耳朵发烫','软成一团','忍不住了','心跳好乱','眼神发直','呼吸都轻了','只想赖着','偷偷看着你','越看越心动','根本把持不住','小鹿乱撞'] },
+    { key:'suggestive', name:'🍑 暧昧暗语', words:['过来一点','靠近一点','别走开','今晚别走','陪着我','别躲','看着我说话','抱一会儿','再抱一下','抱久一点','贴着说话','别松开手','嗯？','知道了吧','你来嘛','试试看','不告诉你','就不说','你猜','小声点说','凑近点','再说一遍','说给我听','晚安抱抱','早安亲亲','梦里见','想着我睡','记得梦到我'] },
+    { key:'bodyFeel', name:'💦 身体感受', words:['有点热','有点软','腿发软','手抖','心跳快','呼吸急','脸烫','耳朵红','眼眶湿','发麻','打颤','发烫的','闷闷的','酥得一塌糊涂','热得不行','手脚发软','晕乎乎的','醉醺醺的','飘飘的','软下的'] },
+    { key:'aftercare', name:'🫂 亲密后', words:['抱着睡','盖好被子','喝点水','早点休息','别着凉','再抱一会儿','亲亲额头','摸摸头发','盖好被子抱一下','靠着睡','慢慢睡','晚安','抱着不撒手','乖乖躺好','抱着你就够','轻轻拍一拍'] },
+    { key:'missVerb', name:'📮 思念表达', words:['想你','好想你','想见你','等你','盼着你','惦记你','舍不得','想黏着你','想赖着你','想靠着你','梦见你','一直在想','随时在想','想你想得不轻','整颗心都是你','你在就想你'] },
+    { key:'praise', name:'🌹 夸赞称呼', words:['我的宝贝','我的小可爱','我最爱的','我的唯一','我的全世界','最好看的','最乖的','最甜的','最可爱的','我的小幸运','我的小朋友','我的大宝贝','小天使','心头肉','小太阳','小甜品','我的宝贝疙瘩','小宝贝儿','最爱的人','心尖上的人'] },
+    { key:'soft', name:'🫧 拟声/软词', words:['嘿嘿','嘻嘻','噗','咕噜','哎呀','嗯哼','唔','嗷','哇哦','哟','嘤','呜','哼唧','咕嘟','啪叽','啵','咕噜咕噜','嗷呜','呼呼','嗒嗒','叮咚','噗嗤','噗噗','嗷嗷','嘿嘿嘿'] }
   ];
   // 句式结构：slots 按顺序从对应分组中各抽一个词
   const DICT_PATTERNS = [
@@ -1290,7 +1314,36 @@
     { name:'宾+评价', slots:['obj','adv','adj','mood'] },
     { name:'主+方位+地点+语气', slots:['subj','prep','place','mood'] },
     { name:'时间+主+评价', slots:['time','subj','adv','adj','mood'] },
-    { name:'主谓宾+连接+主谓宾', slots:['subj','verbWant','obj','conn','subj','verbWant','objAct'] }
+    { name:'主谓宾+连接+主谓宾', slots:['subj','verbWant','obj','conn','subj','verbWant','objAct'] },
+    // ===== 物品 / 情绪 / 亲密 句式 =====
+    { name:'主+使用+物品', slots:['subj','useVerb','item'] },
+    { name:'主+方位+物品（物品在哪）', slots:['item','prepLoc','place'] },
+    { name:'主+赠送+对象+物品', slots:['subj','giftVerb','perObj','quant','item'] },
+    { name:'称呼+主+物品+评价', slots:['praise','subj','item','adv','adj','mood'] },
+    { name:'亲密称呼+谓语+身体部位', slots:['callName','touchVerb','perObj','bodyPart'] },
+    { name:'主+亲密动作+身体部位', slots:['subj','kissVerb','bodyPart'] },
+    { name:'时间+主+亲密动作+身体部位', slots:['time','subj','kissVerb','bodyPart'] },
+    { name:'主+想+亲密动作', slots:['subj','verbWant','kissVerb'] },
+    { name:'主+爱意表达', slots:['subj','loveVerb','perObj'] },
+    { name:'时间+主+爱意表达', slots:['time','subj','loveVerb','perObj'] },
+    { name:'主+思念+身体部位', slots:['subj','missVerb','bodyPart'] },
+    { name:'我+喜欢+你的一切', slots:['subj','verbWant','callName','adj','mood'] },
+    { name:'称呼+评价+语气', slots:['callName','loveAdj','mood'] },
+    { name:'主+暧昧形容词', slots:['subj','flirty'] },
+    { name:'身体感受+语气', slots:['bodyFeel','mood'] },
+    { name:'主+亲密互动动词+身体部位', slots:['subj','kinkVerb','bodyPart','mood'] },
+    { name:'主+亲密互动+评价', slots:['subj','kinkVerb','perObj','kinkAdj','mood'] },
+    { name:'暗语+语气', slots:['suggestive','mood'] },
+    { name:'暗语+亲密称呼', slots:['suggestive','callName'] },
+    { name:'时间+暗语', slots:['time','suggestive','mood'] },
+    { name:'亲密后+语气', slots:['aftercare','mood'] },
+    { name:'时间+亲密后', slots:['time','aftercare'] },
+    { name:'夸赞+身体部位+暧昧', slots:['praise','adj','bodyPart','mood'] },
+    { name:'主+使用+物品+连接+主+亲密动作', slots:['subj','useVerb','item','conn','subj','kissVerb','bodyPart'] },
+    { name:'拟声+主+亲密动作', slots:['soft','subj','kissVerb','bodyPart'] },
+    { name:'时间+主+亲密互动+身体部位', slots:['time','subj','kinkVerb','bodyPart','mood'] },
+    { name:'主+爱意表达+称呼', slots:['subj','loveVerb','callName','mood'] },
+    { name:'物品+评价+爱意', slots:['item','adv','loveAdj','mood'] }
   ];
 
   let state = {
@@ -1316,7 +1369,8 @@
     intimacyDuration: 10,
     dictEnabled: true,
     dictProb: 30,
-    dictGroups: {}
+    dictGroups: {},
+    dictVersion: 0
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
 const VALID_PINYIN = [
@@ -1790,6 +1844,7 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.autoVoiceIntervalDelay !== undefined) state.autoVoiceIntervalDelay = s.autoVoiceIntervalDelay;
         if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
         if (s.dictProb !== undefined) state.dictProb = s.dictProb;
+        if (s.dictVersion !== undefined) state.dictVersion = s.dictVersion;
         if (s.dictGroups && typeof s.dictGroups === 'object' && !Array.isArray(s.dictGroups)) {
           Object.keys(s.dictGroups).forEach(k => {
             const v = s.dictGroups[k];
@@ -1807,6 +1862,8 @@ window.handleTransferCardClick = function(card, msgId) {
         const words = src[k].map(w => String(w).trim()).filter(Boolean);
         state.dictGroups[k] = mode === 'overwrite' ? words : [...new Set([...(state.dictGroups[k] || []), ...words])];
       });
+      // 导入的是完整词库，标记为当前版本，避免再次合并内置词
+      if (mode === 'overwrite') state.dictVersion = DICT_VERSION;
     }
     if (sections.wordCards) state.wordCards = mode === 'overwrite' ? sections.wordCards : [...new Set([...state.wordCards, ...sections.wordCards])];
     if (sections.emojis) state.emojis = mode === 'overwrite' ? sections.emojis : [...new Set([...state.emojis, ...sections.emojis])];
@@ -1959,9 +2016,18 @@ window.handleTransferCardClick = function(card, msgId) {
     if (state.dictEnabled === undefined) state.dictEnabled = true;
     if (state.dictProb === undefined) state.dictProb = 30;
     if (!state.dictGroups || typeof state.dictGroups !== 'object' || Array.isArray(state.dictGroups)) state.dictGroups = {};
-    DICT_GROUPS_META.forEach(m => {
-      if (!Array.isArray(state.dictGroups[m.key]) || !state.dictGroups[m.key].length) state.dictGroups[m.key] = [...m.words];
-    });
+    if (state.dictVersion !== DICT_VERSION) {
+      // 版本升级：把新增的内置词语并入现有分组（用户自己添加的词不会丢）
+      DICT_GROUPS_META.forEach(m => {
+        const cur = Array.isArray(state.dictGroups[m.key]) ? state.dictGroups[m.key] : [];
+        state.dictGroups[m.key] = [...new Set([...cur, ...m.words])];
+      });
+      state.dictVersion = DICT_VERSION;
+    } else {
+      DICT_GROUPS_META.forEach(m => {
+        if (!Array.isArray(state.dictGroups[m.key]) || !state.dictGroups[m.key].length) state.dictGroups[m.key] = [...m.words];
+      });
+    }
     try { messages = await loadMessagesFromDB(); } catch (e) { messages = []; console.warn('加载消息失败', e); }
     nextId = messages.reduce((max, m) => Math.max(max, m.id || 0), 0) + 1;
     // 恢复 lastMsgTime（页面重载后主动回复/主动消息机制需要它）
@@ -1997,6 +2063,8 @@ window.handleTransferCardClick = function(card, msgId) {
       });
     }
     state.voiceLibrary = await getAllData(VOICE_STORE).catch(e => { console.warn('加载语音库失败', e); return []; });
+    // 清理历史遗留的扩展名后缀（如 “名字.mp3” → “名字”）
+    state.voiceLibrary.forEach(v => { if (v && typeof v.name === 'string') v.name = v.name.replace(/\.(mp3|wav|ogg|m4a|aac|flac|webm|amr|opus)$/i, ''); });
     if (!state.myAvatar) state.myAvatar = 'data:image/svg+xml,%3Csvg%3E%3Ccircle cx=\'24\' cy=\'24\' r=\'24\' fill=\'%2395d07a\'/%3E%3C/svg%3E';
     if (!state.otherAvatar) state.otherAvatar = 'data:image/svg+xml,%3Csvg%3E%3Ccircle cx=\'24\' cy=\'24\' r=\'24\' fill=\'%23b0b0b0\'/%3E%3C/svg%3E';
     if (!state.probCount) state.probCount = [40,30,15,10,5];
@@ -2266,7 +2334,10 @@ window.handleTransferCardClick = function(card, msgId) {
       document.querySelectorAll('.play-voice-test').forEach(b => b.onclick = (e) => {
         const idx = Number(e.target.dataset.index), v = state.voiceLibrary[idx];
         if (currentAudio) { if (currentAudio.dataset.index === idx && !currentAudio.paused) { currentAudio.pause(); currentAudio = null; return; } currentAudio.pause(); currentAudio = null; }
-        const audio = new Audio(v.dataURL); audio.dataset.index = idx; audio.play(); currentAudio = audio;
+        const audio = new Audio(v.dataURL); audio.dataset.index = idx; 
+        audio.onerror = () => { currentAudio = null; showAlert('这条语音无法播放：\n格式不被当前浏览器支持（常见于 m4a / aac / webm）。\n请将它转成 mp3 后重新上传。'); };
+        audio.play().catch(() => { currentAudio = null; showAlert('语音播放失败，请确认是 mp3 格式。'); });
+        currentAudio = audio;
         audio.onended = () => { currentAudio = null; };
       });
       document.querySelectorAll('.rename-voice').forEach(b => b.onclick = async (e) => { const idx = Number(e.target.dataset.index); const newName = await showPrompt('重命名语音条', state.voiceLibrary[idx].name); if (newName !== null) { state.voiceLibrary[idx].name = newName.trim(); renderVoiceLibraryUI(); await saveAll(); } });
@@ -3008,7 +3079,7 @@ else if (m.type !== 'transfer') {
 }
 
   function attachMessageEvents() {
-    document.querySelectorAll('.voice-bubble').forEach(bubble => bubble.onclick = (e) => { e.stopPropagation(); const msgId = Number(bubble.dataset.voiceId); const msg = messages.find(m => m.id === msgId); if (!msg || !msg.content) return; if (currentAudio) { if (currentAudio.dataset.voiceMsgId === msgId && !currentAudio.paused) { currentAudio.pause(); currentAudio = null; return; } currentAudio.pause(); currentAudio = null; } const audio = new Audio(msg.content); audio.dataset.voiceMsgId = msgId; audio.play(); currentAudio = audio; audio.onended = () => { currentAudio = null; }; });
+    document.querySelectorAll('.voice-bubble').forEach(bubble => bubble.onclick = (e) => { e.stopPropagation(); const msgId = Number(bubble.dataset.voiceId); const msg = messages.find(m => m.id === msgId); if (!msg || !msg.content) return; if (currentAudio) { if (currentAudio.dataset.voiceMsgId === msgId && !currentAudio.paused) { currentAudio.pause(); currentAudio = null; return; } currentAudio.pause(); currentAudio = null; } const audio = new Audio(msg.content); audio.dataset.voiceMsgId = msgId; audio.onerror = () => { currentAudio = null; showAlert('这条语音无法播放：\n格式不被当前浏览器支持（常见于 m4a / aac / webm）。'); }; audio.play().catch(() => { currentAudio = null; showAlert('语音播放失败，请确认是 mp3 格式。'); }); currentAudio = audio; audio.onended = () => { currentAudio = null; }; });
     document.querySelectorAll('.voice-transcribed').forEach(el => { el.onclick = (e) => { e.stopPropagation(); const msgId = Number(el.dataset.msgId); const msg = messages.find(m => m.id === msgId); if (msg) { const scrollTop = chatMessages.scrollTop; msg.transcribedText = ''; renderMessages(false); chatMessages.scrollTop = scrollTop; saveMessagesOnly(); } }; });
     document.querySelectorAll('.message-avatar').forEach(av => av.ondblclick = (e) => { const sender = av.dataset.sender; if (sender === 'other') { addMessage('other', 'tap', `${state.myName}拍了拍${state.otherName}`); triggerOtherReply(); } });
     function addLongPress(el, msgId) { let pressTimer; const show = (e) => { e.preventDefault(); const msg = messages.find(m => m.id === msgId); if (msg) showContextMenu(e, msg); }; el.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => show(e), 500); }); el.addEventListener('touchend', () => clearTimeout(pressTimer)); el.addEventListener('touchmove', () => clearTimeout(pressTimer)); el.addEventListener('contextmenu', (e) => { e.preventDefault(); show(e); }); }
@@ -3879,7 +3950,7 @@ async function handleTransferAction(msg, action) {
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         callVoiceDelay: state.callVoiceDelay,
         autoVoiceIntervalDelay: state.autoVoiceIntervalDelay,
-        dictEnabled: state.dictEnabled, dictProb: state.dictProb
+        dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
       };
     }
     if (sections.includes('wordCards')) data.sections.wordCards = state.wordCards;
@@ -4751,7 +4822,11 @@ async function handleTransferAction(msg, action) {
       let addedCount = 0;
       const newVoices = [];
       for (const f of files) {
-        if (!f.type.startsWith('audio/') && !f.name.match(/\.(mp3|wav|m4a|ogg|flac)$/i)) continue;
+        if (!f.type.startsWith('audio/') && !f.name.match(/\.(mp3|wav|ogg)$/i)) continue;
+        if (/\.(m4a|aac|flac|wma|amr|opus)$/i.test(f.name)) {
+          addTapMessage(`⚠️ 跳过 ${f.name}：网页版不支持 m4a/aac 播放，请转成 mp3 后再上传`, 'me');
+          continue;
+        }
         try {
           const reader = new FileReader();
           const dataURL = await new Promise((resolve, reject) => {
@@ -4771,7 +4846,7 @@ async function handleTransferAction(msg, action) {
           }
           newVoices.push({
             id: Date.now() + Math.random(),
-            name: f.name || '未命名',
+            name: (f.name || '未命名').replace(/\.[^.]+$/, ''),
             dataURL: dataURL,
             duration: dur
           });
