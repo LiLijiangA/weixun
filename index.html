@@ -432,7 +432,7 @@
           <div class="setting-row"><label>5条%</label><input id="probCount5" type="number" value="5"></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
-        <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
+        <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
         <button id="closeSettingsGeneral" class="close-settings-btn">保存并关闭</button>
@@ -1130,7 +1130,7 @@
             startAt: intimacyStartAt,
             durationMs: intimacyDurationMs,
             actionName: intimacyActionName,
-            score: intimacyScore,
+            score: state.intimacyScore,
             modeIdx: parseInt(document.getElementById('intimacyModeSlider')?.value) || 0
           } : null
         };
@@ -2057,6 +2057,24 @@ window.handleTransferCardClick = function(card, msgId) {
             state.dictGroups[k] = mode === 'overwrite' ? words : [...new Set([...(state.dictGroups[k] || []), ...words])];
           });
         }
+      }
+    }
+    if (sections.intimacy) {
+      const it = sections.intimacy;
+      if (mode === 'overwrite') {
+        if (it.enabled !== undefined) state.intimacyEnabled = it.enabled;
+        if (Array.isArray(it.actions) && it.actions.length) state.intimacyActions = it.actions;
+        state.intimacySelectedAction = it.selectedAction || state.intimacyActions[0] || '亲亲';
+        if (it.score !== undefined) state.intimacyScore = it.score;
+        if (it.mode !== undefined) state.intimacyMode = it.mode;
+        if (it.duration !== undefined) state.intimacyDuration = it.duration;
+      } else {
+        if (it.enabled !== undefined) state.intimacyEnabled = it.enabled;
+        if (Array.isArray(it.actions)) state.intimacyActions = [...new Set([...state.intimacyActions, ...it.actions])];
+        if (it.selectedAction && !state.intimacyActions.includes(it.selectedAction)) state.intimacySelectedAction = it.selectedAction;
+        if (it.score !== undefined) state.intimacyScore = it.score;
+        if (it.mode !== undefined) state.intimacyMode = it.mode;
+        if (it.duration !== undefined) state.intimacyDuration = it.duration;
       }
     }
     if (sections.dictGroups && typeof sections.dictGroups === 'object' && !Array.isArray(sections.dictGroups)) {
@@ -3652,9 +3670,20 @@ function startEmojiRain(emojis, duration = 5) {
   function selectType() { let w = state.probWord, s = state.probSticker, e = state.probEmoji, v = state.probVoice; const sum = w + s + e + v || 1; const r = Math.random() * sum; if (r < w) return 'word'; else if (r < w + s) return 'sticker'; else if (r < w + s + e) return 'emoji'; else return 'voice'; }
   function getRandomQuote() { const meMsgs = messages.filter(m => m.sender === 'me').slice(-50); return meMsgs.length ? meMsgs[Math.floor(Math.random() * meMsgs.length)].id : null; }
   // ==================== 词典拼句：生成随机句子 ====================
+  // 加权抽取句式：含“宾语·食物(obj)”的句式降权，避免对方总是发食物
+  function pickWeightedPattern() {
+    const weights = DICT_PATTERNS.map(p => (p.slots.includes('obj') ? 0.5 : 1));
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < DICT_PATTERNS.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return DICT_PATTERNS[i];
+    }
+    return DICT_PATTERNS[DICT_PATTERNS.length - 1];
+  }
   function buildDictSentence() {
     if (!state.dictGroups) return '';
-    const pat = DICT_PATTERNS[Math.floor(Math.random() * DICT_PATTERNS.length)];
+    const pat = pickWeightedPattern();
     const parts = [];
     pat.slots.forEach(k => {
       const arr = (state.dictGroups[k] || []).filter(w => w && String(w).trim());
@@ -3880,7 +3909,7 @@ function startEmojiRain(emojis, duration = 5) {
       sum += v * v;
     }
     const rms = Math.sqrt(sum / autoDetectBuf.length);
-    if (rms > 0.05) {
+    if (rms > 0.02) {
       autoDetectSpoke = true;
       autoDetectSilenceSince = 0;
     } else if (autoDetectSpoke) {
@@ -4204,6 +4233,16 @@ async function handleTransferAction(msg, action) {
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
       };
     }
+    if (sections.includes('intimacy')) {
+      data.sections.intimacy = {
+        enabled: state.intimacyEnabled,
+        actions: state.intimacyActions,
+        selectedAction: state.intimacySelectedAction,
+        score: state.intimacyScore,
+        mode: state.intimacyMode,
+        duration: state.intimacyDuration
+      };
+    }
     if (sections.includes('wordCards')) data.sections.wordCards = state.wordCards;
     if (sections.includes('dictGroups')) data.sections.dictGroups = state.dictGroups;
     if (sections.includes('emojis')) data.sections.emojis = state.emojis;
@@ -4236,7 +4275,6 @@ async function handleTransferAction(msg, action) {
   let intimacyOtherEndTimer = null;
   let intimacyCountdownTimer = null;
   let intimacyOneMinTimer = null;
-  let intimacyScore = 0;
   let intimacyStartedShown = false;
   const INTIMACY_MAX_SCORE = 520;
   const MODE_NAMES = ['温柔模式', '热情模式', '惩罚模式'];
@@ -4302,7 +4340,7 @@ async function handleTransferAction(msg, action) {
   }
 
   function updateHeartProgress() {
-    const score = Math.min(intimacyScore, INTIMACY_MAX_SCORE);
+    const score = Math.min(state.intimacyScore || 0, INTIMACY_MAX_SCORE);
     const num = document.getElementById('intimacyHeartNum');
     const fill = document.getElementById('heartFill');
     if (num) num.textContent = score;
@@ -4415,7 +4453,6 @@ async function handleTransferAction(msg, action) {
       intimacyStartAt = Date.now();
       intimacyDurationMs = duration * 60 * 1000;
       intimacyActionName = action;
-      intimacyScore = state.intimacyScore || 0;
 
       const text = `${state.myName} 对 ${state.otherName} 使用了${action}（${modeName}），持续${duration}分种`;
       showIntimacyFloatingText(text);
@@ -4662,7 +4699,6 @@ async function handleTransferAction(msg, action) {
     intimacyStartAt = Date.now();
     intimacyDurationMs = duration * 60 * 1000;
     intimacyActionName = action;
-    intimacyScore = state.intimacyScore || 0;
 
     const text = `${state.otherName} 对 ${state.myName} 使用了${action}（${MODE_NAMES[modeIdx]}），持续${duration}分种`;
     showIntimacyFloatingText(text);
@@ -4708,12 +4744,14 @@ async function handleTransferAction(msg, action) {
   }
 
   function initIntimacy() {
-    intimacyScore = state.intimacyScore || 0;
+    const durInput = document.getElementById('intimacyDurationInput');
+    if (durInput) durInput.value = state.intimacyDuration;
+    const modeSlider = document.getElementById('intimacyModeSlider');
+    if (modeSlider) { modeSlider.value = state.intimacyMode; const modeLabel = document.getElementById('intimacyModeLabel'); if (modeLabel) modeLabel.textContent = MODE_NAMES[state.intimacyMode] || MODE_NAMES[0]; }
     const figure = document.getElementById('intimacyFigure');
     if (figure) {
       figure.onclick = (e) => {
-        intimacyScore++;
-        state.intimacyScore = intimacyScore;
+        state.intimacyScore++;
         updateHeartProgress();
 
         const area = document.getElementById('intimacyFigureArea');
@@ -4730,9 +4768,8 @@ async function handleTransferAction(msg, action) {
           setTimeout(() => { if (plus.parentNode) plus.remove(); }, 2000);
         }
 
-        if (intimacyScore >= INTIMACY_MAX_SCORE) {
+        if (state.intimacyScore >= INTIMACY_MAX_SCORE) {
           // 达到520：立即清空积分并触发对方主动（只触发一次）
-          intimacyScore = 0;
           state.intimacyScore = 0;
           updateHeartProgress();
           addIntimacyTapMessage(`🔥 心动值达到520！${state.otherName} 主动发起了亲密互动`);
@@ -4827,7 +4864,6 @@ async function handleTransferAction(msg, action) {
         const elapsed = now - i.startAt;
         if (elapsed >= i.durationMs) {
           intimacyRunning = false;
-          intimacyScore = 0;
           state.intimacyScore = 0;
           updateHeartProgress();
           setIntimacyHeart(false);
@@ -4841,8 +4877,7 @@ async function handleTransferAction(msg, action) {
         intimacyStartAt = i.startAt;
         intimacyDurationMs = i.durationMs;
         intimacyActionName = i.actionName;
-        intimacyScore = i.score || 0;
-        state.intimacyScore = intimacyScore;
+        state.intimacyScore = i.score || 0;
         updateHeartProgress();
 
         const modeIdx = i.modeIdx || 0;
