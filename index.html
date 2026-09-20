@@ -1441,6 +1441,7 @@
       defaultChoiceCount: state.defaultChoiceCount,
       choiceCustomAnswer: state.choiceCustomAnswer,
       lastMsgTime: lastMsgTime,
+      lastNoteTime: state.lastNoteTime,
       intimacyEnabled: state.intimacyEnabled,
       intimacyActions: state.intimacyActions,
       intimacySelectedAction: state.intimacySelectedAction,
@@ -1621,6 +1622,18 @@ window.handleTransferCardClick = function(card, msgId) {
   let emojiSelected = new Set(), stickerSelected = new Set();
   let voiceManageMode = false, voiceSelected = new Set();
   let currentAudio = null;
+  let currentAudioCtx = null;
+  function stopCurrentAudio() {
+    if (currentAudio) {
+      try { currentAudio.onended = null; } catch (e) {}
+      try { currentAudio.stop(); } catch (e) {}
+      currentAudio = null;
+    }
+    if (currentAudioCtx) {
+      try { currentAudioCtx.close(); } catch(e) {}
+      currentAudioCtx = null;
+    }
+  }
   const commentAttachments = {};
 
   let incomingCallTimer = null;
@@ -1649,6 +1662,7 @@ window.handleTransferCardClick = function(card, msgId) {
   let autoDetectPlayingVoice = false;
   let autoDetectCooldownUntil = 0;
   let currentAutoAudio = null;
+  let currentAutoCtx = null;
 
   const chatMessages = document.getElementById('chatMessages');
   const msgInputArea = document.getElementById('messageInputArea');
@@ -2029,6 +2043,7 @@ window.handleTransferCardClick = function(card, msgId) {
         state.probCount = s.probCount || [40,30,15,10,5];
         state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
+        if (s.lastNoteTime !== undefined) state.lastNoteTime = s.lastNoteTime;
       } else {
         if (s.myName) state.myName = s.myName; if (s.otherName) state.otherName = s.otherName;
         if (s.myAvatarId) state.myAvatarId = s.myAvatarId; if (s.otherAvatarId) state.otherAvatarId = s.otherAvatarId;
@@ -2046,6 +2061,7 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
         if (s.keepAliveEnabled !== undefined) state.keepAliveEnabled = s.keepAliveEnabled;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
+        if (s.lastNoteTime !== undefined) state.lastNoteTime = s.lastNoteTime;
         if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
         if (s.dictProb !== undefined) state.dictProb = s.dictProb;
         if (s.dictVersion !== undefined) state.dictVersion = s.dictVersion;
@@ -2226,7 +2242,7 @@ window.handleTransferCardClick = function(card, msgId) {
       console.warn('IndexedDB打开失败，将使用内存模式（数据不持久化）', e);
     }
     const saved = localStorage.getItem('wc_ultra_settings');
-    if (saved) { try { const p = JSON.parse(saved); Object.assign(state, p); if (!state.notes) state.notes = []; if (!state.moments) state.moments = []; if (!state.voiceLibrary) state.voiceLibrary = []; if (!state.unreadMomentIds) state.unreadMomentIds = []; if (state.defaultChoiceThinkSeconds === undefined) state.defaultChoiceThinkSeconds = 10; if (state.defaultChoiceCount === undefined) state.defaultChoiceCount = 1; if (state.choiceCustomAnswer === undefined) state.choiceCustomAnswer = true; } catch(e) {} }
+    if (saved) { try { const p = JSON.parse(saved); Object.assign(state, p); if (!state.notes) state.notes = []; if (!state.moments) state.moments = []; if (!state.voiceLibrary) state.voiceLibrary = []; if (!state.unreadMomentIds) state.unreadMomentIds = []; if (state.defaultChoiceThinkSeconds === undefined) state.defaultChoiceThinkSeconds = 10; if (state.defaultChoiceCount === undefined) state.defaultChoiceCount = 1; if (state.choiceCustomAnswer === undefined) state.choiceCustomAnswer = true; if (state.lastNoteTime === undefined) state.lastNoteTime = p.lastNoteTime || null; } catch(e) {} }
     // 亲密互动字段默认值（始终设置）
     if (state.intimacyEnabled === undefined) state.intimacyEnabled = true;
     if (!state.intimacyActions || !state.intimacyActions.length) state.intimacyActions = ["亲亲","抱抱","打屁股","乳夹","跳蛋","肛塞"];
@@ -2553,12 +2569,22 @@ window.handleTransferCardClick = function(card, msgId) {
     if (!voiceManageMode) {
       document.querySelectorAll('.play-voice-test').forEach(b => b.onclick = (e) => {
         const idx = Number(e.target.dataset.index), v = state.voiceLibrary[idx];
-        if (currentAudio) { if (currentAudio.dataset.index === idx && !currentAudio.paused) { currentAudio.pause(); currentAudio = null; return; } currentAudio.pause(); currentAudio = null; }
-        const audio = new Audio(v.dataURL); audio.dataset.index = idx; 
-        audio.onerror = () => { currentAudio = null; showAlert('这条语音无法播放：\n格式不被当前浏览器支持（常见于 m4a / aac / webm）。\n请将它转成 mp3 后重新上传。'); };
-        audio.play().catch(() => { currentAudio = null; showAlert('语音播放失败，请确认是 mp3 格式。'); });
-        currentAudio = audio;
-        audio.onended = () => { currentAudio = null; };
+        if (currentAudio) { if (currentAudio.dataset && currentAudio.dataset.index === idx) { stopCurrentAudio(); return; } stopCurrentAudio(); }
+        const buf = dataURLToArrayBuffer(v.dataURL);
+        if (!buf) { showAlert('语音数据损坏'); return; }
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new Ctx();
+        if (ctx.state === 'suspended') { try { ctx.resume(); } catch(e) {} }
+        decodeAudio(ctx, buf).then(audioBuf => {
+          const src = ctx.createBufferSource();
+          src.buffer = audioBuf;
+          src.connect(ctx.destination);
+          currentAudioCtx = ctx;
+          currentAudio = src;
+          src.dataset = { index: idx, voiceMsgId: -1 };
+          src.onended = () => { currentAudio = null; currentAudioCtx = null; };
+          src.start();
+        }).catch(() => { showAlert('这条语音无法播放：\n格式不被当前浏览器支持（常见于 m4a / aac / webm）。\n请将它转成 mp3 后重新上传。'); });
       });
       document.querySelectorAll('.rename-voice').forEach(b => b.onclick = async (e) => { const idx = Number(e.target.dataset.index); const newName = await showPrompt('重命名语音条', state.voiceLibrary[idx].name); if (newName !== null) { state.voiceLibrary[idx].name = newName.trim(); renderVoiceLibraryUI(); await saveAll(); } });
       document.querySelectorAll('.delete-voice').forEach(b => b.onclick = async (e) => { state.voiceLibrary.splice(Number(e.target.dataset.index), 1); renderVoiceLibraryUI(); await saveAll(); });
@@ -3013,39 +3039,17 @@ window.handleTransferCardClick = function(card, msgId) {
   }
 
   async function generateOtherComment(replyTo = null) {
-    const rand = Math.random() * 100;
-    let content = '', type = 'text', attachments = null;
-    if (rand < 80 && state.wordCards.length) {
-      content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)];
-      type = 'text';
-    } else if (rand < 85 && state.emojis.length) {
-      content = state.emojis[Math.floor(Math.random() * state.emojis.length)];
-      type = 'emoji';
-    } else if (rand < 95 && state.stickers.length) {
-      const sticker = state.stickers[Math.floor(Math.random() * state.stickers.length)];
-      content = `sticker_${sticker.id}`;
-      type = 'sticker';
-    } else if (state.wordCards.length && state.stickers.length) {
-      content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)];
-      type = 'mixed';
-      const sticker = state.stickers[Math.floor(Math.random() * state.stickers.length)];
-      attachments = [{ type: 'sticker', id: `sticker_${sticker.id}` }];
-    } else {
-      if (state.wordCards.length) { content = state.wordCards[0]; type = 'text'; }
-      else if (state.emojis.length) { content = state.emojis[0]; type = 'emoji'; }
-      else if (state.stickers.length) { content = `sticker_${state.stickers[0].id}`; type = 'sticker'; }
-      else { content = '嗯'; type = 'text'; }
-    }
-    return { id: Date.now(), author: 'other', content, type, attachments: type === 'mixed' ? attachments : undefined, timestamp: Date.now(), replyTo };
+    let content = getWordOrDict();
+    return { id: Date.now(), author: 'other', content, type: 'text', timestamp: Date.now(), replyTo };
   }
 
   function autoGenerateMoment(fireTs) {
     if (Math.random() > 0.05) return;
-    if (!state.wordCards.length) return;
     const ts = fireTs || Date.now();
     const count = Math.floor(Math.random() * 2) + 1;
-    let content = '';
-    for (let i = 0; i < count; i++) content += state.wordCards[Math.floor(Math.random() * state.wordCards.length)] + ' ';
+    let content = [];
+    for (let i = 0; i < count; i++) content.push(getWordOrDict());
+    content = content.join('。');
     let emoji = null, stickerId = null;
     const randEmoji = Math.random();
     const randSticker = Math.random();
@@ -3054,7 +3058,7 @@ window.handleTransferCardClick = function(card, msgId) {
       const s = state.stickers[Math.floor(Math.random() * state.stickers.length)];
       stickerId = `sticker_${s.id}`;
     }
-    const moment = { id: ts, sender: 'other', content: content.trim(), emoji, sticker: stickerId, images: [], timestamp: ts, likes: [], comments: [] };
+    const moment = { id: ts, sender: 'other', content, emoji, sticker: stickerId, images: [], timestamp: ts, likes: [], comments: [] };
     state.moments.unshift(moment); state.unreadMomentIds.push(moment.id); state.momentsUnread = true;
     saveAll(); updateUI(); if (!document.getElementById('momentsOverlay').classList.contains('hidden')) renderMoments();
     showNotification(state.otherName, '发了一条新朋友圈 🌐', state.otherAvatar);
@@ -3299,7 +3303,7 @@ else if (m.type !== 'transfer') {
 }
 
   function attachMessageEvents() {
-    document.querySelectorAll('.voice-bubble').forEach(bubble => bubble.onclick = (e) => { e.stopPropagation(); const msgId = Number(bubble.dataset.voiceId); const msg = messages.find(m => m.id === msgId); if (!msg || !msg.content) return; if (currentAudio) { if (currentAudio.dataset.voiceMsgId === msgId && !currentAudio.paused) { currentAudio.pause(); currentAudio = null; return; } currentAudio.pause(); currentAudio = null; } const audio = new Audio(msg.content); audio.dataset.voiceMsgId = msgId; audio.onerror = () => { currentAudio = null; showAlert('这条语音无法播放：\n格式不被当前浏览器支持（常见于 m4a / aac / webm）。'); }; audio.play().catch(() => { currentAudio = null; showAlert('语音播放失败，请确认是 mp3 格式。'); }); currentAudio = audio; audio.onended = () => { currentAudio = null; }; });
+    document.querySelectorAll('.voice-bubble').forEach(bubble => bubble.onclick = (e) => { e.stopPropagation(); const msgId = Number(bubble.dataset.voiceId); const msg = messages.find(m => m.id === msgId); if (!msg || !msg.content) return; if (currentAudio) { if (currentAudio.dataset && currentAudio.dataset.voiceMsgId === msgId) { stopCurrentAudio(); bubble.classList.remove('playing'); return; } stopCurrentAudio(); document.querySelectorAll('.voice-bubble.playing').forEach(b => b.classList.remove('playing')); } const buf = dataURLToArrayBuffer(msg.content); if (!buf) { showAlert('语音数据损坏'); return; } const Ctx = window.AudioContext || window.webkitAudioContext; const ctx = new Ctx(); if (ctx.state === 'suspended') { try { ctx.resume(); } catch(e) {} } decodeAudio(ctx, buf).then(audioBuf => { const src = ctx.createBufferSource(); src.buffer = audioBuf; src.connect(ctx.destination); currentAudioCtx = ctx; currentAudio = src; src.dataset = { voiceMsgId: msgId, index: -1 }; bubble.classList.add('playing'); src.onended = () => { bubble.classList.remove('playing'); currentAudio = null; currentAudioCtx = null; }; src.start(); }).catch(() => { showAlert('这条语音无法播放：\n格式不被当前浏览器支持（常见于 m4a / aac / webm）。\n请将它转成 mp3 后重新上传。'); }); });
     document.querySelectorAll('.voice-transcribed').forEach(el => { el.onclick = (e) => { e.stopPropagation(); const msgId = Number(el.dataset.msgId); const msg = messages.find(m => m.id === msgId); if (msg) { const scrollTop = chatMessages.scrollTop; msg.transcribedText = ''; renderMessages(false); chatMessages.scrollTop = scrollTop; saveMessagesOnly(); } }; });
     document.querySelectorAll('.message-avatar').forEach(av => av.ondblclick = (e) => { const sender = av.dataset.sender; if (sender === 'other') { addMessage('other', 'tap', `${state.myName}拍了拍${state.otherName}`); triggerOtherReply(); } });
     function addLongPress(el, msgId) { let pressTimer; const show = (e) => { e.preventDefault(); const msg = messages.find(m => m.id === msgId); if (msg) showContextMenu(e, msg); }; el.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => show(e), 500); }); el.addEventListener('touchend', () => clearTimeout(pressTimer)); el.addEventListener('touchmove', () => clearTimeout(pressTimer)); el.addEventListener('contextmenu', (e) => { e.preventDefault(); show(e); }); }
@@ -3665,7 +3669,7 @@ function startEmojiRain(emojis, duration = 5) {
     }, state.replyDelay * 1000); 
   }
   
-  function generateReplies() { const count = getRandomCount(); const reps = []; for (let i = 0; i < count; i++) { const type = selectType(); let content, msgType, extra = {}; if (type === 'word') { const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0)); const useDict = state.dictEnabled !== false && p > 0 && Math.random() * 100 < p; const sent = useDict ? buildDictSentence() : ''; if (sent) { content = sent; msgType = 'text'; extra.isDict = true; } else if (state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; } else { content = '嗯'; msgType = 'text'; } } else if (type === 'sticker' && state.stickers.length) { const s = state.stickers[Math.floor(Math.random() * state.stickers.length)]; content = s.dataURL; msgType = 'sticker'; } else if (type === 'emoji' && state.emojis.length) { content = state.emojis[Math.floor(Math.random() * state.emojis.length)]; msgType = 'emoji'; } else if (type === 'voice' && state.voiceLibrary.length) { const v = state.voiceLibrary[Math.floor(Math.random() * state.voiceLibrary.length)]; content = v.dataURL; msgType = 'voice'; extra.duration = v.duration; extra.voiceName = v.name; } else { content = '嗯'; msgType = 'text'; } reps.push({ type: msgType, content, quote: Math.random() < 0.15 ? getRandomQuote() : null, extra }); } if (reps.length) startQueue(reps); else typingInd.textContent = ''; }
+  function generateReplies() { const count = getRandomCount(); const reps = []; for (let i = 0; i < count; i++) { const type = selectType(); let content, msgType, extra = {}; if (type === 'word') { const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0)); const useDict = state.dictEnabled !== false && (state.wordCards.length === 0 || (p > 0 && Math.random() * 100 < p)); const sent = useDict ? buildDictSentence() : ''; if (sent) { content = sent; msgType = 'text'; extra.isDict = true; } else if (state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; } else { content = '嗯'; msgType = 'text'; } } else if (type === 'sticker' && state.stickers.length) { const s = state.stickers[Math.floor(Math.random() * state.stickers.length)]; content = s.dataURL; msgType = 'sticker'; } else if (type === 'emoji' && state.emojis.length) { content = state.emojis[Math.floor(Math.random() * state.emojis.length)]; msgType = 'emoji'; } else if (type === 'voice' && state.voiceLibrary.length) { const v = state.voiceLibrary[Math.floor(Math.random() * state.voiceLibrary.length)]; content = v.dataURL; msgType = 'voice'; extra.duration = v.duration; extra.voiceName = v.name; } else { content = '嗯'; msgType = 'text'; } reps.push({ type: msgType, content, quote: Math.random() < 0.15 ? getRandomQuote() : null, extra }); } if (reps.length) startQueue(reps); else typingInd.textContent = ''; }
   function getRandomCount() { const p = state.probCount; const sum = p.reduce((a,b) => a + b, 0); if (sum <= 0) return 1; let r = Math.random() * sum, acc = 0; for (let i = 0; i < 5; i++) { acc += p[i]; if (r < acc) return i + 1; } return 1; }
   function selectType() { let w = state.probWord, s = state.probSticker, e = state.probEmoji, v = state.probVoice; const sum = w + s + e + v || 1; const r = Math.random() * sum; if (r < w) return 'word'; else if (r < w + s) return 'sticker'; else if (r < w + s + e) return 'emoji'; else return 'voice'; }
   function getRandomQuote() { const meMsgs = messages.filter(m => m.sender === 'me').slice(-50); return meMsgs.length ? meMsgs[Math.floor(Math.random() * meMsgs.length)].id : null; }
@@ -3691,6 +3695,18 @@ function startEmojiRain(emojis, duration = 5) {
     });
     return parts.length >= 2 ? parts.join(' ') : '';
   }
+  function getWordOrDict() {
+    const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0));
+    const useDict = state.dictEnabled !== false && (state.wordCards.length === 0 || (p > 0 && Math.random() * 100 < p));
+    if (useDict) {
+      const sent = buildDictSentence();
+      if (sent) return sent;
+    }
+    if (state.wordCards.length) {
+      return state.wordCards[Math.floor(Math.random() * state.wordCards.length)];
+    }
+    return '嗯';
+  }
   function startQueue(reps) { if (queueActive) { queuedBatches.push(reps); return; } pendingReplies = reps; processQueue(); }
   function processQueue() {
     if (!pendingReplies.length) {
@@ -3713,12 +3729,26 @@ function startEmojiRain(emojis, duration = 5) {
     patchedScheduleNextActive();
   }
 
-  function generateOtherNote(fireTs) { if (state.wordCards.length === 0) return; const ts = fireTs || Date.now(); const count = Math.floor(Math.random() * 10) + 1; const selected = []; for (let i = 0; i < count; i++) selected.push(state.wordCards[Math.floor(Math.random() * state.wordCards.length)]); const note = { id: ts, content: selected.join('。') + '。', author: state.otherName, date: formatDateTime(ts), unread: true, isMine: false }; state.notes.push(note); invalidateNotesCache(); state.notesUnread = true; renderNotesList(); updateUI(); state.lastNoteTime = Date.now(); saveAll(); 
+  function generateOtherNote(fireTs) {
+    const ts = fireTs || Date.now();
+    const count = Math.floor(Math.random() * 10) + 1;
+    const selected = [];
+    for (let i = 0; i < count; i++) selected.push(getWordOrDict());
+    const note = { id: ts, content: selected.join('。') + '。', author: state.otherName, date: formatDateTime(ts), unread: true, isMine: false };
+    state.notes.push(note); invalidateNotesCache(); state.notesUnread = true; renderNotesList(); updateUI();
+    state.lastNoteTime = Date.now(); saveAll(); 
     showNotification(state.otherName, '写了一条新便签 💌', state.otherAvatar);
   }
   function startNoteScheduler() { runHourlyAction(() => noteNextAt, v => noteNextAt = v, (ts) => { if (Math.random() < 0.04) generateOtherNote(ts); }); }
   setInterval(() => { if (Math.random() < 0.07) addTapMessage(`${state.otherName}拍了拍${state.myName}`, 'other'); }, 15 * 60 * 1000);
-  function checkIdleNote() { const now = Date.now(); if (!state.lastNoteTime || (now - state.lastNoteTime) > 10 * 60 * 60 * 1000) { if (Math.random() < 0.1) generateOtherNote(); } }
+  function checkIdleNote() {
+    const now = Date.now();
+    if (!state.lastNoteTime || (now - state.lastNoteTime) > 10 * 60 * 60 * 1000) {
+      if (Math.random() < 0.1) {
+        generateOtherNote();
+      }
+    }
+  }
 
   function getSortedNotes() {
     if (!sortedNotesCache) {
@@ -3865,6 +3895,44 @@ function startEmojiRain(emojis, duration = 5) {
     if (autoDetectCtx && autoDetectCtx.state === 'running') { try { autoDetectCtx.suspend(); } catch (e) {} }
   }
 
+  // 把 dataURL 转成 ArrayBuffer（不依赖 fetch，兼容性更好）
+  function dataURLToArrayBuffer(dataURL) {
+    const comma = dataURL.indexOf(',');
+    if (comma === -1) return null;
+    const base64 = dataURL.slice(comma + 1);
+    try {
+      const bin = atob(base64);
+      const buf = new ArrayBuffer(bin.length);
+      const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return buf;
+    } catch (e) { return null; }
+  }
+  // 兼容 Promise 与回调两种 decodeAudioData 形式
+  function decodeAudio(ctx, buf) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const ok = (b) => { if (!settled) { settled = true; resolve(b); } };
+      const bad = (e) => { if (!settled) { settled = true; reject(e); } };
+      try {
+        const p = ctx.decodeAudioData(buf, ok, bad);
+        if (p && typeof p.then === 'function') p.then(ok, bad);
+      } catch (e) { bad(e); }
+    });
+  }
+  // 停止当前 Web Audio 播放（清 onended 再 stop，避免触发 finishPlayback 导致重复）
+  function stopCurrentAutoAudio() {
+    if (currentAutoAudio) {
+      try { currentAutoAudio.onended = null; } catch (e) {}
+      try { currentAutoAudio.stop(); } catch (e) {}
+      currentAutoAudio = null;
+    }
+    if (currentAutoCtx) {
+      try { currentAutoCtx.close(); } catch (e) {}
+      currentAutoCtx = null;
+    }
+  }
+
   function playRandomVoice() {
     if (!videoActive) return;
     if (state.voiceLibrary.length === 0) {
@@ -3874,11 +3942,11 @@ function startEmojiRain(emojis, duration = 5) {
     const randomIndex = Math.floor(Math.random() * state.voiceLibrary.length);
     const voice = state.voiceLibrary[randomIndex];
     autoDetectPlayingVoice = true;
-    // 先释放麦克风，让系统退出“通话模式”，语音改走扬声器而非听筒
+    // 释放麦克风，让系统退出“通话模式”
     closeAutoDetectMic();
     const finishPlayback = () => {
       autoDetectPlayingVoice = false;
-      currentAutoAudio = null;
+      stopCurrentAutoAudio();
       autoDetectSpoke = false;
       autoDetectSilenceSince = 0;
       if (autoDetectActive && videoActive) {
@@ -3886,15 +3954,27 @@ function startEmojiRain(emojis, duration = 5) {
         openAutoDetectMic().catch(e => console.warn('重新打开麦克风失败', e));
       }
     };
-    // 稍等片刻，确保音频会话切回扬声器后再播放
-    setTimeout(() => {
-      if (!videoActive || !autoDetectActive) return;
-      if (currentAutoAudio) { currentAutoAudio.pause(); currentAutoAudio = null; }
-      const audio = new Audio(voice.dataURL);
-      currentAutoAudio = audio;
-      audio.play().catch(e => console.warn('语音播放失败', e));
-      audio.onended = finishPlayback;
-      audio.onerror = finishPlayback;
+    // 用 Web Audio 解码播放：走扬声器音频通道，彻底绕开听筒
+    setTimeout(async () => {
+      if (!videoActive || !autoDetectActive) { finishPlayback(); return; }
+      const buf = dataURLToArrayBuffer(voice.dataURL);
+      if (!buf) { finishPlayback(); return; }
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new Ctx();
+        if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) {} }
+        const audioBuf = await decodeAudio(ctx, buf);
+        const src = ctx.createBufferSource();
+        src.buffer = audioBuf;
+        src.connect(ctx.destination);
+        currentAutoCtx = ctx;
+        currentAutoAudio = src;
+        src.onended = () => finishPlayback();
+        src.start();
+      } catch (e) {
+        console.warn('Web Audio 解码播放失败', e);
+        finishPlayback();
+      }
     }, 500);
   }
 
@@ -3931,7 +4011,7 @@ function startEmojiRain(emojis, duration = 5) {
     autoDetectSpoke = false;
     autoDetectSilenceSince = 0;
     autoDetectPlayingVoice = false;
-    if (currentAutoAudio) { currentAutoAudio.pause(); currentAutoAudio = null; }
+    stopCurrentAutoAudio();
     const btn = document.getElementById('randomVoiceBtn');
     if (btn) btn.classList.remove('active');
   }
@@ -4232,6 +4312,7 @@ async function handleTransferAction(msg, action) {
         probCount: state.probCount,
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
+        lastNoteTime: state.lastNoteTime,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
       };
     }
@@ -4936,6 +5017,8 @@ async function handleTransferAction(msg, action) {
     startMomentScheduler();
     startNoteScheduler();
     startTransferScheduler();
+    // 启动时检查 10 小时兜底便签
+    checkIdleNote();
     notesBtn.onclick = async () => {
       state.notesUnread = false;
       state.notes.forEach(n => n.unread = false);
@@ -5264,7 +5347,7 @@ document.getElementById('voiceRecordBtn').onclick = async () => {
           if (document.hidden && state.notifyEnabled && Notification.permission === 'granted') {
             showNotification(state.otherName, '赞了你的朋友圈 👍', state.otherAvatar);
           }
-          const replyContent = state.wordCards.length ? state.wordCards[Math.floor(Math.random() * state.wordCards.length)] : '赞！';
+          const replyContent = getWordOrDict();
           moment.comments.push({
             id: Date.now(), author: 'other',
             content: replyContent,
@@ -5319,7 +5402,6 @@ document.getElementById('voiceRecordBtn').onclick = async () => {
     });
 
     renderPanel('emoji');
-    checkIdleNote();
     scheduleNextActive();
     // 初始化亲密互动
     initIntimacy();
