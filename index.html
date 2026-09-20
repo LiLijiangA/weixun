@@ -3844,7 +3844,7 @@ function startEmojiRain(emojis, duration = 5) {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!autoDetectCtx) autoDetectCtx = new Ctx();
-    if (autoDetectCtx.state === 'suspended') autoDetectCtx.resume();
+    if (autoDetectCtx.state === 'suspended') { try { await autoDetectCtx.resume(); } catch (e) {} }
     const source = autoDetectCtx.createMediaStreamSource(stream);
     const analyser = autoDetectCtx.createAnalyser();
     analyser.fftSize = 512;
@@ -3861,6 +3861,8 @@ function startEmojiRain(emojis, duration = 5) {
     if (autoDetectStream) { autoDetectStream.getTracks().forEach(t => t.stop()); autoDetectStream = null; }
     autoDetectAnalyser = null;
     autoDetectBuf = null;
+    // 挂起音频上下文，彻底释放“通话模式”，确保语音只走扬声器、不走听筒
+    if (autoDetectCtx && autoDetectCtx.state === 'running') { try { autoDetectCtx.suspend(); } catch (e) {} }
   }
 
   function playRandomVoice() {
@@ -3893,7 +3895,7 @@ function startEmojiRain(emojis, duration = 5) {
       audio.play().catch(e => console.warn('语音播放失败', e));
       audio.onended = finishPlayback;
       audio.onerror = finishPlayback;
-    }, 150);
+    }, 500);
   }
 
   function autoDetectTick() {
