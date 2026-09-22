@@ -104,7 +104,8 @@
     .wordcard-item .wordcard-left { display: flex; align-items: center; }
     .wordcard-checkbox { margin-right: 10px; }
     .wordcard-actions { display: flex; gap: 6px; }
-    .close-settings-btn { width: 100%; padding: 12px; background: #007aff; color: white; border: none; border-radius: 10px; margin-top: 20px; }
+    .close-settings-btn { width: 100%; padding: 12px; background: #007aff; color: white; border: none; border-radius: 10px; margin-top: 20px; position: sticky; bottom: 0; }
+    .ntf-moment-comment { display: none; }
     .voice-library-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
     .voice-library-item span { flex: 1; }
     .voice-library-item button { padding: 4px 8px; font-size: 13px; margin-left: 4px; }
@@ -419,6 +420,7 @@
           <div class="setting-row"><label>表情包%</label><input id="probSticker" type="number" value="10"></div>
           <div class="setting-row"><label>Emoji%</label><input id="probEmoji" type="number" value="5"></div>
           <div class="setting-row"><label>语音条%</label><input id="probVoice" type="number" value="2"></div>
+          <p style="font-size:12px;color:#ff9500;margin:0 0 8px;">⚠️ 字卡 + 表情包 + Emoji + 语音条 四项概率总和需为 100%</p>
           <div class="setting-row"><label>主动最快(分钟)</label><input id="autoMin" type="number" value="30"></div>
           <div class="setting-row"><label>主动最慢(分钟)</label><input id="autoMax" type="number" value="120"></div>
           <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💞按钮</span></div>
@@ -430,6 +432,15 @@
           <div class="setting-row"><label>3条%</label><input id="probCount3" type="number" value="15"></div>
           <div class="setting-row"><label>4条%</label><input id="probCount4" type="number" value="10"></div>
           <div class="setting-row"><label>5条%</label><input id="probCount5" type="number" value="5"></div>
+        </div>
+        <div class="setting-group"><h4>🎯 主动行为概率</h4>
+          <div class="setting-row"><label>拍一拍 每15分钟%</label><input id="patTapProb" type="number" min="0" max="100" value="7"> <span style="font-size:12px;color:#888;">对方主动拍一拍</span></div>
+          <div class="setting-row"><label>随机拼音/字母 每30分钟%</label><input id="patLetterProb" type="number" min="0" max="100" value="5"> <span style="font-size:12px;color:#888;">对方发随机字母/拼音消息</span></div>
+          <div class="setting-row"><label>主动朋友圈 每小时%</label><input id="patMomentProb" type="number" min="0" max="100" value="5"></div>
+          <div class="setting-row"><label>便签留言 每小时%</label><input id="patNoteProb" type="number" min="0" max="100" value="4"></div>
+          <div class="setting-row"><label>亲密互动 每小时%</label><input id="patIntimacyProb" type="number" min="0" max="100" value="5"></div>
+          <div class="setting-row"><label>转账红包 每小时%</label><input id="patTransferProb" type="number" min="0" max="100" value="4"></div>
+          <div class="setting-row"><label>主动来电 每小时%</label><input id="patVideoCallProb" type="number" min="0" max="100" value="6"></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
@@ -486,8 +497,8 @@
         <button id="closeSettingsSearch" class="close-settings-btn">关闭</button>
       </div>
       <div id="settingsBg" class="hidden">
-        <div><label>📱 聊天背景</label><div class="bg-preview-row"><img id="chatBgPreview" class="bg-preview" src=""><input type="file" id="bgUpload" accept="image/*"><button id="deleteChatBgBtn" style="background:#ff3b30; color:white; border:none; padding:6px 12px; border-radius:16px;">删除</button></div></div>
-        <div style="margin-top:20px;"><label>📹 视频背景</label><div class="bg-preview-row"><img id="videoBgPreview" class="bg-preview" src=""><input type="file" id="videoBgUpload" accept="image/*"><button id="deleteVideoBgBtn" style="background:#ff3b30; color:white; border:none; padding:6px 12px; border-radius:16px;">删除</button></div></div>
+        <div><label>📱 聊天背景</label><div class="bg-preview-row"><img id="chatBgPreview" class="bg-preview" src=""><button id="deleteChatBgBtn" style="background:#ff3b30; color:white; border:none; padding:6px 12px; border-radius:16px; flex-shrink:0;">删除</button><input type="file" id="bgUpload" accept="image/*" style="flex:1; min-width:0;"></div></div>
+        <div style="margin-top:20px;"><label>📹 视频背景</label><div class="bg-preview-row"><img id="videoBgPreview" class="bg-preview" src=""><button id="deleteVideoBgBtn" style="background:#ff3b30; color:white; border:none; padding:6px 12px; border-radius:16px; flex-shrink:0;">删除</button><input type="file" id="videoBgUpload" accept="image/*" style="flex:1; min-width:0;"></div></div>
         <button id="closeSettingsBg" class="close-settings-btn">关闭</button>
       </div>
     </div>
@@ -1442,6 +1453,7 @@
       choiceCustomAnswer: state.choiceCustomAnswer,
       lastMsgTime: lastMsgTime,
       lastNoteTime: state.lastNoteTime,
+      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb,
       intimacyEnabled: state.intimacyEnabled,
       intimacyActions: state.intimacyActions,
       intimacySelectedAction: state.intimacySelectedAction,
@@ -1570,7 +1582,8 @@
     dictEnabled: true,
     dictProb: 30,
     dictGroups: {},
-    dictVersion: 0
+    dictVersion: 0,
+    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
 const VALID_PINYIN = [
@@ -1869,6 +1882,12 @@ window.handleTransferCardClick = function(card, msgId) {
   }
   function showNotification(title, body, icon) { 
     if (!("Notification"in window) || Notification.permission !== "granted" || !state.notifyEnabled) return; 
+    // 通知去重：同一标题+内容 2 秒内只发一次，避免同一条通知被触发两次
+    const _nkey = title + '|' + body;
+    const _nnow = Date.now();
+    if (window._ntfLast && window._ntfLast[_nkey] && (_nnow - window._ntfLast[_nkey]) < 2000) return;
+    if (!window._ntfLast) window._ntfLast = {};
+    window._ntfLast[_nkey] = _nnow;
     // 允许前台弹窗：即使页面在前台，也能弹屏幕顶部通知
     const opts = { 
       body: body, 
@@ -2041,6 +2060,13 @@ window.handleTransferCardClick = function(card, msgId) {
         state.probSticker = s.probSticker || 10; state.probEmoji = s.probEmoji || 5; state.probVoice = s.probVoice || 2;
         state.autoMin = s.autoMin !== undefined ? s.autoMin : 30; state.autoMax = s.autoMax !== undefined ? s.autoMax : 120;
         state.probCount = s.probCount || [40,30,15,10,5];
+        state.patTapProb = s.patTapProb !== undefined ? s.patTapProb : 7;
+        state.patLetterProb = s.patLetterProb !== undefined ? s.patLetterProb : 5;
+        state.patMomentProb = s.patMomentProb !== undefined ? s.patMomentProb : 5;
+        state.patNoteProb = s.patNoteProb !== undefined ? s.patNoteProb : 4;
+        state.patIntimacyProb = s.patIntimacyProb !== undefined ? s.patIntimacyProb : 5;
+        state.patTransferProb = s.patTransferProb !== undefined ? s.patTransferProb : 4;
+        state.patVideoCallProb = s.patVideoCallProb !== undefined ? s.patVideoCallProb : 6;
         state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.lastNoteTime !== undefined) state.lastNoteTime = s.lastNoteTime;
@@ -2056,6 +2082,13 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.autoMin !== undefined) state.autoMin = s.autoMin;
         if (s.autoMax !== undefined) state.autoMax = s.autoMax;
         if (s.probCount) state.probCount = s.probCount;
+        if (s.patTapProb !== undefined) state.patTapProb = s.patTapProb;
+        if (s.patLetterProb !== undefined) state.patLetterProb = s.patLetterProb;
+        if (s.patMomentProb !== undefined) state.patMomentProb = s.patMomentProb;
+        if (s.patNoteProb !== undefined) state.patNoteProb = s.patNoteProb;
+        if (s.patIntimacyProb !== undefined) state.patIntimacyProb = s.patIntimacyProb;
+        if (s.patTransferProb !== undefined) state.patTransferProb = s.patTransferProb;
+        if (s.patVideoCallProb !== undefined) state.patVideoCallProb = s.patVideoCallProb;
         if (s.soundIndex !== undefined) state.soundIndex = s.soundIndex;
         if (s.volume !== undefined) state.volume = s.volume;
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
@@ -2307,6 +2340,13 @@ window.handleTransferCardClick = function(card, msgId) {
     if (!state.otherAvatar) state.otherAvatar = 'data:image/svg+xml,%3Csvg%3E%3Ccircle cx=\'24\' cy=\'24\' r=\'24\' fill=\'%23b0b0b0\'/%3E%3C/svg%3E';
     if (!state.probCount) state.probCount = [40,30,15,10,5];
     if (state.probVoice === undefined) state.probVoice = 2;
+    if (state.patTapProb === undefined) state.patTapProb = 7;
+    if (state.patLetterProb === undefined) state.patLetterProb = 5;
+    if (state.patMomentProb === undefined) state.patMomentProb = 5;
+    if (state.patNoteProb === undefined) state.patNoteProb = 4;
+    if (state.patIntimacyProb === undefined) state.patIntimacyProb = 5;
+    if (state.patTransferProb === undefined) state.patTransferProb = 4;
+    if (state.patVideoCallProb === undefined) state.patVideoCallProb = 6;
     if (state.autoMin === undefined) state.autoMin = 30;
     if (state.autoMax === undefined) state.autoMax = 120;
     visibleStart = Math.max(0, messages.length - PAGE_SIZE);
@@ -2365,6 +2405,13 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('probSticker').value = state.probSticker;
     document.getElementById('probEmoji').value = state.probEmoji;
     document.getElementById('probVoice').value = state.probVoice;
+    document.getElementById('patTapProb').value = state.patTapProb;
+    document.getElementById('patLetterProb').value = state.patLetterProb;
+    document.getElementById('patMomentProb').value = state.patMomentProb;
+    document.getElementById('patNoteProb').value = state.patNoteProb;
+    document.getElementById('patIntimacyProb').value = state.patIntimacyProb;
+    document.getElementById('patTransferProb').value = state.patTransferProb;
+    document.getElementById('patVideoCallProb').value = state.patVideoCallProb;
     document.getElementById('soundSelect').value = state.soundIndex;
     document.getElementById('volumeSlider').value = state.volume;
     document.getElementById('notifyEnabled').checked = state.notifyEnabled;
@@ -3044,7 +3091,7 @@ window.handleTransferCardClick = function(card, msgId) {
   }
 
   function autoGenerateMoment(fireTs) {
-    if (Math.random() > 0.05) return;
+    if (Math.random() * 100 > (Number(state.patMomentProb) || 5)) return;
     const ts = fireTs || Date.now();
     const count = Math.floor(Math.random() * 2) + 1;
     let content = [];
@@ -3739,8 +3786,8 @@ function startEmojiRain(emojis, duration = 5) {
     state.lastNoteTime = Date.now(); saveAll(); 
     showNotification(state.otherName, '写了一条新便签 💌', state.otherAvatar);
   }
-  function startNoteScheduler() { runHourlyAction(() => noteNextAt, v => noteNextAt = v, (ts) => { if (Math.random() < 0.04) generateOtherNote(ts); }); }
-  setInterval(() => { if (Math.random() < 0.07) addTapMessage(`${state.otherName}拍了拍${state.myName}`, 'other'); }, 15 * 60 * 1000);
+  function startNoteScheduler() { runHourlyAction(() => noteNextAt, v => noteNextAt = v, (ts) => { if (Math.random() * 100 < (Number(state.patNoteProb) || 4)) generateOtherNote(ts); }); }
+  setInterval(() => { if (Math.random() * 100 < (Number(state.patTapProb) || 7)) addTapMessage(`${state.otherName}拍了拍${state.myName}`, 'other'); }, 15 * 60 * 1000);
   function checkIdleNote() {
     const now = Date.now();
     if (!state.lastNoteTime || (now - state.lastNoteTime) > 10 * 60 * 60 * 1000) {
@@ -4184,7 +4231,7 @@ async function handleTransferAction(msg, action) {
   }
 }
   function startTransferScheduler() { runHourlyAction(() => transferNextAt, v => transferNextAt = v, (ts) => {
-  if (Math.random() < 0.04) {
+  if (Math.random() * 100 < (Number(state.patTransferProb) || 4)) {
     let amt;
     const r = Math.random(); // 生成 0~1 之间的随机数，用于决定档位
     
@@ -4220,7 +4267,7 @@ async function handleTransferAction(msg, action) {
     addMessage('other', 'transfer', amt, null, {}, ts || Date.now());
   }
 }); }
-  setInterval(() => { if (!videoActive && !typingInd.textContent.includes('等待') && Math.random() < 0.06) startCall(true); }, 60 * 60 * 1000);
+  setInterval(() => { if (!videoActive && !typingInd.textContent.includes('等待') && Math.random() * 100 < (Number(state.patVideoCallProb) || 6)) startCall(true); }, 60 * 60 * 1000);
 
   async function clearChatHistory() { if (await confirmDialog('确定清空聊天记录？设置会保留。')) { messages = []; nextId = 0; lastMsgTime = Date.now(); visibleStart = 0; renderMessages(); await saveMessagesOnly(); scheduleNextActive(); } }
 
@@ -4313,6 +4360,7 @@ async function handleTransferAction(msg, action) {
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         lastNoteTime: state.lastNoteTime,
+        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
       };
     }
@@ -4508,10 +4556,8 @@ async function handleTransferAction(msg, action) {
   }
 
   function addIntimacyTapMessage(text) {
+    // addTapMessage 内部在后台时已发过通知，这里不再重复发（否则亲密互动每次弹两条）
     addTapMessage(text, 'other');
-    if (document.hidden && state.notifyEnabled && Notification.permission === 'granted') {
-      showNotification(state.otherName, text, state.otherAvatar);
-    }
   }
 
   function startIntimacy() {
@@ -4722,7 +4768,7 @@ async function handleTransferAction(msg, action) {
       let triggered = false;
       for (let i = 0; i < missed; i++) {
         try {
-          if (!triggered && Math.random() < 0.05) {
+          if (!triggered && Math.random() * 100 < (Number(state.patIntimacyProb) || 5)) {
             triggerOtherIntimacy();
             triggered = true;
           }
@@ -4737,7 +4783,7 @@ async function handleTransferAction(msg, action) {
         setTimeout(tick, HOUR);
         return;
       }
-      if (Math.random() < 0.05) triggerOtherIntimacy();
+      if (Math.random() * 100 < (Number(state.patIntimacyProb) || 5)) triggerOtherIntimacy();
       intimacyOtherNextAt += HOUR;
       saveRuntimeState();
       setTimeout(tick, HOUR);
@@ -5085,6 +5131,13 @@ async function handleTransferAction(msg, action) {
       state.dictEnabled = document.getElementById('dictToggle').checked;
       state.dictProb = Math.max(0, Math.min(100, +document.getElementById('dictProb').value || 0)); 
       state.probCount = [+document.getElementById('probCount1').value, +document.getElementById('probCount2').value, +document.getElementById('probCount3').value, +document.getElementById('probCount4').value, +document.getElementById('probCount5').value]; 
+      state.patTapProb = Math.max(0, Math.min(100, +document.getElementById('patTapProb').value || 0)); 
+      state.patLetterProb = Math.max(0, Math.min(100, +document.getElementById('patLetterProb').value || 0)); 
+      state.patMomentProb = Math.max(0, Math.min(100, +document.getElementById('patMomentProb').value || 0)); 
+      state.patNoteProb = Math.max(0, Math.min(100, +document.getElementById('patNoteProb').value || 0)); 
+      state.patIntimacyProb = Math.max(0, Math.min(100, +document.getElementById('patIntimacyProb').value || 0)); 
+      state.patTransferProb = Math.max(0, Math.min(100, +document.getElementById('patTransferProb').value || 0)); 
+      state.patVideoCallProb = Math.max(0, Math.min(100, +document.getElementById('patVideoCallProb').value || 0)); 
       saveAll(); 
       updateUI(); 
       document.getElementById('settingsOverlay').classList.add('hidden'); 
@@ -5412,7 +5465,7 @@ document.getElementById('voiceRecordBtn').onclick = async () => {
 // 每30分钟检查一次，5%概率触发特殊消息
 setInterval(async () => {
   // 5% 的概率触发
-  if (Math.random() < 0.05) {
+  if (Math.random() * 100 < (Number(state.patLetterProb) || 5)) {
     // 20% 概率触发随机字母消息，80% 概率触发随机拼音消息
     if (Math.random() < 0.2) {
       // ---------- 字母消息（增加标点） ----------
