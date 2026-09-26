@@ -3780,7 +3780,7 @@ function startEmojiRain(emojis, duration = 5) {
     const count = getRandomCount();
     for (let i = 0; i < count; i++) {
       const r = buildOneReply();
-      setTimeout(() => { if (videoActive) addMessage('other', r.type, r.content, r.quote, r.extra); }, i * 200);
+      setTimeout(() => { if (videoActive) addMessage('other', r.type, r.content, r.quote, r.extra); }, i * 800);   // 与普通聊天队列一致：每条间隔 800ms
     }
   }
   function getRandomCount() { const p = state.probCount; const sum = p.reduce((a,b) => a + b, 0); if (sum <= 0) return 1; let r = Math.random() * sum, acc = 0; for (let i = 0; i < 5; i++) { acc += p[i]; if (r < acc) return i + 1; } return 1; }
