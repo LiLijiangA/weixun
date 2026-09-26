@@ -104,7 +104,8 @@
     .wordcard-item .wordcard-left { display: flex; align-items: center; }
     .wordcard-checkbox { margin-right: 10px; }
     .wordcard-actions { display: flex; gap: 6px; }
-    .close-settings-btn { width: 100%; padding: 12px; background: #007aff; color: white; border: none; border-radius: 10px; margin-top: 20px; position: sticky; bottom: 0; }
+    @keyframes topBannerIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .close-settings-btn { width: 100%; padding: 12px; background: #007aff; color: white; border: none; border-radius: 10px; margin-top: 20px; position: sticky; bottom: 0; }
     .ntf-moment-comment { display: none; }
     .voice-library-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
     .voice-library-item span { flex: 1; }
@@ -441,6 +442,8 @@
           <div class="setting-row"><label>亲密互动 每小时%</label><input id="patIntimacyProb" type="number" min="0" max="100" value="5"></div>
           <div class="setting-row"><label>转账红包 每小时%</label><input id="patTransferProb" type="number" min="0" max="100" value="4"></div>
           <div class="setting-row"><label>主动来电 每小时%</label><input id="patVideoCallProb" type="number" min="0" max="100" value="6"></div>
+          <div class="setting-row"><label>主动挂断%</label><input id="patHangupProb" type="number" min="0" max="100" value="80"> <span style="font-size:12px;color:#888;">接通后对方随机在10-180分钟间挂断</span></div>
+          <div class="setting-row"><label>对方引用消息%</label><input id="patQuoteProb" type="number" min="0" max="100" value="15"></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
@@ -531,7 +534,8 @@
     <div class="video-controls">
       <button id="hangupBtn" title="挂断">📵</button>
       <button id="minimizeVideoBtn" title="缩小">🔽</button>
-      <button id="randomVoiceBtn" title="自动识别说话">🔊</button>
+      <button id="randomVoiceBtn" title="说话随机播放语音">🔊</button>
+      <button id="textReplyBtn" title="说话文字回复">💭</button>
     </div>
   </div>
   <div id="miniTimer" class="mini-timer hidden"><span>📹</span><span id="miniTimerText">00:00</span></div>
@@ -634,8 +638,8 @@
     <div class="fav-panel">
       <div class="fav-header"><span class="fav-title" id="favOwnerName">📌 对方 的收藏夹</span><button class="fav-close" id="favCloseBtn">✕</button></div>
       <div class="fav-tabs">
-        <div class="fav-tab active" data-favtab="messages">收藏的聊天记录</div>
-        <div class="fav-tab" data-favtab="photos">收藏的照片</div>
+        <div class="fav-tab active" data-favtab="messages">收藏的聊天记录<span id="favMsgCount"></span></div>
+        <div class="fav-tab" data-favtab="photos">收藏的照片<span id="favPhotoCount"></span></div>
       </div>
       <div id="favMessagesWrap" class="fav-body">
         <div id="favMessages"></div>
@@ -1453,7 +1457,7 @@
       choiceCustomAnswer: state.choiceCustomAnswer,
       lastMsgTime: lastMsgTime,
       lastNoteTime: state.lastNoteTime,
-      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb,
+      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb,
       intimacyEnabled: state.intimacyEnabled,
       intimacyActions: state.intimacyActions,
       intimacySelectedAction: state.intimacySelectedAction,
@@ -1574,7 +1578,7 @@
     defaultChoiceCount: 1,
     choiceCustomAnswer: true,
     intimacyEnabled: true,
-    intimacyActions: ["亲亲","抱抱","打屁股","乳夹","跳蛋","肛塞"],
+    intimacyActions: ["亲亲","抱抱","打屁股","摸摸✋","👅","小玩具"],
     intimacySelectedAction: "亲亲",
     intimacyScore: 0,
     intimacyMode: 0,
@@ -1583,7 +1587,7 @@
     dictProb: 30,
     dictGroups: {},
     dictVersion: 0,
-    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6
+    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
 const VALID_PINYIN = [
@@ -1674,6 +1678,7 @@ window.handleTransferCardClick = function(card, msgId) {
   let autoDetectSilenceSince = 0;
   let autoDetectPlayingVoice = false;
   let autoDetectCooldownUntil = 0;
+  let autoDetectMode = 'voice'; // 'voice'=停止说话后随机播语音；'reply'=停止说话后对方在聊天里实时回复
   let currentAutoAudio = null;
   let currentAutoCtx = null;
 
@@ -1727,6 +1732,11 @@ window.handleTransferCardClick = function(card, msgId) {
   const favSelected = new Set();
   const FAV_MSG_PAGE = 50, FAV_PHOTO_PAGE = 40;
 
+  function updateFavTabCounts() {
+    const mc = document.getElementById('favMsgCount'), pc = document.getElementById('favPhotoCount');
+    if (mc) mc.textContent = `（${favCache.filter(f => f.type === 'text').length}）`;
+    if (pc) pc.textContent = `（${favCache.filter(f => f.type === 'image').length}）`;
+  }
   async function openFavorites() {
     if (favOwnerNameEl) favOwnerNameEl.textContent = `📌 ${state.otherName} 的收藏夹`;
     favCache = (await loadFavoritesFromDB()).sort((a, b) => b.timestamp - a.timestamp);
@@ -1745,6 +1755,7 @@ window.handleTransferCardClick = function(card, msgId) {
   }
   function renderFavMessages(append) {
     const items = favCache.filter(f => f.type === 'text');
+    updateFavTabCounts();
     const shown = items.slice(favMsgStart, favMsgStart + FAV_MSG_PAGE);
     if (!append) favMessagesEl.innerHTML = '';
     if (items.length === 0) {
@@ -1762,6 +1773,7 @@ window.handleTransferCardClick = function(card, msgId) {
   }
   function renderFavPhotos(append) {
     const items = favCache.filter(f => f.type === 'image');
+    updateFavTabCounts();
     const shown = items.slice(favPhotoStart, favPhotoStart + FAV_PHOTO_PAGE);
     if (!append) favPhotosEl.innerHTML = '';
     if (items.length === 0) {
@@ -1902,6 +1914,22 @@ window.handleTransferCardClick = function(card, msgId) {
           reg.showNotification(title, opts).catch(function () {});
         }).catch(function () {});
       }
+    } catch (e) {}
+  }
+  function showTopBanner(title, body, icon) {
+    try {
+      let wrap = document.getElementById('topBannerWrap');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'topBannerWrap';
+        wrap.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;pointer-events:none;';
+        document.body.appendChild(wrap);
+      }
+      const el = document.createElement('div');
+      el.style.cssText = 'pointer-events:auto;margin:8px;display:flex;align-items:center;gap:10px;background:rgba(30,30,30,0.95);color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.35);font-size:14px;animation:topBannerIn .3s ease;';
+      el.innerHTML = `${icon ? `<img src="${icon}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : ''}<div style="flex:1;min-width:0;"><div style="font-weight:600;margin-bottom:2px;">${escapeHtml(title)}</div><div style="color:#ddd;word-break:break-all;">${escapeHtml(body || '')}</div></div>`;
+      wrap.appendChild(el);
+      setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 4000);
     } catch (e) {}
   }
   function notifyNewMessage(sender, type, content) { 
@@ -2067,6 +2095,8 @@ window.handleTransferCardClick = function(card, msgId) {
         state.patIntimacyProb = s.patIntimacyProb !== undefined ? s.patIntimacyProb : 5;
         state.patTransferProb = s.patTransferProb !== undefined ? s.patTransferProb : 4;
         state.patVideoCallProb = s.patVideoCallProb !== undefined ? s.patVideoCallProb : 6;
+        state.patHangupProb = s.patHangupProb !== undefined ? s.patHangupProb : 80;
+        state.patQuoteProb = s.patQuoteProb !== undefined ? s.patQuoteProb : 15;
         state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.lastNoteTime !== undefined) state.lastNoteTime = s.lastNoteTime;
@@ -2089,6 +2119,8 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.patIntimacyProb !== undefined) state.patIntimacyProb = s.patIntimacyProb;
         if (s.patTransferProb !== undefined) state.patTransferProb = s.patTransferProb;
         if (s.patVideoCallProb !== undefined) state.patVideoCallProb = s.patVideoCallProb;
+        if (s.patHangupProb !== undefined) state.patHangupProb = s.patHangupProb;
+        if (s.patQuoteProb !== undefined) state.patQuoteProb = s.patQuoteProb;
         if (s.soundIndex !== undefined) state.soundIndex = s.soundIndex;
         if (s.volume !== undefined) state.volume = s.volume;
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
@@ -2278,7 +2310,7 @@ window.handleTransferCardClick = function(card, msgId) {
     if (saved) { try { const p = JSON.parse(saved); Object.assign(state, p); if (!state.notes) state.notes = []; if (!state.moments) state.moments = []; if (!state.voiceLibrary) state.voiceLibrary = []; if (!state.unreadMomentIds) state.unreadMomentIds = []; if (state.defaultChoiceThinkSeconds === undefined) state.defaultChoiceThinkSeconds = 10; if (state.defaultChoiceCount === undefined) state.defaultChoiceCount = 1; if (state.choiceCustomAnswer === undefined) state.choiceCustomAnswer = true; if (state.lastNoteTime === undefined) state.lastNoteTime = p.lastNoteTime || null; } catch(e) {} }
     // 亲密互动字段默认值（始终设置）
     if (state.intimacyEnabled === undefined) state.intimacyEnabled = true;
-    if (!state.intimacyActions || !state.intimacyActions.length) state.intimacyActions = ["亲亲","抱抱","打屁股","乳夹","跳蛋","肛塞"];
+    if (!state.intimacyActions || !state.intimacyActions.length) state.intimacyActions = ["亲亲","抱抱","打屁股","摸摸✋","👅","小玩具"];
     if (state.intimacySelectedAction === undefined) state.intimacySelectedAction = state.intimacyActions[0];
     if (state.intimacyScore === undefined) state.intimacyScore = 0;
     if (state.intimacyMode === undefined) state.intimacyMode = 0;
@@ -2347,6 +2379,8 @@ window.handleTransferCardClick = function(card, msgId) {
     if (state.patIntimacyProb === undefined) state.patIntimacyProb = 5;
     if (state.patTransferProb === undefined) state.patTransferProb = 4;
     if (state.patVideoCallProb === undefined) state.patVideoCallProb = 6;
+    if (state.patHangupProb === undefined) state.patHangupProb = 80;
+    if (state.patQuoteProb === undefined) state.patQuoteProb = 15;
     if (state.autoMin === undefined) state.autoMin = 30;
     if (state.autoMax === undefined) state.autoMax = 120;
     visibleStart = Math.max(0, messages.length - PAGE_SIZE);
@@ -2412,6 +2446,8 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('patIntimacyProb').value = state.patIntimacyProb;
     document.getElementById('patTransferProb').value = state.patTransferProb;
     document.getElementById('patVideoCallProb').value = state.patVideoCallProb;
+    document.getElementById('patHangupProb').value = state.patHangupProb;
+    document.getElementById('patQuoteProb').value = state.patQuoteProb;
     document.getElementById('soundSelect').value = state.soundIndex;
     document.getElementById('volumeSlider').value = state.volume;
     document.getElementById('notifyEnabled').checked = state.notifyEnabled;
@@ -3716,10 +3752,40 @@ function startEmojiRain(emojis, duration = 5) {
     }, state.replyDelay * 1000); 
   }
   
-  function generateReplies() { const count = getRandomCount(); const reps = []; for (let i = 0; i < count; i++) { const type = selectType(); let content, msgType, extra = {}; if (type === 'word') { const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0)); const useDict = state.dictEnabled !== false && (state.wordCards.length === 0 || (p > 0 && Math.random() * 100 < p)); const sent = useDict ? buildDictSentence() : ''; if (sent) { content = sent; msgType = 'text'; extra.isDict = true; } else if (state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; } else { content = '嗯'; msgType = 'text'; } } else if (type === 'sticker' && state.stickers.length) { const s = state.stickers[Math.floor(Math.random() * state.stickers.length)]; content = s.dataURL; msgType = 'sticker'; } else if (type === 'emoji' && state.emojis.length) { content = state.emojis[Math.floor(Math.random() * state.emojis.length)]; msgType = 'emoji'; } else if (type === 'voice' && state.voiceLibrary.length) { const v = state.voiceLibrary[Math.floor(Math.random() * state.voiceLibrary.length)]; content = v.dataURL; msgType = 'voice'; extra.duration = v.duration; extra.voiceName = v.name; } else { content = '嗯'; msgType = 'text'; } reps.push({ type: msgType, content, quote: Math.random() < 0.15 ? getRandomQuote() : null, extra }); } if (reps.length) startQueue(reps); else typingInd.textContent = ''; }
+  // 生成单条对方回复（聊天回复与视频通话实时回复共用）
+  function buildOneReply() {
+    const type = selectType();
+    let content, msgType, extra = {};
+    if (type === 'word') {
+      const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0));
+      const useDict = state.dictEnabled !== false && (state.wordCards.length === 0 || (p > 0 && Math.random() * 100 < p));
+      const sent = useDict ? buildDictSentence() : '';
+      if (sent) { content = sent; msgType = 'text'; extra.isDict = true; }
+      else if (state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; }
+      else { content = '嗯'; msgType = 'text'; }
+    } else if (type === 'sticker' && state.stickers.length) {
+      const s = state.stickers[Math.floor(Math.random() * state.stickers.length)];
+      content = s.dataURL; msgType = 'sticker';
+    } else if (type === 'emoji' && state.emojis.length) {
+      content = state.emojis[Math.floor(Math.random() * state.emojis.length)]; msgType = 'emoji';
+    } else if (type === 'voice' && state.voiceLibrary.length) {
+      const v = state.voiceLibrary[Math.floor(Math.random() * state.voiceLibrary.length)];
+      content = v.dataURL; msgType = 'voice'; extra.duration = v.duration; extra.voiceName = v.name;
+    } else { content = '嗯'; msgType = 'text'; }
+    return { type: msgType, content, quote: Math.random() * 100 < (Number(state.patQuoteProb) || 15) ? getRandomQuote() : null, extra };
+  }
+  function generateReplies() { const count = getRandomCount(); const reps = []; for (let i = 0; i < count; i++) reps.push(buildOneReply()); if (reps.length) startQueue(reps); else typingInd.textContent = ''; }
+  // 视频通话：用户停止说话后对方在聊天里实时回复（不走延时队列）
+  function sendRealtimeReplies() {
+    const count = getRandomCount();
+    for (let i = 0; i < count; i++) {
+      const r = buildOneReply();
+      setTimeout(() => { if (videoActive) addMessage('other', r.type, r.content, r.quote, r.extra); }, i * 200);
+    }
+  }
   function getRandomCount() { const p = state.probCount; const sum = p.reduce((a,b) => a + b, 0); if (sum <= 0) return 1; let r = Math.random() * sum, acc = 0; for (let i = 0; i < 5; i++) { acc += p[i]; if (r < acc) return i + 1; } return 1; }
   function selectType() { let w = state.probWord, s = state.probSticker, e = state.probEmoji, v = state.probVoice; const sum = w + s + e + v || 1; const r = Math.random() * sum; if (r < w) return 'word'; else if (r < w + s) return 'sticker'; else if (r < w + s + e) return 'emoji'; else return 'voice'; }
-  function getRandomQuote() { const meMsgs = messages.filter(m => m.sender === 'me').slice(-50); return meMsgs.length ? meMsgs[Math.floor(Math.random() * meMsgs.length)].id : null; }
+  function getRandomQuote() { const meMsgs = messages.filter(m => m.sender === 'me'); if (!meMsgs.length) return null; const r = Math.random(); let pool; if (r < 0.6) pool = meMsgs.slice(-5); else if (r < 0.9) pool = meMsgs.slice(-10); else pool = meMsgs.slice(-20); if (!pool.length) pool = meMsgs.slice(-5); if (!pool.length) return null; return pool[Math.floor(Math.random() * pool.length)].id; }
   // ==================== 词典拼句：生成随机句子 ====================
   // 加权抽取句式：含“宾语·食物(obj)”的句式降权，避免对方总是发食物
   function pickWeightedPattern() {
@@ -4046,7 +4112,8 @@ function startEmojiRain(emojis, duration = 5) {
       if (now - autoDetectSilenceSince >= 1200) {
         autoDetectSpoke = false;
         autoDetectSilenceSince = 0;
-        playRandomVoice();
+        if (autoDetectMode === 'reply') sendRealtimeReplies();
+        else playRandomVoice();
       }
     }
   }
@@ -4061,12 +4128,14 @@ function startEmojiRain(emojis, duration = 5) {
     stopCurrentAutoAudio();
     const btn = document.getElementById('randomVoiceBtn');
     if (btn) btn.classList.remove('active');
+    const rb = document.getElementById('textReplyBtn');
+    if (rb) rb.classList.remove('active');
   }
 
-  async function startAutoDetect() {
+  async function startAutoDetect(mode) {
     if (autoDetectActive) { stopAutoDetect(); return; }
     if (!videoActive) { addTapMessage('请先开启视频通话', 'me'); return; }
-    if (state.voiceLibrary.length === 0) {
+    if (mode === 'voice' && state.voiceLibrary.length === 0) {
       showAlert('语音库为空，请先上传语音。');
       return;
     }
@@ -4076,9 +4145,10 @@ function startEmojiRain(emojis, duration = 5) {
       autoDetectSilenceSince = 0;
       autoDetectPlayingVoice = false;
       autoDetectCooldownUntil = 0;
+      autoDetectMode = mode;
       autoDetectActive = true;
       if (!autoDetectInterval) autoDetectInterval = setInterval(autoDetectTick, 120);
-      const btn = document.getElementById('randomVoiceBtn');
+      const btn = document.getElementById(mode === 'reply' ? 'textReplyBtn' : 'randomVoiceBtn');
       if (btn) btn.classList.add('active');
     } catch (e) {
       showAlert('无法访问麦克风，请检查权限设置');
@@ -4086,9 +4156,9 @@ function startEmojiRain(emojis, duration = 5) {
     }
   }
 
-  function toggleAutoDetect() {
-    if (autoDetectActive) stopAutoDetect();
-    else startAutoDetect();
+  function toggleAutoDetect(mode) {
+    if (autoDetectActive && autoDetectMode === mode) stopAutoDetect();
+    else startAutoDetect(mode);
   }
 
   // 视频通话未接自动挂断
@@ -4114,7 +4184,7 @@ function startEmojiRain(emojis, duration = 5) {
         }
       }
       incomingCallTimer = null;
-    }, 60000);
+    }, 120000);   // 未应答 2 分钟后才判定为未接听（原来是 60 秒）
     
     overlay.querySelector('.call-accept').onclick = () => { 
       if (incomingCallTimer) clearTimeout(incomingCallTimer);
@@ -4142,7 +4212,7 @@ function startEmojiRain(emojis, duration = 5) {
     videoTimerInterval = setInterval(updateVideoTimer, 1000); 
     if (autoHangupTimer) clearTimeout(autoHangupTimer); 
     autoHangupDeadline = null;
-    if (Math.random() < 0.8) { 
+    if (Math.random() * 100 < (Number(state.patHangupProb) || 80)) {
       autoHangupDeadline = Date.now() + Math.floor(Math.random() * (180 * 60 * 1000 - 10 * 60 * 1000 + 1)) + 10 * 60 * 1000;
       autoHangupTimer = setTimeout(() => { 
         if (videoActive) hangup(true); 
@@ -4360,7 +4430,7 @@ async function handleTransferAction(msg, action) {
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         lastNoteTime: state.lastNoteTime,
-        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb,
+        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
       };
     }
@@ -4880,7 +4950,10 @@ async function handleTransferAction(msg, action) {
     const figure = document.getElementById('intimacyFigure');
     if (figure) {
       figure.onclick = (e) => {
-        state.intimacyScore++;
+        // 每次点击：2% 概率 +5 分、5% 概率 +3 分、其余 +1 分
+        const rr = Math.random();
+        const gain = rr < 0.02 ? 5 : (rr < 0.07 ? 3 : 1);
+        state.intimacyScore += gain;
         updateHeartProgress();
 
         const area = document.getElementById('intimacyFigureArea');
@@ -4889,7 +4962,7 @@ async function handleTransferAction(msg, action) {
         const y = e.clientY - rect.top;
         const plus = document.createElement('div');
         plus.className = 'intimacy-plus-one';
-        plus.textContent = '+1';
+        plus.textContent = '+' + gain;
         plus.style.left = (x - 10) + 'px';
         plus.style.top = (y - 10) + 'px';
         if (area) {
@@ -5138,6 +5211,8 @@ async function handleTransferAction(msg, action) {
       state.patIntimacyProb = Math.max(0, Math.min(100, +document.getElementById('patIntimacyProb').value || 0)); 
       state.patTransferProb = Math.max(0, Math.min(100, +document.getElementById('patTransferProb').value || 0)); 
       state.patVideoCallProb = Math.max(0, Math.min(100, +document.getElementById('patVideoCallProb').value || 0)); 
+      state.patHangupProb = Math.max(0, Math.min(100, +document.getElementById('patHangupProb').value || 0)); 
+      state.patQuoteProb = Math.max(0, Math.min(100, +document.getElementById('patQuoteProb').value || 0)); 
       saveAll(); 
       updateUI(); 
       document.getElementById('settingsOverlay').classList.add('hidden'); 
@@ -5162,6 +5237,7 @@ async function handleTransferAction(msg, action) {
         if (p !== "granted") { showAlert('通知权限未授予，无法发送通知。请在浏览器设置中允许'); return; }
       }
       try {
+        showTopBanner('微讯', '这是一条测试通知，通知功能正常！', state.otherAvatar);
         if ('serviceWorker' in navigator && navigator.serviceWorker) {
           navigator.serviceWorker.ready.then(function (reg) {
             reg.showNotification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true, urgency: 'high', badge: 'icon.svg' }).then(function () {
@@ -5211,7 +5287,9 @@ async function handleTransferAction(msg, action) {
     document.getElementById('closeTransferInput').onclick = () => transferInputOverlay.classList.add('hidden');
 
     const randomVoiceBtn = document.getElementById('randomVoiceBtn');
-    if (randomVoiceBtn) randomVoiceBtn.onclick = toggleAutoDetect;
+    if (randomVoiceBtn) randomVoiceBtn.onclick = () => toggleAutoDetect('voice');
+    const textReplyBtn = document.getElementById('textReplyBtn');
+    if (textReplyBtn) textReplyBtn.onclick = () => toggleAutoDetect('reply');
 
     document.getElementById('voiceUploadBtn').onclick = () => document.getElementById('voiceUploadInput').click();
     document.getElementById('voiceUploadInput').onchange = async (e) => {
