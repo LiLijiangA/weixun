@@ -5231,29 +5231,15 @@ async function handleTransferAction(msg, action) {
     document.getElementById('closeSettingsGeneral').onclick = saveSettings;
     document.getElementById('testNotifyBtn').onclick = async () => {
       if (!("Notification"in window)) { showAlert('当前浏览器不支持通知'); return; }
+      // 必须先在设置里打开「后台弹窗」开关（与转账等所有系统通知走同一道判断）
+      if (!state.notifyEnabled) { showAlert('请先在「后台弹窗」打开开关，再发送测试通知'); return; }
       if (Notification.permission === "denied") { showAlert('通知已被拒绝，请在浏览器/系统设置中允许微讯发送通知'); return; }
       if (Notification.permission !== "granted") {
         const p = await Notification.requestPermission();
         if (p !== "granted") { showAlert('通知权限未授予，无法发送通知。请在浏览器设置中允许'); return; }
       }
-      try {
-        showTopBanner('微讯', '这是一条测试通知，通知功能正常！', state.otherAvatar);
-        if ('serviceWorker' in navigator && navigator.serviceWorker) {
-          navigator.serviceWorker.ready.then(function (reg) {
-            reg.showNotification('微讯测试通知', { body: '这是一条测试通知，通知功能正常！', icon: state.otherAvatar, silent: true, urgency: 'high', badge: 'icon.svg' }).then(function () {
-              showAlert('测试通知已发送 ✓');
-            }).catch(function (err) {
-              showAlert('通知发送失败：' + (err && err.message ? err.message : err));
-            });
-          }).catch(function (err) {
-            showAlert('通知发送失败（SW 不可用）：' + (err && err.message ? err.message : err));
-          });
-        } else {
-          showAlert('当前环境不支持 Service Worker，无法发送通知');
-        }
-      } catch (e) {
-        showAlert('通知发送失败：' + (e && e.message ? e.message : e));
-      }
+      // 复用与转账完全相同的通知路径（不带 silent，否则系统不弹横幅）
+      showNotification(state.otherName, '这是一条测试通知，通知功能正常！', state.otherAvatar);
     };
     document.getElementById('closeSettingsWordcard').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsVoice').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
