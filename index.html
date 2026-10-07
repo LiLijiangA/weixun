@@ -46,6 +46,49 @@
     .bubble-image { max-width: 200px; max-height: 200px; border-radius: 4px; display: block; cursor: pointer; }
     .bubble-emoji { font-size: 20px !important; padding: 6px 8px; }
     .transfer-card { background: #f39c12; color: white; padding: 8px 16px; border-radius: 8px; width: 240px; max-width: 100%; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
+    .gift-card { background: linear-gradient(135deg, #ff6b6b, #c2185b); color: white; border-radius: 14px; width: 240px; max-width: 100%; text-align: center; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative; }
+    .gift-card.gift-from-me { background: linear-gradient(135deg, #ff9a3d, #e65100); }
+    .gift-card .gift-card-emoji { font-size: 44px; line-height: 1.2; }
+    .gift-card .gift-card-name { font-size: 15px; font-weight: 700; margin: 4px 0; }
+    .gift-card .gift-card-count { font-size: 12px; opacity: 0.9; }
+    .gift-card .gift-card-status { font-size: 11px; margin-top: 8px; opacity: 0.85; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 6px; }
+    .gift-card.sealed { background: linear-gradient(135deg, #7b4397, #dc2430); cursor: pointer; text-align: center; }
+    .gift-card.sealed .gift-card-emoji { animation: heartPulse 1s ease-in-out infinite; }
+    .gift-open-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: flex; justify-content: center; align-items: center; }
+    .gift-open-box { background: #fff; border-radius: 20px; padding: 40px 50px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: giftOpenIn .3s; }
+    .gift-open-box.opening .gift-open-emoji { animation: giftOpenShake .5s; }
+    .gift-open-emoji { font-size: 80px; }
+    .gift-open-text { margin-top: 14px; color: #888; font-size: 14px; }
+    .gift-open-name { margin-top: 10px; font-size: 20px; font-weight: 700; color: #333; }
+    @keyframes giftOpenIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes giftOpenShake { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(-12deg) scale(1.1); } 50% { transform: rotate(12deg) scale(1.1); } 75% { transform: rotate(-8deg) scale(1.05); } 100% { transform: rotate(0) scale(1); } }
+    .gift-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 660; display: flex; justify-content: center; align-items: center; }
+    .gift-panel { background: #fff; border-radius: 16px; width: 92%; max-width: 420px; height: 78vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+    .gift-header { position: relative; padding: 14px 16px; border-bottom: 1px solid #eee; text-align: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .gift-close { position: absolute; top: 10px; right: 14px; font-size: 22px; cursor: pointer; color: #888; background: none; border: none; }
+    .gift-shop-list { flex: 1; overflow-y: auto; padding: 6px 10px; }
+    .gift-item { display: flex; align-items: center; gap: 8px; padding: 10px 6px; border-bottom: 1px solid #f0f0f0; }
+    .gift-item-emoji { font-size: 30px; flex-shrink: 0; width: 36px; text-align: center; }
+    .gift-item-name { flex: 1; font-size: 15px; font-weight: 600; }
+    .gift-qty { display: flex; align-items: center; gap: 4px; }
+    .gift-qty button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ddd; background: #f7f7f7; font-size: 16px; cursor: pointer; }
+    .gift-qty span { min-width: 20px; text-align: center; font-size: 14px; font-weight: 600; }
+    .gift-send-btn { background: #ff9500; color: #fff; border: none; border-radius: 16px; padding: 6px 12px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+    .gift-edit-btn, .gift-del-btn { background: none; border: none; font-size: 15px; cursor: pointer; padding: 2px; }
+    .gift-shop-add { display: flex; gap: 6px; padding: 10px; border-top: 1px solid #eee; flex-shrink: 0; }
+    .gift-shop-add input { flex: 1; min-width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .gift-shop-add button { background: #07c160; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+    .gift-tabs { display: flex; border-bottom: 1px solid #eee; flex-shrink: 0; }
+    .gift-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; }
+    .gift-tab.active { color: #07c160; border-bottom-color: #07c160; font-weight: 600; }
+    .gift-cabinet-body { flex: 1; overflow-y: auto; padding: 8px 12px; }
+    .gift-cabinet-item { display: flex; align-items: center; gap: 10px; padding: 10px 6px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+    .gift-cabinet-emoji { font-size: 26px; width: 34px; text-align: center; flex-shrink: 0; }
+    .gift-cabinet-name { flex: 1; font-weight: 600; }
+    .gift-cabinet-meta { font-size: 11px; color: #999; white-space: nowrap; }
+    .rating-card { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 14px; width: 240px; max-width: 100%; text-align: center; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative; }
+    .rating-card .rating-question { font-size: 12px; opacity: 0.85; margin-bottom: 8px; word-break: break-all; }
+    .rating-card .rating-stars { font-size: 26px; letter-spacing: 2px; line-height: 1.2; }
     .transfer-label { font-size: 13px; opacity: 0.9; margin-bottom: 4px; }
     .transfer-amount { font-size: 24px; font-weight: bold; margin: 2px 0; }
     .transfer-status { font-size: 11px; margin-top: 6px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 6px; }
@@ -309,7 +352,7 @@
     .intimacy-passive-btn { flex: 1; padding: 10px 0; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.12); color: #ffd9e8; font-size: 14px; cursor: pointer; }
     .intimacy-passive-btn:disabled { opacity: 0.45; }
     /* 悬浮文字 */
-    .intimacy-floating-text { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); background: rgba(30, 5, 40, 0.9); border: 1px solid rgba(255, 120, 180, 0.6); color: #ffd9e8; padding: 14px 22px; border-radius: 14px; font-size: 15px; z-index: 1300; max-width: 86%; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.5); animation: floatTextIn 0.25s; }
+    .intimacy-floating-text { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); background: rgba(30, 5, 40, 0.9); border: 1px solid rgba(255, 120, 180, 0.6); color: #ffd9e8; padding: 14px 22px; border-radius: 14px; font-size: 15px; z-index: 9999; max-width: 86%; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.5); animation: floatTextIn 0.25s; }
     @keyframes floatTextIn { from { opacity: 0; transform: translate(-50%, -55%); } to { opacity: 1; transform: translate(-50%, -50%); } }
     /* 弹窗 */
     .intimacy-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 1400; display: flex; justify-content: center; align-items: center; }
@@ -323,6 +366,8 @@
     /* ==================== 词典拼句 ==================== */
     .message-bubble.dict-msg { padding-right: 22px; }
     .message-bubble.dict-msg::after { content: '拼'; position: absolute; right: 4px; bottom: 4px; font-size: 10px; line-height: 1; color: rgba(0, 0, 0, 0.3); user-select: none; }
+    .message-bubble.ta-msg { padding-right: 22px; }
+    .message-bubble.ta-msg::after { content: '➕'; position: absolute; right: 4px; bottom: 4px; font-size: 10px; line-height: 1; color: rgba(0, 0, 0, 0.3); user-select: none; }
     .dict-group { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
     .dict-group-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: #f7f7f9; padding: 6px 8px; flex-wrap: wrap; }
     .dict-group-head .dg-toggle { font-size: 14px; font-weight: 600; cursor: pointer; user-select: none; }
@@ -395,6 +440,7 @@
       <div class="panel-tab" data-tab="dice">🎲</div>
       <div class="panel-tab" data-tab="photo">📷</div>
       <div class="panel-tab" data-tab="transfer">💸</div>
+      <div class="panel-tab" data-tab="gift">🎁</div>
     </div>
     <div class="panel-content" id="panelContent"></div>
   </div>
@@ -408,6 +454,7 @@
         <div class="settings-tab active" data-stab="general">通用</div>
         <div class="settings-tab" data-stab="wordcard">字卡库</div>
         <div class="settings-tab" data-stab="dict">词典拼句</div>
+        <div class="settings-tab" data-stab="tacards">ta添加的字卡</div>
         <div class="settings-tab" data-stab="voice">语音库</div>
         <div class="settings-tab" data-stab="search">查找</div>
         <div class="settings-tab" data-stab="bg">背景</div>
@@ -426,7 +473,10 @@
           <div class="setting-row"><label>主动最慢(分钟)</label><input id="autoMax" type="number" value="120"></div>
           <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💞按钮</span></div>
           <div class="setting-row"><label>🧩 词典拼句</label><input type="checkbox" id="dictToggle" checked> <span style="font-size:13px;color:#888;">开启后对方可随机拼句回复</span></div>
-          <div class="setting-row"><label>拼句概率%</label><input id="dictProb" type="number" min="0" max="100" value="30"> <span style="font-size:12px;color:#888;">占字卡消息比例，剩余为字卡库</span></div>
+          <div class="setting-row"><label>拼句概率%</label><input id="dictProb" type="number" min="0" max="100" value="25"> <span style="font-size:12px;color:#888;">占字卡消息比例，剩余为字卡库</span></div>
+          <div class="setting-row"><label>💗 ta主动添加字卡</label><input type="checkbox" id="taAddToggle" checked> <span style="font-size:13px;color:#888;">开启后对方可主动添加字卡</span></div>
+          <div class="setting-row"><label>ta主动添加字卡的概率%</label><input id="taAddProb" type="number" min="0" max="100" value="3"> <span style="font-size:12px;color:#888;">对方收藏消息进ta字卡库的概率</span></div>
+          <div class="setting-row"><label>使用ta添加的字卡概率%</label><input id="taUseProb" type="number" min="0" max="100" value="5"> <span style="font-size:12px;color:#888;">对方发文字消息时使用ta字卡库的比例</span></div>
           <div><strong>回复条数概率(1~5条)总和100%</strong></div>
           <div class="setting-row"><label>1条%</label><input id="probCount1" type="number" value="40"></div>
           <div class="setting-row"><label>2条%</label><input id="probCount2" type="number" value="30"></div>
@@ -446,7 +496,7 @@
           <div class="setting-row"><label>对方引用消息%</label><input id="patQuoteProb" type="number" min="0" max="100" value="15"></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
-        <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
+        <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="taCards" checked> ta添加的字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="gifts" checked> 礼物</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
         <button id="closeSettingsGeneral" class="close-settings-btn">保存并关闭</button>
@@ -474,6 +524,15 @@
         <div id="dictGroupList"></div>
         <p>🧩 词语总数: <span id="dictTotalCount">0</span></p>
         <button id="closeSettingsDict" class="close-settings-btn">关闭</button>
+      </div>
+      <div id="settingsTacards" class="hidden">
+        <h4 style="margin-bottom:8px;">💗 ta添加的字卡</h4>
+        <p style="font-size:12px;color:#888;margin-bottom:10px;">这里是对方（ta）主动添加的字卡：对方会按照「ta主动添加字卡的概率」收藏您的消息和ta自己的词典拼句消息。ta添加的字卡可能不通顺或称呼不对，建议您多关注并根据大意手动修改成适合ta使用的字卡。此页面无法手动新增字卡，仅支持修改与删除。</p>
+        <input type="text" id="taCardSearch" placeholder="🔍 搜索字卡" class="wordcard-search">
+        <div style="margin:10px 0;"><button id="selectAllTacards">全选</button><button id="batchDeleteTacards">批量删除</button><button id="dedupeTacards">去重</button></div>
+        <div class="wordcard-list" id="taCardList"></div>
+        <p>💗 ta添加的字卡总数: <span id="taCardCount">0</span></p>
+        <button id="closeSettingsTacards" class="close-settings-btn">关闭</button>
       </div>
       <div id="settingsVoice" class="hidden">
         <h4>🔊 语音库管理</h4>
@@ -558,6 +617,10 @@
       <button class="close-btn" id="intimacyCloseBtn">✕</button>
     </div>
     <div class="intimacy-body">
+      <div id="intimacyOverlayHeartWrap" class="hidden" style="position:absolute; top:66px; left:12px; z-index:5; text-align:center; pointer-events:none;">
+        <span id="intimacyOverlayHeart" style="display:block; font-size:30px; color:#ff4d88; filter:drop-shadow(0 0 6px rgba(255,77,136,.7)); animation:heartPulse 1s ease-in-out infinite;">❤</span>
+        <span id="intimacyOverlayTimer" style="display:inline-block; margin-top:2px; font-size:13px; font-weight:700; color:#fff; background:rgba(255,77,136,.85); border-radius:12px; padding:2px 8px;">00:00</span>
+      </div>
       <div class="intimacy-figure-area" id="intimacyFigureArea">
         <!-- 心形进度条 -->
         <div class="intimacy-heart-progress">
@@ -632,6 +695,28 @@
       <div class="notes-header"><span class="notes-title">📝 便签留言</span><button class="notes-close" id="notesCloseBtn">✕</button></div>
       <div class="notes-list" id="notesList"></div>
       <div class="notes-input-area"><textarea id="notesInput" placeholder="写点什么..."></textarea><button id="notesSaveBtn">💾 保存</button></div>
+    </div>
+  </div>
+  <div id="giftShopOverlay" class="gift-overlay hidden">
+    <div class="gift-panel">
+      <div class="gift-header">🎁 礼物商城<button class="gift-close" id="giftShopCloseBtn">✕</button></div>
+      <div class="gift-shop-list" id="giftShopList"></div>
+      <div class="gift-shop-add">
+        <input id="giftNewEmoji" placeholder="商品emoji" maxlength="8" style="flex:0 0 88px;">
+        <input id="giftNewName" placeholder="商品名称">
+        <button id="giftAddBtn">添加</button>
+      </div>
+    </div>
+  </div>
+  <div id="giftCabinetOverlay" class="gift-overlay hidden">
+    <div class="gift-panel">
+      <div class="gift-header">🎁 礼物柜<button class="gift-close" id="giftCabinetCloseBtn">✕</button></div>
+      <div class="gift-tabs">
+        <div class="gift-tab active" data-giftcab="mine">我的礼物柜<span id="giftMineCount" style="color:#ff9500;margin-left:4px;"></span></div>
+        <div class="gift-tab" data-giftcab="theirs">对方礼物柜<span id="giftTheirsCount" style="color:#ff9500;margin-left:4px;"></span></div>
+      </div>
+      <div class="gift-cabinet-body" id="giftMineList"></div>
+      <div class="gift-cabinet-body hidden" id="giftTheirsList"></div>
     </div>
   </div>
   <div id="favoritesOverlay" class="fav-overlay hidden">
@@ -1136,6 +1221,7 @@
           momentNextAt: momentNextAt || null,
           noteNextAt: noteNextAt || null,
           transferNextAt: transferNextAt || null,
+          giftNextAt: giftNextAt || null,
           intimacyOtherNextAt: intimacyOtherNextAt || null,
           moments: [],
           intimacy: intimacyRunning ? {
@@ -1298,6 +1384,7 @@
       if (typeof st.momentNextAt === 'number') momentNextAt = st.momentNextAt;
       if (typeof st.noteNextAt === 'number') noteNextAt = st.noteNextAt;
       if (typeof st.transferNextAt === 'number') transferNextAt = st.transferNextAt;
+      if (typeof st.giftNextAt === 'number') giftNextAt = st.giftNextAt;
       // 恢复对方主动亲密互动的下次触发时间（白屏/重启后补偿并继续计时）
       if (typeof st.intimacyOtherNextAt === 'number') intimacyOtherNextAt = st.intimacyOtherNextAt;
     } catch (e) {
@@ -1467,7 +1554,15 @@
       dictEnabled: state.dictEnabled,
       dictProb: state.dictProb,
       dictGroups: state.dictGroups,
-      dictVersion: state.dictVersion
+      dictVersion: state.dictVersion,
+      taCards: state.taCards,
+      taAddEnabled: state.taAddEnabled,
+      taAddProb: state.taAddProb,
+      taUseProb: state.taUseProb,
+      giftShop: state.giftShop,
+      giftCabinet: state.giftCabinet,
+      patGiftProb: state.patGiftProb,
+      ratingThinkSeconds: state.ratingThinkSeconds
     };
     try { localStorage.setItem('wc_ultra_settings', JSON.stringify(s)); } catch (e) { console.warn('保存设置失败', e); }
   }
@@ -1564,6 +1659,60 @@
     { name:'物品+评价+爱意', slots:['item','adv','loveAdj','mood'] }
   ];
 
+  // ==================== 礼物商城：内置 50 个商品（含情趣/计生用品）====================
+  const DEFAULT_GIFT_SHOP = [
+    { id: 1, emoji: '🌹', name: '玫瑰花' },
+    { id: 2, emoji: '💐', name: '鲜花束' },
+    { id: 3, emoji: '🍫', name: '巧克力' },
+    { id: 4, emoji: '🍬', name: '糖果' },
+    { id: 5, emoji: '🎂', name: '蛋糕' },
+    { id: 6, emoji: '🧁', name: '纸杯蛋糕' },
+    { id: 7, emoji: '🥤', name: '奶茶' },
+    { id: 8, emoji: '☕', name: '咖啡' },
+    { id: 9, emoji: '🍓', name: '草莓' },
+    { id: 10, emoji: '🍇', name: '水果篮' },
+    { id: 11, emoji: '🧸', name: '泰迪熊' },
+    { id: 12, emoji: '🐻', name: '毛绒小熊' },
+    { id: 13, emoji: '💝', name: '爱心礼盒' },
+    { id: 14, emoji: '🎁', name: '惊喜礼盒' },
+    { id: 15, emoji: '🎀', name: '蝴蝶结' },
+    { id: 16, emoji: '💍', name: '戒指' },
+    { id: 17, emoji: '💎', name: '钻石' },
+    { id: 18, emoji: '📿', name: '项链' },
+    { id: 19, emoji: '💄', name: '口红' },
+    { id: 20, emoji: '🧴', name: '香水' },
+    { id: 21, emoji: '🧣', name: '围巾' },
+    { id: 22, emoji: '🧤', name: '手套' },
+    { id: 23, emoji: '🧢', name: '帽子' },
+    { id: 24, emoji: '👟', name: '情侣鞋' },
+    { id: 25, emoji: '👜', name: '手提包' },
+    { id: 26, emoji: '🎒', name: '双肩包' },
+    { id: 27, emoji: '⌚', name: '情侣手表' },
+    { id: 28, emoji: '🎧', name: '耳机' },
+    { id: 29, emoji: '📱', name: '手机' },
+    { id: 30, emoji: '📷', name: '拍立得相机' },
+    { id: 31, emoji: '📚', name: '书' },
+    { id: 32, emoji: '✒️', name: '钢笔' },
+    { id: 33, emoji: '🖼️', name: '合照相框' },
+    { id: 34, emoji: '🎈', name: '气球' },
+    { id: 35, emoji: '🎆', name: '烟花' },
+    { id: 36, emoji: '✨', name: '星星灯' },
+    { id: 37, emoji: '🏮', name: '灯笼' },
+    { id: 38, emoji: '🪁', name: '风筝' },
+    { id: 39, emoji: '🧺', name: '野餐篮' },
+    { id: 40, emoji: '🎫', name: '电影票' },
+    { id: 41, emoji: '✈️', name: '机票' },
+    { id: 42, emoji: '🧳', name: '旅行箱' },
+    { id: 43, emoji: '🩴', name: '情侣拖鞋' },
+    { id: 44, emoji: '🛁', name: '泡泡浴套装' },
+    { id: 45, emoji: '🕯️', name: '香薰蜡烛' },
+    { id: 46, emoji: '🍑', name: '蜜桃玩具' },
+    { id: 47, emoji: '🍆', name: '情趣玩具' },
+    { id: 48, emoji: '💦', name: '润滑剂' },
+    { id: 49, emoji: '⛓️', name: '情趣手铐' },
+    { id: 50, emoji: '🫧', name: '安全套' }
+  ];
+
   let state = {
     myName:'我', myAvatarId:'', myAvatar:'', otherName:'对方', otherAvatarId:'', otherAvatar:'',
     wordCards:[], emojis:[], stickers:[], voiceLibrary:[],
@@ -1584,9 +1733,17 @@
     intimacyMode: 0,
     intimacyDuration: 10,
     dictEnabled: true,
-    dictProb: 30,
+    dictProb: 25,
     dictGroups: {},
     dictVersion: 0,
+    taCards: [],
+    taAddEnabled: true,
+    taAddProb: 3,
+    taUseProb: 5,
+    giftShop: [],
+    giftCabinet: { mine: [], theirs: [] },
+    patGiftProb: 4,
+    ratingThinkSeconds: 10,
     patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
@@ -1630,6 +1787,111 @@ window.handleTransferCardClick = function(card, msgId) {
   }
   showTransferActionModal(msg);
 };
+// ==================== 礼物功能 ====================
+let giftNextAt = null;
+function showGiftShopOverlay() { document.getElementById('giftShopOverlay').classList.remove('hidden'); renderGiftShop(); }
+function renderGiftShop() {
+  const list = document.getElementById('giftShopList'); if (!list) return;
+  list.innerHTML = '';
+  state.giftShop.forEach((item, i) => {
+    const row = document.createElement('div'); row.className = 'gift-item';
+    row.innerHTML = `
+      <span class="gift-item-emoji">${item.emoji}</span>
+      <span class="gift-item-name">${escapeHtml(item.name)}</span>
+      <div class="gift-qty"><button class="gq-minus" data-i="${i}">−</button><span class="gq-num" data-i="${i}">1</span><button class="gq-plus" data-i="${i}">+</button></div>
+      <button class="gift-send-btn" data-i="${i}">赠送</button>
+      <button class="gift-edit-btn" data-i="${i}" title="修改">✏️</button>
+      <button class="gift-del-btn" data-i="${i}" title="删除">🗑️</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.gq-plus').forEach(b => b.onclick = () => { const num = list.querySelector('.gq-num[data-i="' + b.dataset.i + '"]'); num.textContent = Math.min(99, (+num.textContent || 1) + 1); });
+  list.querySelectorAll('.gq-minus').forEach(b => b.onclick = () => { const num = list.querySelector('.gq-num[data-i="' + b.dataset.i + '"]'); num.textContent = Math.max(1, (+num.textContent || 1) - 1); });
+  list.querySelectorAll('.gift-send-btn').forEach(b => b.onclick = () => { const i = +b.dataset.i; const num = list.querySelector('.gq-num[data-i="' + i + '"]'); sendGift(i, Math.max(1, +num.textContent || 1)); });
+  list.querySelectorAll('.gift-edit-btn').forEach(b => b.onclick = async () => {
+    const i = +b.dataset.i; const item = state.giftShop[i]; if (!item) return;
+    const newEmoji = await showPrompt('商品emoji', item.emoji);
+    if (newEmoji === null) return;
+    const newName = await showPrompt('商品名称', item.name);
+    if (newName === null) return;
+    if (newEmoji.trim()) item.emoji = newEmoji.trim();
+    if (newName.trim()) item.name = newName.trim();
+    saveAll(); renderGiftShop();
+  });
+  list.querySelectorAll('.gift-del-btn').forEach(b => b.onclick = async () => {
+    const i = +b.dataset.i;
+    if (await confirmDialog('确定删除该商品？')) { state.giftShop.splice(i, 1); saveAll(); renderGiftShop(); }
+  });
+}
+function sendGift(i, count) {
+  const item = state.giftShop[i]; if (!item) return;
+  const giftId = 'gift_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  const payload = JSON.stringify({ emoji: item.emoji, name: item.name, count });
+  addMessage('me', 'gift', payload, null, { giftId, giftStatus: 'sent', giftSender: 'me' });
+  // 用户送给对方的礼物 → 记录到对方礼物柜
+  state.giftCabinet.theirs.unshift({ id: giftId, emoji: item.emoji, name: item.name, count, ts: Date.now(), date: formatDateTime(Date.now()) });
+  saveAll();
+  document.getElementById('giftShopOverlay').classList.add('hidden');
+  emojiPanel.classList.add('hidden');
+}
+function showGiftCabinetOverlay() { document.getElementById('giftCabinetOverlay').classList.remove('hidden'); renderGiftCabinet(); }
+function renderGiftCabinet() {
+  const mineEl = document.getElementById('giftMineList');
+  const theirsEl = document.getElementById('giftTheirsList');
+  if (!mineEl || !theirsEl) return;
+  document.getElementById('giftMineCount').textContent = state.giftCabinet.mine.reduce((a, g) => a + (g.count || 1), 0) + ' 件';
+  document.getElementById('giftTheirsCount').textContent = state.giftCabinet.theirs.reduce((a, g) => a + (g.count || 1), 0) + ' 件';
+  mineEl.innerHTML = '';
+  theirsEl.innerHTML = '';
+  if (!state.giftCabinet.mine.length) mineEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;">还没有收到礼物～</div>';
+  if (!state.giftCabinet.theirs.length) theirsEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;">还没有送出礼物～</div>';
+  state.giftCabinet.mine.forEach(g => {
+    mineEl.innerHTML += `<div class="gift-cabinet-item"><span class="gift-cabinet-emoji">${g.emoji}</span><span class="gift-cabinet-name">${escapeHtml(g.name)} ×${g.count}</span><span class="gift-cabinet-meta">${escapeHtml(g.date || '')}</span></div>`;
+  });
+  state.giftCabinet.theirs.forEach(g => {
+    theirsEl.innerHTML += `<div class="gift-cabinet-item"><span class="gift-cabinet-emoji">${g.emoji}</span><span class="gift-cabinet-name">${escapeHtml(g.name)} ×${g.count}</span><span class="gift-cabinet-meta">${escapeHtml(g.date || '')}</span></div>`;
+  });
+}
+// 对方主动赠送礼物（每小时调度）
+function giftFromOther(fireTs) {
+  if (Math.random() * 100 >= (Number(state.patGiftProb) || 4)) return;
+  if (!state.giftShop.length) return;
+  const item = state.giftShop[Math.floor(Math.random() * state.giftShop.length)];
+  const giftId = 'gift_' + (fireTs || Date.now()) + '_' + Math.random().toString(36).slice(2, 7);
+  const payload = JSON.stringify({ emoji: item.emoji, name: item.name, count: 1 });
+  addMessage('other', 'gift', payload, null, { giftId, giftStatus: 'sealed', giftSender: 'other' }, fireTs || Date.now());
+}
+function startGiftScheduler() { runHourlyAction(() => giftNextAt, v => giftNextAt = v, giftFromOther); }
+// 拆礼物（对方送的未拆礼物）
+window.handleGiftCardClick = function(card, msgId) {
+  const msg = messages.find(m => m.id === msgId);
+  if (!msg) return;
+  if (msg.giftStatus !== 'sealed') return;
+  showOpenGiftAnimation(msg, () => {
+    msg.giftStatus = 'opened';
+    let g = {}; try { g = JSON.parse(msg.content); } catch (e) {}
+    // 拆开后记录到用户礼物柜
+    state.giftCabinet.mine.unshift({ id: msg.giftId || ('gift_' + Date.now()), emoji: g.emoji || '🎁', name: g.name || '礼物', count: g.count || 1, ts: Date.now(), date: formatDateTime(Date.now()) });
+    saveAll();
+    renderMessages(true);
+    saveMessagesOnly();
+    startEmojiRain(['🎁', '🎉', '💝'], 5);
+  });
+};
+function showOpenGiftAnimation(msg, done) {
+  const overlay = document.createElement('div');
+  overlay.className = 'gift-open-overlay';
+  overlay.innerHTML = `<div class="gift-open-box"><div class="gift-open-emoji">🎁</div><div class="gift-open-text">点击拆开礼物</div></div>`;
+  document.body.appendChild(overlay);
+  overlay.onclick = () => {
+    overlay.querySelector('.gift-open-box').classList.add('opening');
+    overlay.querySelector('.gift-open-text').textContent = '拆开中...';
+    setTimeout(() => {
+      let g = {}; try { g = JSON.parse(msg.content); } catch (e) {}
+      overlay.innerHTML = `<div class="gift-open-box opened"><div class="gift-open-emoji">${g.emoji || '🎁'}</div><div class="gift-open-name">${escapeHtml(g.name || '礼物')} ×${g.count || 1}</div></div>`;
+      setTimeout(() => { overlay.remove(); done && done(); }, 900);
+    }, 600);
+  };
+}
   let nextId = 0, lastMsgTime = null;
   let replyTimer = null, pendingReplies = [], queueActive = false, queuedBatches = [];
   let batchMessages = [];
@@ -1637,6 +1899,7 @@ window.handleTransferCardClick = function(card, msgId) {
   let audioCtx = null, allSelected = false, pendingQuoteId = null;
   let emojiManageMode = false, stickerManageMode = false;
   let emojiSelected = new Set(), stickerSelected = new Set();
+  let tacardsAllSelected = false;
   let voiceManageMode = false, voiceSelected = new Set();
   let currentAudio = null;
   let currentAudioCtx = null;
@@ -1938,6 +2201,8 @@ window.handleTransferCardClick = function(card, msgId) {
     else if (type === 'emoji') body = content; 
     else if (type === 'image' || type === 'sticker') body = '[图片]'; 
     else if (type === 'transfer') body = `转账 ¥${parseFloat(content).toFixed(2)}`; 
+    else if (type === 'gift') { try { const g = JSON.parse(content); body = `赠送了一个礼物 ${g.emoji || ''}${g.name || ''}`; } catch(e) { body = '赠送了一个礼物 🎁'; } }
+    else if (type === 'rating') { try { const rd = JSON.parse(content); body = `评价：${'⭐'.repeat(Math.max(0,Math.min(5,rd.stars||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,rd.stars||0)))}`; } catch(e) { body = '做出了评价 ⭐'; } } 
     else if (type === 'voice') body = '[语音]'; 
     else body = '[消息]'; 
     showNotification(state.otherName, body, state.otherAvatar); 
@@ -2100,6 +2365,14 @@ window.handleTransferCardClick = function(card, msgId) {
         state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.lastNoteTime !== undefined) state.lastNoteTime = s.lastNoteTime;
+        if (s.taAddEnabled !== undefined) state.taAddEnabled = s.taAddEnabled;
+        if (s.taAddProb !== undefined) state.taAddProb = s.taAddProb;
+        if (s.taUseProb !== undefined) state.taUseProb = s.taUseProb;
+        if (s.patGiftProb !== undefined) state.patGiftProb = s.patGiftProb;
+        if (s.ratingThinkSeconds !== undefined) state.ratingThinkSeconds = s.ratingThinkSeconds;
+        if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
+        if (s.dictProb !== undefined) state.dictProb = s.dictProb;
+        if (s.dictVersion !== undefined) state.dictVersion = s.dictVersion;
       } else {
         if (s.myName) state.myName = s.myName; if (s.otherName) state.otherName = s.otherName;
         if (s.myAvatarId) state.myAvatarId = s.myAvatarId; if (s.otherAvatarId) state.otherAvatarId = s.otherAvatarId;
@@ -2130,6 +2403,11 @@ window.handleTransferCardClick = function(card, msgId) {
         if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
         if (s.dictProb !== undefined) state.dictProb = s.dictProb;
         if (s.dictVersion !== undefined) state.dictVersion = s.dictVersion;
+        if (s.taAddEnabled !== undefined) state.taAddEnabled = s.taAddEnabled;
+        if (s.taAddProb !== undefined) state.taAddProb = s.taAddProb;
+        if (s.taUseProb !== undefined) state.taUseProb = s.taUseProb;
+        if (s.patGiftProb !== undefined) state.patGiftProb = s.patGiftProb;
+        if (s.ratingThinkSeconds !== undefined) state.ratingThinkSeconds = s.ratingThinkSeconds;
         if (s.dictGroups && typeof s.dictGroups === 'object' && !Array.isArray(s.dictGroups)) {
           Object.keys(s.dictGroups).forEach(k => {
             const v = s.dictGroups[k];
@@ -2169,6 +2447,13 @@ window.handleTransferCardClick = function(card, msgId) {
       if (mode === 'overwrite') state.dictVersion = DICT_VERSION;
     }
     if (sections.wordCards) state.wordCards = mode === 'overwrite' ? sections.wordCards : [...new Set([...state.wordCards, ...sections.wordCards])];
+    if (sections.taCards) state.taCards = mode === 'overwrite' ? sections.taCards : [...new Set([...state.taCards, ...sections.taCards])];
+    if (sections.gifts && sections.gifts.shop) state.giftShop = mode === 'overwrite' ? sections.gifts.shop : [...state.giftShop, ...sections.gifts.shop];
+    if (sections.gifts && sections.gifts.cabinet) {
+      const c = sections.gifts.cabinet;
+      if (mode === 'overwrite') state.giftCabinet = { mine: c.mine || [], theirs: c.theirs || [] };
+      else { state.giftCabinet.mine = [...(c.mine || []), ...state.giftCabinet.mine]; state.giftCabinet.theirs = [...(c.theirs || []), ...state.giftCabinet.theirs]; }
+    }
     if (sections.emojis) state.emojis = mode === 'overwrite' ? sections.emojis : [...new Set([...state.emojis, ...sections.emojis])];
     if (sections.stickers) {
       const newStickers = sections.stickers;
@@ -2317,10 +2602,20 @@ window.handleTransferCardClick = function(card, msgId) {
     if (state.intimacyDuration === undefined) state.intimacyDuration = 10;
     // 词典拼句字段默认值
     if (state.dictEnabled === undefined) state.dictEnabled = true;
-    if (state.dictProb === undefined) state.dictProb = 30;
+    if (state.dictProb === undefined) state.dictProb = 25;
     if (!state.dictGroups || typeof state.dictGroups !== 'object' || Array.isArray(state.dictGroups)) state.dictGroups = {};
-    if (state.dictVersion !== DICT_VERSION) {
-      // 版本升级：把新增的内置词语并入现有分组（用户自己添加的词不会丢）
+    // ta添加的字卡 默认值
+    if (!Array.isArray(state.taCards)) state.taCards = [];
+    if (state.taAddEnabled === undefined) state.taAddEnabled = true;
+    if (state.taAddProb === undefined) state.taAddProb = 3;
+    if (state.taUseProb === undefined) state.taUseProb = 5;
+    // 礼物 默认值
+    if (!Array.isArray(state.giftShop)) state.giftShop = [];
+    if (!state.giftShop.length) state.giftShop = DEFAULT_GIFT_SHOP.slice();
+    if (!state.giftCabinet || !Array.isArray(state.giftCabinet.mine)) state.giftCabinet = { mine: [], theirs: [] };
+    if (state.patGiftProb === undefined) state.patGiftProb = 4;
+    if (state.ratingThinkSeconds === undefined) state.ratingThinkSeconds = 10;
+    if (state.dictVersion !== DICT_VERSION) {      // 版本升级：把新增的内置词语并入现有分组（用户自己添加的词不会丢）
       DICT_GROUPS_META.forEach(m => {
         const cur = Array.isArray(state.dictGroups[m.key]) ? state.dictGroups[m.key] : [];
         state.dictGroups[m.key] = [...new Set([...cur, ...m.words])];
@@ -2456,7 +2751,11 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('autoMax').value = state.autoMax;
     document.getElementById('intimacyToggle').checked = state.intimacyEnabled;
     document.getElementById('dictToggle').checked = state.dictEnabled !== false;
-    document.getElementById('dictProb').value = state.dictProb === undefined ? 30 : state.dictProb;
+    document.getElementById('dictProb').value = state.dictProb === undefined ? 25 : state.dictProb;
+    document.getElementById('taAddToggle').checked = state.taAddEnabled !== false;
+    document.getElementById('taAddProb').value = state.taAddProb === undefined ? 3 : state.taAddProb;
+    document.getElementById('taUseProb').value = state.taUseProb === undefined ? 5 : state.taUseProb;
+    document.getElementById('patGiftProb').value = state.patGiftProb === undefined ? 4 : state.patGiftProb;
     document.getElementById('probCount1').value = state.probCount[0];
     document.getElementById('probCount2').value = state.probCount[1];
     document.getElementById('probCount3').value = state.probCount[2];
@@ -2468,6 +2767,7 @@ window.handleTransferCardClick = function(card, msgId) {
     document.getElementById('momentsBadge').classList.toggle('hidden', !state.momentsUnread);
     updateWordcardUI();
     updateDictUI();
+    updateTaCardUI();
     renderMessages(true);
     renderVoiceLibraryUI();
     renderNotesList(false);
@@ -2475,6 +2775,24 @@ window.handleTransferCardClick = function(card, msgId) {
   }
 
   function updateWordcardUI() { document.getElementById('wordcardCount').textContent = state.wordCards.length; renderWordcardList(); }
+
+  // ==================== ta添加的字卡：设置页管理 ====================
+  function taCardCurFilter() { const el = document.getElementById('taCardSearch'); return el ? el.value : ''; }
+  function updateTaCardUI() { const el = document.getElementById('taCardCount'); if (el) el.textContent = state.taCards.length; renderTaCardList(taCardCurFilter()); }
+  function renderTaCardList(filter = '') {
+    const list = document.getElementById('taCardList');
+    if (!list) return;
+    const f = String(filter || '').toLowerCase();
+    list.innerHTML = '';
+    state.taCards.forEach((c, i) => {
+      if (f && !String(c).toLowerCase().includes(f)) return;
+      const d = document.createElement('div'); d.className = 'wordcard-item';
+      d.innerHTML = `<div class="wordcard-left"><input type="checkbox" class="tacard-checkbox" value="${i}"><span class="wordcard-text">${escapeHtml(c)}</span></div><div class="wordcard-actions"><button data-i="${i}" class="edit-tacard">✏️</button><button data-i="${i}" class="del-tacard">🗑️</button></div>`;
+      list.appendChild(d);
+    });
+    document.querySelectorAll('.edit-tacard').forEach(b => b.onclick = async e => { const i = e.target.dataset.i; const newVal = await showPrompt('编辑字卡', state.taCards[i]); if (newVal !== null) { state.taCards[i] = newVal.trim(); updateTaCardUI(); saveAll(); } });
+    document.querySelectorAll('.del-tacard').forEach(b => b.onclick = e => { state.taCards.splice(e.target.dataset.i, 1); updateTaCardUI(); saveAll(); });
+  }
 
   // ==================== 词典拼句：设置页管理 ====================
   const dictSelected = new Set();   // "groupKey:index"
@@ -3350,6 +3668,25 @@ if (canInteract && (!m.status || m.status === '待收款')) {
 }
       html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="transfer-card" ${clickAttr}><div class="transfer-label">转账红包</div><div class="transfer-amount">¥ ${parseFloat(m.content).toFixed(2)}</div><div class="transfer-status">${displayStatus}</div></div>${quoteHtml}</div></div>`;
       continue;
+    } else if (m.type === 'gift') {
+      let g = {};
+      try { g = JSON.parse(m.content); } catch(e) {}
+      const isSealed = m.giftStatus === 'sealed';
+      const statusText = m.giftStatus === 'opened' ? '✅ 已拆开' : m.giftStatus === 'sent' ? '🎁 已送出' : '🎁 待拆开 · 点击拆礼物';
+      const emoji = isSealed ? '🎁' : (g.emoji || '🎁');
+      const name = isSealed ? 'a gift' : (g.name || '礼物');
+      const countText = (isSealed || !g.count) ? '' : `×${g.count}`;
+      const clickAttr = isSealed ? `onclick="window.handleGiftCardClick(this, ${m.id})" style="cursor:pointer;"` : 'style="cursor:default;"';
+      const fromCls = m.giftSender === 'me' ? ' gift-from-me' : '';
+      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div data-gift-msg-id="${m.id}" class="gift-card${fromCls}${isSealed ? ' sealed' : ''}" ${clickAttr}><div class="gift-card-emoji">${emoji}</div><div class="gift-card-name">${escapeHtml(name)}</div><div class="gift-card-count">${countText}</div><div class="gift-card-status">${isSealed ? '点击拆开 🎁' : statusText}</div></div>${quoteHtml}</div></div>`;
+      continue;
+    } else if (m.type === 'rating') {
+      let rd = {};
+      try { rd = JSON.parse(m.content); } catch(e) {}
+      const stars = Math.max(0, Math.min(5, rd.stars || 0));
+      const starStr = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
+      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="rating-card"><div class="rating-question">${escapeHtml(rd.question || '')}</div><div class="rating-stars">${starStr}</div></div>${quoteHtml}</div></div>`;
+      continue;
     }
     
     // 普通消息行
@@ -3359,7 +3696,7 @@ if (m.type === 'image' || m.type === 'sticker') {
 } 
 // 文字、Emoji、骰子、语音等其他类型：保留气泡
 else if (m.type !== 'transfer') {
-  html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="message-bubble ${m.type === 'emoji' ? 'bubble-emoji' : ''}${m.isDict ? ' dict-msg' : ''}">${bubbleContent}</div>${quoteHtml}</div></div>`;
+  html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="message-bubble ${m.type === 'emoji' ? 'bubble-emoji' : ''}${m.isDict ? ' dict-msg' : ''}${m.isTaCard ? ' ta-msg' : ''}">${bubbleContent}</div>${quoteHtml}</div></div>`;
     }
   }
   
@@ -3496,6 +3833,19 @@ else if (m.type !== 'transfer') {
         }
       } catch (e) { console.warn('收藏失败', e); }
     }
+    // ===== ta主动添加字卡：用户消息 / 对方词典拼句消息 有概率被对方收藏进 ta添加的字卡 =====
+    if (state.taAddEnabled !== false) {
+      const taProb = Math.max(0, Math.min(100, Number(state.taAddProb) || 3));
+      const eligible = (sender === 'me' && type === 'text') || (sender === 'other' && type === 'text' && extra.isDict);
+      if (eligible && Math.random() * 100 < taProb) {
+        const t = String(finalContent).trim();
+        if (t && !state.taCards.includes(t)) {
+          state.taCards.push(t);
+          updateTaCardUI();
+          try { saveAll(); } catch (e) {}
+        }
+      }
+    }
     if (sender === 'other') { 
       playSound(state.soundIndex); 
       if (document.hidden) { 
@@ -3520,7 +3870,7 @@ else if (m.type !== 'transfer') {
     }
   } else {
     // 非转账消息，正常触发回复
-    if (sender === 'me' && !extra.isChoice) {
+    if (sender === 'me' && !extra.isChoice && !extra.isRating) {
       triggerOtherReply();
     }
   }
@@ -3535,6 +3885,51 @@ else if (m.type !== 'transfer') {
     const n = 1 + Math.floor(Math.random() * 2); // 随机 1 或 2 条
     const chosen = shuffled.slice(0, Math.min(n, cards.length));
     return '自定义回答：' + chosen.join('、');
+  }
+  // ==================== 评价功能 ====================
+  function showRatingModal() {
+    const existing = document.querySelector('.rating-modal');
+    if (existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'picker-overlay choice-modal rating-modal';
+    overlay.style.zIndex = 902;
+    overlay.innerHTML = `
+      <div class="modal-content">
+        <button class="close-x">✕</button>
+        <h3 style="margin-bottom: 16px; text-align: center;">⭐ 评价</h3>
+        <textarea id="ratingQuestion" rows="3" placeholder="想请对方评价什么？（例如：我今天的表现怎么样？）" style="width:100%; margin-bottom:12px;"></textarea>
+        <div class="think-time-row">
+          <span>⏱️ 给 ${state.otherName} 的思考时间（秒）</span>
+          <input type="number" id="ratingThinkSeconds" min="1" max="300" value="${state.ratingThinkSeconds || 10}" step="1">
+          <button class="save-default-btn" id="saveDefaultRatingSeconds">💾 保存默认</button>
+        </div>
+        <button class="action-btn" id="submitRatingBtn">让 ${state.otherName} 评价</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.close-x').onclick = () => overlay.remove();
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    overlay.querySelector('#saveDefaultRatingSeconds').onclick = () => {
+      const val = parseInt(document.getElementById('ratingThinkSeconds').value, 10);
+      if (!isNaN(val) && val >= 1) { state.ratingThinkSeconds = val; saveAll(); showAlert('已保存默认思考时间'); }
+    };
+    overlay.querySelector('#submitRatingBtn').onclick = async () => {
+      const question = document.getElementById('ratingQuestion').value.trim();
+      if (!question) { showAlert('请先输入问题'); return; }
+      let thinkSec = parseInt(document.getElementById('ratingThinkSeconds').value, 10);
+      if (isNaN(thinkSec) || thinkSec < 1) thinkSec = state.ratingThinkSeconds || 10;
+      addMessage('me', 'text', question, null, { isRating: true });
+      overlay.remove();
+      emojiPanel.classList.add('hidden');
+      if (window.ratingReplyTimer) clearTimeout(window.ratingReplyTimer);
+      if (replyTimer) { clearTimeout(replyTimer); replyTimer = null; }
+      typingInd.textContent = `${state.otherName} 正在评价...`;
+      window.ratingReplyTimer = setTimeout(async () => {
+        typingInd.textContent = '';
+        const stars = Math.floor(Math.random() * 6); // 0~5 星随机
+        await addMessage('other', 'rating', JSON.stringify({ question, stars }), null, { isRatingReply: true });
+        if (document.hidden) showNotification(state.otherName, `评价了你的问题（${stars}星）`, state.otherAvatar);
+      }, thinkSec * 1000);
+    };
   }
   function showChoiceModal() {
     const existing = document.querySelector('.choice-modal');
@@ -3753,16 +4148,32 @@ function startEmojiRain(emojis, duration = 5) {
   }
   
   // 生成单条对方回复（聊天回复与视频通话实时回复共用）
+  // 对方文字消息来源：ta添加的字卡 / 词典拼句 / 字卡库 三通道概率（默认 5% / 25% / 70%）
+  function buildTextFromLibrary() {
+    const taOn = state.taAddEnabled !== false && state.taCards.length > 0;
+    const dictOn = state.dictEnabled !== false;
+    const taP = taOn ? Math.max(0, Math.min(100, Number(state.taUseProb) || 0)) : 0;
+    const dictP = dictOn ? Math.max(0, Math.min(100, Number(state.dictProb) || 0)) : 0;
+    const r = Math.random() * 100;
+    if (taP > 0 && r < taP) {
+      return { content: state.taCards[Math.floor(Math.random() * state.taCards.length)], isTaCard: true };
+    }
+    if (dictP > 0 && r >= taP && r < taP + dictP) {
+      const sent = buildDictSentence();
+      if (sent) return { content: sent, isDict: true };
+    }
+    if (state.wordCards.length) return { content: state.wordCards[Math.floor(Math.random() * state.wordCards.length)] };
+    if (state.taCards.length) return { content: state.taCards[Math.floor(Math.random() * state.taCards.length)], isTaCard: true };
+    return { content: '嗯' };
+  }
   function buildOneReply() {
     const type = selectType();
     let content, msgType, extra = {};
     if (type === 'word') {
-      const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0));
-      const useDict = state.dictEnabled !== false && (state.wordCards.length === 0 || (p > 0 && Math.random() * 100 < p));
-      const sent = useDict ? buildDictSentence() : '';
-      if (sent) { content = sent; msgType = 'text'; extra.isDict = true; }
-      else if (state.wordCards.length) { content = state.wordCards[Math.floor(Math.random() * state.wordCards.length)]; msgType = 'text'; }
-      else { content = '嗯'; msgType = 'text'; }
+      const r = buildTextFromLibrary();
+      content = r.content; msgType = 'text';
+      if (r.isDict) extra.isDict = true;
+      if (r.isTaCard) extra.isTaCard = true;
     } else if (type === 'sticker' && state.stickers.length) {
       const s = state.stickers[Math.floor(Math.random() * state.stickers.length)];
       content = s.dataURL; msgType = 'sticker';
@@ -3809,16 +4220,7 @@ function startEmojiRain(emojis, duration = 5) {
     return parts.length >= 2 ? parts.join(' ') : '';
   }
   function getWordOrDict() {
-    const p = Math.max(0, Math.min(100, Number(state.dictProb) || 0));
-    const useDict = state.dictEnabled !== false && (state.wordCards.length === 0 || (p > 0 && Math.random() * 100 < p));
-    if (useDict) {
-      const sent = buildDictSentence();
-      if (sent) return sent;
-    }
-    if (state.wordCards.length) {
-      return state.wordCards[Math.floor(Math.random() * state.wordCards.length)];
-    }
-    return '嗯';
+    return buildTextFromLibrary().content;
   }
   function startQueue(reps) { if (queueActive) { queuedBatches.push(reps); return; } pendingReplies = reps; processQueue(); }
   function processQueue() {
@@ -4348,20 +4750,25 @@ async function handleTransferAction(msg, action) {
     else if (tab === 'dice') html = `
       <div class="dice-panel-btn" id="rollDiceBtn">🎲 摇骰子</div>
       <div class="dice-panel-btn" id="choiceDecisionBtn">🔮 帮我抉择</div>
+      <div class="dice-panel-btn" id="ratingBtn">⭐ 评价</div>
     `;
     else if (tab === 'photo') html = '<div class="photo-upload-btn"><label>📷 选择照片<input type="file" id="panelPhotoInput" accept="image/*" style="display:none;"></label></div>';
     else if (tab === 'transfer') html = '<div style="padding:20px; text-align:center;">点击下方按钮输入金额</div><button id="openTransferBtn" style="background:#07c160; color:white; border:none; padding:12px; border-radius:8px; width:100%;">💸 发起转账</button>';
+    else if (tab === 'gift') html = '<div style="padding:16px; display:flex; gap:12px;"><button id="openGiftShopBtn" style="flex:1; background:#ff9500; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; cursor:pointer;">🎁 送礼物</button><button id="openGiftCabinetBtn" style="flex:1; background:#8e44ad; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; cursor:pointer;">🎁 礼物柜</button></div>';
     panelContent.innerHTML = html;
     if (tab === 'dice') {
       const rollBtn = document.getElementById('rollDiceBtn');
       if (rollBtn) rollBtn.onclick = () => { emojiPanel.classList.add('hidden'); rollDiceAnimate(); };
       const choiceBtn = document.getElementById('choiceDecisionBtn');
       if (choiceBtn) choiceBtn.onclick = () => { showChoiceModal(); };
+      const ratingBtnEl = document.getElementById('ratingBtn');
+      if (ratingBtnEl) ratingBtnEl.onclick = () => { showRatingModal(); };
     }
     if (tab === 'emoji' && !emojiManageMode) { document.querySelectorAll('.emoji-item').forEach(el => el.onclick = () => { addMessage('me','emoji', el.textContent.trim(), pendingQuoteId); emojiPanel.classList.add('hidden'); pendingQuoteId=null; quotePreviewBar.classList.add('hidden'); triggerOtherReply(); }); const addBtn = document.getElementById('addEmojiBtn'); if (addBtn) addBtn.onclick = async () => { const e = await showPrompt('Emoji'); if(e) { state.emojis.push(e); renderPanel('emoji'); saveAll(); } }; }
     if (tab === 'sticker' && !stickerManageMode) { document.querySelectorAll('.sticker-item').forEach(el => el.onclick = async () => { const img = el.querySelector('img'); const dataURL = img.src; const s = state.stickers.find(s => s.dataURL === dataURL); if (s) await addMessage('me','sticker', s.dataURL, pendingQuoteId); else await addMessage('me','sticker', dataURL, pendingQuoteId); emojiPanel.classList.add('hidden'); pendingQuoteId=null; quotePreviewBar.classList.add('hidden'); triggerOtherReply(); }); const uploadInput = document.getElementById('stickerUploadInput'); if (uploadInput) uploadInput.onchange = async e => { for (let f of e.target.files) { const u = await compressImage(f, 140, 1.0, 'image/png'); const newId = Date.now() + Math.random(); state.stickers.push({ id: newId, dataURL: u }); await saveImageToDB(`sticker_${newId}`, u); } renderPanel('sticker'); await saveAll(); }; }
     if (tab === 'photo') { document.getElementById('panelPhotoInput').onchange = e => { const f = e.target.files[0]; if(f) { compressImage(f, 600, 0.9).then(async u => { const fullImg = await compressImage(f, 1200, 0.95); await addMessage('me','image', u, pendingQuoteId, { fullImage: fullImg }); emojiPanel.classList.add('hidden'); pendingQuoteId=null; quotePreviewBar.classList.add('hidden'); triggerOtherReply(); }); } }; }
     if (tab === 'transfer') document.getElementById('openTransferBtn').onclick = () => { transferInputOverlay.classList.remove('hidden'); emojiPanel.classList.add('hidden'); };
+    else if (tab === 'gift') { const gsBtn = document.getElementById('openGiftShopBtn'); if (gsBtn) gsBtn.onclick = () => { emojiPanel.classList.add('hidden'); showGiftShopOverlay(); }; const gcBtn = document.getElementById('openGiftCabinetBtn'); if (gcBtn) gcBtn.onclick = () => { emojiPanel.classList.add('hidden'); showGiftCabinetOverlay(); }; }
     bindManageEvents();
   }
 
@@ -4431,7 +4838,9 @@ async function handleTransferAction(msg, action) {
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         lastNoteTime: state.lastNoteTime,
         patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb,
-        dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion
+        dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion,
+        taAddEnabled: state.taAddEnabled, taAddProb: state.taAddProb, taUseProb: state.taUseProb,
+        patGiftProb: state.patGiftProb, ratingThinkSeconds: state.ratingThinkSeconds
       };
     }
     if (sections.includes('intimacy')) {
@@ -4446,6 +4855,8 @@ async function handleTransferAction(msg, action) {
     }
     if (sections.includes('wordCards')) data.sections.wordCards = state.wordCards;
     if (sections.includes('dictGroups')) data.sections.dictGroups = state.dictGroups;
+    if (sections.includes('taCards')) data.sections.taCards = state.taCards;
+    if (sections.includes('gifts')) data.sections.gifts = { shop: state.giftShop, cabinet: state.giftCabinet };
     if (sections.includes('emojis')) data.sections.emojis = state.emojis;
     if (sections.includes('stickers')) data.sections.stickers = state.stickers.map(s => ({ id: s.id, dataURL: s.dataURL }));
     if (sections.includes('voiceLibrary')) data.sections.voiceLibrary = state.voiceLibrary;
@@ -4588,16 +4999,21 @@ async function handleTransferAction(msg, action) {
   };
 
   function startIntimacyCountdown() {
-    const el = document.getElementById('intimacyTimer');
-    if (!el) return;
+    const setEl = (el) => {
+      if (!el) return;
+      if (!intimacyStartAt || !intimacyDurationMs) { el.textContent = ''; return; }
+      el.textContent = fmtCountdown(intimacyStartAt + intimacyDurationMs - Date.now());
+    };
+    setEl(document.getElementById('intimacyTimer'));
+    setEl(document.getElementById('intimacyOverlayTimer'));
     stopIntimacyCountdown();
-    if (!intimacyStartAt || !intimacyDurationMs) { el.textContent = ''; return; }
-    el.textContent = fmtCountdown(intimacyStartAt + intimacyDurationMs - Date.now());
+    if (!intimacyStartAt || !intimacyDurationMs) return;
     intimacyCountdownTimer = setInterval(() => {
-      if (!intimacyStartAt || !intimacyDurationMs) { el.textContent = ''; stopIntimacyCountdown(); return; }
+      if (!intimacyStartAt || !intimacyDurationMs) { setEl(document.getElementById('intimacyTimer')); setEl(document.getElementById('intimacyOverlayTimer')); stopIntimacyCountdown(); return; }
       const remain = intimacyStartAt + intimacyDurationMs - Date.now();
-      if (remain <= 0) { el.textContent = '00:00'; stopIntimacyCountdown(); return; }
-      el.textContent = fmtCountdown(remain);
+      if (remain <= 0) { setEl(document.getElementById('intimacyTimer')); setEl(document.getElementById('intimacyOverlayTimer')); stopIntimacyCountdown(); return; }
+      setEl(document.getElementById('intimacyTimer'));
+      setEl(document.getElementById('intimacyOverlayTimer'));
     }, 1000);
   }
   function stopIntimacyCountdown() {
@@ -4614,20 +5030,25 @@ async function handleTransferAction(msg, action) {
   function setIntimacyHeart(show, rate = 0) {
     const wrap = document.getElementById('intimacyHeartWrap');
     const heart = document.getElementById('intimacyHeart');
-    if (!wrap || !heart) return;
-    if (show) {
-      wrap.classList.remove('hidden');
-      heart.className = HEART_RATES[rate] || 'rate-slow';
-      startIntimacyCountdown();
-    } else {
-      wrap.classList.add('hidden');
-      stopIntimacyCountdown();
+    if (wrap && heart) {
+      if (show) { wrap.classList.remove('hidden'); heart.className = HEART_RATES[rate] || 'rate-slow'; }
+      else wrap.classList.add('hidden');
     }
+    const owrap = document.getElementById('intimacyOverlayHeartWrap');
+    const oheart = document.getElementById('intimacyOverlayHeart');
+    if (owrap && oheart) {
+      if (show) { owrap.classList.remove('hidden'); oheart.className = HEART_RATES[rate] || 'rate-slow'; }
+      else owrap.classList.add('hidden');
+    }
+    if (show) startIntimacyCountdown();
+    else stopIntimacyCountdown();
   }
 
   function addIntimacyTapMessage(text) {
     // addTapMessage 内部在后台时已发过通知，这里不再重复发（否则亲密互动每次弹两条）
     addTapMessage(text, 'other');
+    // 互动小字以弹屏形式在页面中间再显示一次，3秒后消失（层级高于所有页面）
+    showIntimacyFloatingText(text);
   }
 
   function startIntimacy() {
@@ -5132,10 +5553,11 @@ async function handleTransferAction(msg, action) {
     await restoreRuntimeState();
     // 恢复亲密互动状态
     await restoreIntimacyState();
-    // 启动朋友圈/便签/转账主动触发调度器（支持白屏恢复补随机）
+    // 启动朋友圈/便签/转账/礼物 主动触发调度器（支持白屏恢复补随机）
     startMomentScheduler();
     startNoteScheduler();
     startTransferScheduler();
+    startGiftScheduler();
     // 启动时检查 10 小时兜底便签
     checkIdleNote();
     notesBtn.onclick = async () => {
@@ -5164,7 +5586,7 @@ async function handleTransferAction(msg, action) {
     };
     searchInput.oninput = doSearch;
     document.getElementById('headerSettingsBtn').onclick = () => { updateUI(); document.getElementById('settingsOverlay').classList.remove('hidden'); };
-    document.querySelectorAll('.settings-tab').forEach(t => t.onclick = () => { document.querySelectorAll('.settings-tab').forEach(tb => tb.classList.remove('active')); t.classList.add('active'); ['settingsGeneral','settingsWordcard','settingsDict','settingsVoice','settingsSearch','settingsBg'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('settings' + t.dataset.stab.charAt(0).toUpperCase() + t.dataset.stab.slice(1)).classList.remove('hidden'); if (t.dataset.stab === 'dict') renderDictUI(dictCurFilter()); });
+    document.querySelectorAll('.settings-tab').forEach(t => t.onclick = () => { document.querySelectorAll('.settings-tab').forEach(tb => tb.classList.remove('active')); t.classList.add('active'); ['settingsGeneral','settingsWordcard','settingsDict','settingsTacards','settingsVoice','settingsSearch','settingsBg'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('settings' + t.dataset.stab.charAt(0).toUpperCase() + t.dataset.stab.slice(1)).classList.remove('hidden'); if (t.dataset.stab === 'dict') renderDictUI(dictCurFilter()); if (t.dataset.stab === 'tacards') renderTaCardList(taCardCurFilter()); });
     bindDictUI();
     document.getElementById('myAvatarUpload').onchange = async e => { const f = e.target.files[0]; if (f) { const u = await compressImage(f, 200, 0.8); const newId = `avatar_me_${Date.now()}`; await saveImageToDB(newId, u); state.myAvatarId = newId; state.myAvatar = u; document.getElementById('myAvatarPreview').src = u; saveAll(); } };
     document.getElementById('otherAvatarUpload').onchange = async e => { const f = e.target.files[0]; if (f) { const u = await compressImage(f, 200, 0.8); const newId = `avatar_other_${Date.now()}`; await saveImageToDB(newId, u); state.otherAvatarId = newId; state.otherAvatar = u; document.getElementById('otherAvatarPreview').src = u; saveAll(); } };
@@ -5203,6 +5625,10 @@ async function handleTransferAction(msg, action) {
       state.intimacyEnabled = document.getElementById('intimacyToggle').checked;
       state.dictEnabled = document.getElementById('dictToggle').checked;
       state.dictProb = Math.max(0, Math.min(100, +document.getElementById('dictProb').value || 0)); 
+      state.taAddEnabled = document.getElementById('taAddToggle').checked;
+      state.taAddProb = Math.max(0, Math.min(100, +document.getElementById('taAddProb').value || 0)); 
+      state.taUseProb = Math.max(0, Math.min(100, +document.getElementById('taUseProb').value || 0)); 
+      state.patGiftProb = Math.max(0, Math.min(100, +document.getElementById('patGiftProb').value || 0)); 
       state.probCount = [+document.getElementById('probCount1').value, +document.getElementById('probCount2').value, +document.getElementById('probCount3').value, +document.getElementById('probCount4').value, +document.getElementById('probCount5').value]; 
       state.patTapProb = Math.max(0, Math.min(100, +document.getElementById('patTapProb').value || 0)); 
       state.patLetterProb = Math.max(0, Math.min(100, +document.getElementById('patLetterProb').value || 0)); 
@@ -5242,9 +5668,33 @@ async function handleTransferAction(msg, action) {
       showNotification(state.otherName, '这是一条测试通知，通知功能正常！', state.otherAvatar);
     };
     document.getElementById('closeSettingsWordcard').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
+    document.getElementById('closeSettingsTacards').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
+    document.getElementById('taCardSearch').oninput = e => renderTaCardList(e.target.value);
+    document.getElementById('selectAllTacards').onclick = () => { tacardsAllSelected = !tacardsAllSelected; document.querySelectorAll('.tacard-checkbox').forEach(cb => cb.checked = tacardsAllSelected); };
+    document.getElementById('batchDeleteTacards').onclick = async () => { const checks = [...document.querySelectorAll('.tacard-checkbox:checked')].map(c => +c.value).sort((a,b) => b - a); checks.forEach(i => state.taCards.splice(i, 1)); updateTaCardUI(); await saveAll(); };
+    document.getElementById('dedupeTacards').onclick = async () => { const old = state.taCards.length; state.taCards = [...new Set(state.taCards)]; if (old === state.taCards.length) showAlert('无重复'); else { showAlert(`已删除${old - state.taCards.length}条`); updateTaCardUI(); await saveAll(); } };
     document.getElementById('closeSettingsVoice').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsSearch').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsBg').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
+    document.getElementById('giftShopCloseBtn').onclick = () => document.getElementById('giftShopOverlay').classList.add('hidden');
+    document.getElementById('giftCabinetCloseBtn').onclick = () => document.getElementById('giftCabinetOverlay').classList.add('hidden');
+    document.getElementById('giftAddBtn').onclick = async () => {
+      const emoji = document.getElementById('giftNewEmoji').value.trim();
+      const name = document.getElementById('giftNewName').value.trim();
+      if (!emoji || !name) { showAlert('请填写商品emoji和名称'); return; }
+      state.giftShop.push({ id: Date.now() + Math.random(), emoji, name });
+      document.getElementById('giftNewEmoji').value = '';
+      document.getElementById('giftNewName').value = '';
+      saveAll();
+      renderGiftShop();
+    };
+    document.querySelectorAll('.gift-tab').forEach(t => t.onclick = () => {
+      document.querySelectorAll('.gift-tab').forEach(tb => tb.classList.remove('active'));
+      t.classList.add('active');
+      const which = t.dataset.giftcab;
+      document.getElementById('giftMineList').classList.toggle('hidden', which !== 'mine');
+      document.getElementById('giftTheirsList').classList.toggle('hidden', which !== 'theirs');
+    });
     document.getElementById('wordcardSearch').oninput = e => renderWordcardList(e.target.value);
     document.getElementById('selectAllWordcards').onclick = () => { allSelected = !allSelected; document.querySelectorAll('.wordcard-checkbox').forEach(cb => cb.checked = allSelected); };
     document.getElementById('batchDeleteWordcards').onclick = async () => { const checks = [...document.querySelectorAll('.wordcard-checkbox:checked')].map(c => +c.value).sort((a,b) => b - a); checks.forEach(i => state.wordCards.splice(i, 1)); updateWordcardUI(); await saveAll(); };
