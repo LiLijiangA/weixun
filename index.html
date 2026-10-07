@@ -46,13 +46,13 @@
     .bubble-image { max-width: 200px; max-height: 200px; border-radius: 4px; display: block; cursor: pointer; }
     .bubble-emoji { font-size: 20px !important; padding: 6px 8px; }
     .transfer-card { background: #f39c12; color: white; padding: 8px 16px; border-radius: 8px; width: 240px; max-width: 100%; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
-    .gift-card { background: linear-gradient(135deg, #ff6b6b, #c2185b); color: white; border-radius: 14px; width: 240px; max-width: 100%; text-align: center; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative; }
-    .gift-card.gift-from-me { background: linear-gradient(135deg, #ff9a3d, #e65100); }
-    .gift-card .gift-card-emoji { font-size: 44px; line-height: 1.2; }
-    .gift-card .gift-card-name { font-size: 15px; font-weight: 700; margin: 4px 0; }
-    .gift-card .gift-card-count { font-size: 12px; opacity: 0.9; }
-    .gift-card .gift-card-status { font-size: 11px; margin-top: 8px; opacity: 0.85; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 6px; }
-    .gift-card.sealed { background: linear-gradient(135deg, #7b4397, #dc2430); cursor: pointer; text-align: center; }
+    .gift-card { background: linear-gradient(135deg, #ff6b6b, #c2185b); color: #fff; border-radius: 12px; width: 240px; max-width: 100%; min-height: 96px; padding: 10px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; justify-content: center; }
+    .gift-card .gift-card-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .gift-card .gift-card-emoji { font-size: 32px; line-height: 1; flex-shrink: 0; }
+    .gift-card .gift-card-name { font-size: 16px; font-weight: 700; }
+    .gift-card .gift-card-count { font-size: 14px; opacity: 0.9; }
+    .gift-card .gift-card-status { font-size: 11px; margin-top: 8px; opacity: 0.85; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 6px; text-align: center; }
+    .gift-card.sealed { background: linear-gradient(135deg, #7b4397, #dc2430); cursor: pointer; }
     .gift-card.sealed .gift-card-emoji { animation: heartPulse 1s ease-in-out infinite; }
     .gift-open-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: flex; justify-content: center; align-items: center; }
     .gift-open-box { background: #fff; border-radius: 20px; padding: 40px 50px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: giftOpenIn .3s; }
@@ -64,7 +64,7 @@
     @keyframes giftOpenShake { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(-12deg) scale(1.1); } 50% { transform: rotate(12deg) scale(1.1); } 75% { transform: rotate(-8deg) scale(1.05); } 100% { transform: rotate(0) scale(1); } }
     .gift-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 660; display: flex; justify-content: center; align-items: center; }
     .gift-panel { background: #fff; border-radius: 16px; width: 92%; max-width: 420px; height: 78vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
-    .gift-header { position: relative; padding: 14px 16px; border-bottom: 1px solid #eee; text-align: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .gift-header { position: relative; padding: 14px 16px; border-bottom: 1px solid #eee; text-align: center; font-size: 19px; font-weight: 700; flex-shrink: 0; }
     .gift-close { position: absolute; top: 10px; right: 14px; font-size: 22px; cursor: pointer; color: #888; background: none; border: none; }
     .gift-shop-list { flex: 1; overflow-y: auto; padding: 6px 10px; }
     .gift-item { display: flex; align-items: center; gap: 8px; padding: 10px 6px; border-bottom: 1px solid #f0f0f0; }
@@ -289,7 +289,7 @@
 }
     /* ==================== 亲密互动 ==================== */
     /* 左上角跳动的心脏 — 呼吸式舒张收缩，带虚影 */
-    #intimacyHeartWrap { position: absolute; top: 62px; left: 14px; z-index: 6; pointer-events: none; text-align: center; }
+    #intimacyHeartWrap { position: absolute; top: 62px; left: 14px; z-index: 1250; pointer-events: none; text-align: center; }
     #intimacyHeart { position: relative; font-size: 32px; color: #ff4d88; display: block; width: 100%; max-width: 130px; text-align: center; filter: drop-shadow(0 0 6px rgba(255, 77, 136, 0.7)) drop-shadow(0 0 12px rgba(255, 50, 120, 0.35)); animation: heartPulse 1s ease-in-out infinite; }
     #intimacyTimer { display: inline-block; margin-top: 2px; font-size: 13px; font-weight: 700; color: #fff; background: rgba(255, 77, 136, 0.85); border-radius: 12px; padding: 2px 8px; text-align: center; white-space: nowrap; box-shadow: 0 0 8px rgba(255, 77, 136, 0.5); }
     #intimacyHeart.rate-slow { animation: heartPulse 1s ease-in-out infinite; }
@@ -491,6 +491,7 @@
           <div class="setting-row"><label>便签留言 每小时%</label><input id="patNoteProb" type="number" min="0" max="100" value="4"></div>
           <div class="setting-row"><label>亲密互动 每小时%</label><input id="patIntimacyProb" type="number" min="0" max="100" value="5"></div>
           <div class="setting-row"><label>转账红包 每小时%</label><input id="patTransferProb" type="number" min="0" max="100" value="4"></div>
+          <div class="setting-row"><label>赠送礼物 每小时%</label><input id="patGiftProb" type="number" min="0" max="100" value="4"> <span style="font-size:12px;color:#888;">对方主动赠送礼物</span></div>
           <div class="setting-row"><label>主动来电 每小时%</label><input id="patVideoCallProb" type="number" min="0" max="100" value="6"></div>
           <div class="setting-row"><label>主动挂断%</label><input id="patHangupProb" type="number" min="0" max="100" value="80"> <span style="font-size:12px;color:#888;">接通后对方随机在10-180分钟间挂断</span></div>
           <div class="setting-row"><label>对方引用消息%</label><input id="patQuoteProb" type="number" min="0" max="100" value="15"></div>
@@ -617,10 +618,6 @@
       <button class="close-btn" id="intimacyCloseBtn">✕</button>
     </div>
     <div class="intimacy-body">
-      <div id="intimacyOverlayHeartWrap" class="hidden" style="position:absolute; top:66px; left:12px; z-index:5; text-align:center; pointer-events:none;">
-        <span id="intimacyOverlayHeart" style="display:block; font-size:30px; color:#ff4d88; filter:drop-shadow(0 0 6px rgba(255,77,136,.7)); animation:heartPulse 1s ease-in-out infinite;">❤</span>
-        <span id="intimacyOverlayTimer" style="display:inline-block; margin-top:2px; font-size:13px; font-weight:700; color:#fff; background:rgba(255,77,136,.85); border-radius:12px; padding:2px 8px;">00:00</span>
-      </div>
       <div class="intimacy-figure-area" id="intimacyFigureArea">
         <!-- 心形进度条 -->
         <div class="intimacy-heart-progress">
@@ -710,10 +707,10 @@
   </div>
   <div id="giftCabinetOverlay" class="gift-overlay hidden">
     <div class="gift-panel">
-      <div class="gift-header">🎁 礼物柜<button class="gift-close" id="giftCabinetCloseBtn">✕</button></div>
+      <div class="gift-header">🛍️ 礼物柜<button class="gift-close" id="giftCabinetCloseBtn">✕</button></div>
       <div class="gift-tabs">
         <div class="gift-tab active" data-giftcab="mine">我的礼物柜<span id="giftMineCount" style="color:#ff9500;margin-left:4px;"></span></div>
-        <div class="gift-tab" data-giftcab="theirs">对方礼物柜<span id="giftTheirsCount" style="color:#ff9500;margin-left:4px;"></span></div>
+        <div class="gift-tab" data-giftcab="theirs"><span id="giftTheirsTabName">对方礼物柜</span><span id="giftTheirsCount" style="color:#ff9500;margin-left:4px;"></span></div>
       </div>
       <div class="gift-cabinet-body" id="giftMineList"></div>
       <div class="gift-cabinet-body hidden" id="giftTheirsList"></div>
@@ -1840,6 +1837,8 @@ function renderGiftCabinet() {
   if (!mineEl || !theirsEl) return;
   document.getElementById('giftMineCount').textContent = state.giftCabinet.mine.reduce((a, g) => a + (g.count || 1), 0) + ' 件';
   document.getElementById('giftTheirsCount').textContent = state.giftCabinet.theirs.reduce((a, g) => a + (g.count || 1), 0) + ' 件';
+  const theirsTabName = document.getElementById('giftTheirsTabName');
+  if (theirsTabName) theirsTabName.textContent = state.otherName + '的礼物柜';
   mineEl.innerHTML = '';
   theirsEl.innerHTML = '';
   if (!state.giftCabinet.mine.length) mineEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;">还没有收到礼物～</div>';
@@ -3677,8 +3676,8 @@ if (canInteract && (!m.status || m.status === '待收款')) {
       const name = isSealed ? 'a gift' : (g.name || '礼物');
       const countText = (isSealed || !g.count) ? '' : `×${g.count}`;
       const clickAttr = isSealed ? `onclick="window.handleGiftCardClick(this, ${m.id})" style="cursor:pointer;"` : 'style="cursor:default;"';
-      const fromCls = m.giftSender === 'me' ? ' gift-from-me' : '';
-      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div data-gift-msg-id="${m.id}" class="gift-card${fromCls}${isSealed ? ' sealed' : ''}" ${clickAttr}><div class="gift-card-emoji">${emoji}</div><div class="gift-card-name">${escapeHtml(name)}</div><div class="gift-card-count">${countText}</div><div class="gift-card-status">${isSealed ? '点击拆开 🎁' : statusText}</div></div>${quoteHtml}</div></div>`;
+      const fromCls = '';
+      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div data-gift-msg-id="${m.id}" class="gift-card${fromCls}${isSealed ? ' sealed' : ''}" ${clickAttr}><div class="gift-card-row"><span class="gift-card-emoji">${emoji}</span><span class="gift-card-name">${escapeHtml(name)}</span>${countText ? `<span class="gift-card-count">${countText}</span>` : ''}</div><div class="gift-card-status">${isSealed ? '点击拆开 🎁' : statusText}</div></div>${quoteHtml}</div></div>`;
       continue;
     } else if (m.type === 'rating') {
       let rd = {};
@@ -4754,7 +4753,7 @@ async function handleTransferAction(msg, action) {
     `;
     else if (tab === 'photo') html = '<div class="photo-upload-btn"><label>📷 选择照片<input type="file" id="panelPhotoInput" accept="image/*" style="display:none;"></label></div>';
     else if (tab === 'transfer') html = '<div style="padding:20px; text-align:center;">点击下方按钮输入金额</div><button id="openTransferBtn" style="background:#07c160; color:white; border:none; padding:12px; border-radius:8px; width:100%;">💸 发起转账</button>';
-    else if (tab === 'gift') html = '<div style="padding:16px; display:flex; gap:12px;"><button id="openGiftShopBtn" style="flex:1; background:#ff9500; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; cursor:pointer;">🎁 送礼物</button><button id="openGiftCabinetBtn" style="flex:1; background:#8e44ad; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; cursor:pointer;">🎁 礼物柜</button></div>';
+    else if (tab === 'gift') html = '<div style="padding:12px 0;"><div class="dice-panel-btn" id="openGiftShopBtn">🎁 送礼物</div><div class="dice-panel-btn" id="openGiftCabinetBtn">🛍️ 礼物柜</div></div>';
     panelContent.innerHTML = html;
     if (tab === 'dice') {
       const rollBtn = document.getElementById('rollDiceBtn');
@@ -4999,21 +4998,16 @@ async function handleTransferAction(msg, action) {
   };
 
   function startIntimacyCountdown() {
-    const setEl = (el) => {
-      if (!el) return;
-      if (!intimacyStartAt || !intimacyDurationMs) { el.textContent = ''; return; }
-      el.textContent = fmtCountdown(intimacyStartAt + intimacyDurationMs - Date.now());
-    };
-    setEl(document.getElementById('intimacyTimer'));
-    setEl(document.getElementById('intimacyOverlayTimer'));
+    const el = document.getElementById('intimacyTimer');
+    if (!el) return;
     stopIntimacyCountdown();
-    if (!intimacyStartAt || !intimacyDurationMs) return;
+    if (!intimacyStartAt || !intimacyDurationMs) { el.textContent = ''; return; }
+    el.textContent = fmtCountdown(intimacyStartAt + intimacyDurationMs - Date.now());
     intimacyCountdownTimer = setInterval(() => {
-      if (!intimacyStartAt || !intimacyDurationMs) { setEl(document.getElementById('intimacyTimer')); setEl(document.getElementById('intimacyOverlayTimer')); stopIntimacyCountdown(); return; }
+      if (!intimacyStartAt || !intimacyDurationMs) { el.textContent = ''; stopIntimacyCountdown(); return; }
       const remain = intimacyStartAt + intimacyDurationMs - Date.now();
-      if (remain <= 0) { setEl(document.getElementById('intimacyTimer')); setEl(document.getElementById('intimacyOverlayTimer')); stopIntimacyCountdown(); return; }
-      setEl(document.getElementById('intimacyTimer'));
-      setEl(document.getElementById('intimacyOverlayTimer'));
+      if (remain <= 0) { el.textContent = '00:00'; stopIntimacyCountdown(); return; }
+      el.textContent = fmtCountdown(remain);
     }, 1000);
   }
   function stopIntimacyCountdown() {
@@ -5030,18 +5024,15 @@ async function handleTransferAction(msg, action) {
   function setIntimacyHeart(show, rate = 0) {
     const wrap = document.getElementById('intimacyHeartWrap');
     const heart = document.getElementById('intimacyHeart');
-    if (wrap && heart) {
-      if (show) { wrap.classList.remove('hidden'); heart.className = HEART_RATES[rate] || 'rate-slow'; }
-      else wrap.classList.add('hidden');
+    if (!wrap || !heart) return;
+    if (show) {
+      wrap.classList.remove('hidden');
+      heart.className = HEART_RATES[rate] || 'rate-slow';
+      startIntimacyCountdown();
+    } else {
+      wrap.classList.add('hidden');
+      stopIntimacyCountdown();
     }
-    const owrap = document.getElementById('intimacyOverlayHeartWrap');
-    const oheart = document.getElementById('intimacyOverlayHeart');
-    if (owrap && oheart) {
-      if (show) { owrap.classList.remove('hidden'); oheart.className = HEART_RATES[rate] || 'rate-slow'; }
-      else owrap.classList.add('hidden');
-    }
-    if (show) startIntimacyCountdown();
-    else stopIntimacyCountdown();
   }
 
   function addIntimacyTapMessage(text) {
