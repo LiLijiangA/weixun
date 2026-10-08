@@ -3657,7 +3657,9 @@ function showOpenGiftAnimation(msg, done) {
           const imgUrl = imgCache[q.content] || q.content;
           quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: <img src="${imgUrl}" style="width:30px;height:30px;object-fit:cover;border-radius:2px;vertical-align:middle;">`;
         }
-        else if (q.type === 'transfer') quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': [转账]');
+        else if (q.type === 'transfer') quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 💸 ¥${parseFloat(q.content).toFixed(2)}`;
+        else if (q.type === 'gift') { try { const g = JSON.parse(q.content); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🎁 ${g.emoji || ''}${g.name || '礼物'}${g.count ? '×' + g.count : ''}`; } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': 🎁 礼物'); } }
+        else if (q.type === 'rating') { try { const rd = JSON.parse(q.content); const st = Math.max(0, Math.min(5, rd.stars || 0)); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: ⭐评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': ⭐评价'); } }
         else if (q.type === 'voice') quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🔊 ${q.duration}s`;
         else quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': [消息]');
         quoteHtml = `<div class="quote-attachment" data-quote-id="${q.id}">${quoteContent}</div>`;
@@ -3751,7 +3753,7 @@ else if (m.type !== 'transfer') {
     document.querySelectorAll('.voice-transcribed').forEach(el => { el.onclick = (e) => { e.stopPropagation(); const msgId = Number(el.dataset.msgId); const msg = messages.find(m => m.id === msgId); if (msg) { const scrollTop = chatMessages.scrollTop; msg.transcribedText = ''; renderMessages(false); chatMessages.scrollTop = scrollTop; saveMessagesOnly(); } }; });
     document.querySelectorAll('.message-avatar').forEach(av => av.ondblclick = (e) => { const sender = av.dataset.sender; if (sender === 'other') { addMessage('other', 'tap', `${state.myName}拍了拍${state.otherName}`); triggerOtherReply(); } });
     function addLongPress(el, msgId) { let pressTimer; const show = (e) => { e.preventDefault(); const msg = messages.find(m => m.id === msgId); if (msg) showContextMenu(e, msg); }; el.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => show(e), 500); }); el.addEventListener('touchend', () => clearTimeout(pressTimer)); el.addEventListener('touchmove', () => clearTimeout(pressTimer)); el.addEventListener('contextmenu', (e) => { e.preventDefault(); show(e); }); }
-    document.querySelectorAll('.message-row').forEach(row => { const msgId = Number(row.dataset.msgId); const bubble = row.querySelector('.message-bubble, .bubble-image, .transfer-card'); if (bubble) addLongPress(bubble, msgId); });
+    document.querySelectorAll('.message-row').forEach(row => { const msgId = Number(row.dataset.msgId); const bubble = row.querySelector('.message-bubble, .bubble-image, .transfer-card, .gift-card, .rating-card'); if (bubble) addLongPress(bubble, msgId); });
     document.querySelectorAll('.quote-attachment').forEach(q => { q.onclick = () => { const id = Number(q.dataset.quoteId); const el = document.querySelector(`.message-row[data-msg-id="${id}"]`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }; });
     document.querySelectorAll('.bubble-image').forEach(img => { img.addEventListener('click', () => { previewImage.src = img.dataset.fullImg || img.src; imagePreviewOverlay.classList.remove('hidden'); }); });
     
@@ -3786,8 +3788,10 @@ else if (m.type !== 'transfer') {
       else if (msg.type === 'emoji') preview = msg.content;
       else if (msg.type === 'image') preview = '[图片]';
       else if (msg.type === 'sticker') preview = '[图片表情]';
-      else if (msg.type === 'transfer') preview = '[转账]';
+      else if (msg.type === 'transfer') preview = `💸 ¥${parseFloat(msg.content).toFixed(2)}`;
       else if (msg.type === 'voice') preview = `🔊 ${msg.duration}s`;
+      else if (msg.type === 'gift') { try { const g = JSON.parse(msg.content); preview = `🎁 ${g.emoji || ''}${g.name || '礼物'}`; } catch(e) { preview = '[礼物]'; } }
+      else if (msg.type === 'rating') { try { const rd = JSON.parse(msg.content); const st = Math.max(0, Math.min(5, rd.stars || 0)); preview = `⭐ 评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } catch(e) { preview = '[评价]'; } }
       else preview = '[消息]';
       quotePreviewText.textContent = `${senderName}: ${preview}`;
       quotePreviewBar.classList.remove('hidden');
