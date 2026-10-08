@@ -367,7 +367,7 @@
     .message-bubble.dict-msg { padding-right: 22px; }
     .message-bubble.dict-msg::after { content: '拼'; position: absolute; right: 4px; bottom: 4px; font-size: 10px; line-height: 1; color: rgba(0, 0, 0, 0.3); user-select: none; }
     .message-bubble.ta-msg { padding-right: 22px; }
-    .message-bubble.ta-msg::after { content: '➕'; position: absolute; right: 4px; bottom: 4px; font-size: 10px; line-height: 1; color: rgba(0, 0, 0, 0.3); user-select: none; }
+    .message-bubble.ta-msg::after { content: 'ta'; position: absolute; right: 4px; bottom: 4px; font-size: 10px; line-height: 1; color: rgba(0, 0, 0, 0.3); user-select: none; }
     .dict-group { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
     .dict-group-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: #f7f7f9; padding: 6px 8px; flex-wrap: wrap; }
     .dict-group-head .dg-toggle { font-size: 14px; font-weight: 600; cursor: pointer; user-select: none; }
@@ -514,7 +514,7 @@
       </div>
       <div id="settingsDict" class="hidden">
         <h4 style="margin-bottom:8px;">🧩 词典拼句</h4>
-        <p style="font-size:12px;color:#888;margin-bottom:10px;">对方每次拼句时，会先随机抽取一个句式结构，再从对应分组中各自随机抽一个词组合成句子。</p>
+        <p style="font-size:12px;color:#888;margin-bottom:10px;">对方每次拼句时，会先随机抽取一个句式结构，再从对应分组中各自随机抽一个词组合成句子。使用词典拼句发送的消息，气泡右下角会显示「拼」标识。</p>
         <input type="text" id="dictSearch" placeholder="🔍 搜索词语" class="wordcard-search">
         <div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;">
           <button id="dictExpandAll">展开全部</button>
@@ -528,7 +528,7 @@
       </div>
       <div id="settingsTacards" class="hidden">
         <h4 style="margin-bottom:8px;">💗 ta添加的字卡</h4>
-        <p style="font-size:12px;color:#888;margin-bottom:10px;">这里是对方（ta）主动添加的字卡：对方会按照「ta主动添加字卡的概率」收藏您的消息和ta自己的词典拼句消息。ta添加的字卡可能不通顺或称呼不对，建议您多关注并根据大意手动修改成适合ta使用的字卡。此页面无法手动新增字卡，仅支持修改与删除。</p>
+        <p style="font-size:12px;color:#888;margin-bottom:10px;">这里是对方（ta）主动添加的字卡：对方会按照「ta主动添加字卡的概率」收藏您的消息和ta自己的词典拼句消息。ta添加的字卡可能不通顺或称呼不对，建议您多关注并根据大意手动修改成适合ta使用的字卡。此页面无法手动新增字卡，仅支持修改与删除。对方使用ta添加的字卡发送的消息，气泡右下角会显示「ta」标识。</p>
         <input type="text" id="taCardSearch" placeholder="🔍 搜索字卡" class="wordcard-search">
         <div style="margin:10px 0;"><button id="selectAllTacards">全选</button><button id="batchDeleteTacards">批量删除</button><button id="dedupeTacards">去重</button></div>
         <div class="wordcard-list" id="taCardList"></div>
@@ -2198,7 +2198,7 @@ function showOpenGiftAnimation(msg, done) {
     else if (type === 'emoji') body = content; 
     else if (type === 'image' || type === 'sticker') body = '[图片]'; 
     else if (type === 'transfer') body = `转账 ¥${parseFloat(content).toFixed(2)}`; 
-    else if (type === 'gift') { try { const g = JSON.parse(content); body = `赠送了一个礼物 ${g.emoji || ''}${g.name || ''}`; } catch(e) { body = '赠送了一个礼物 🎁'; } }
+    else if (type === 'gift') body = '赠送了一个礼物 🎁';
     else if (type === 'rating') { try { const rd = JSON.parse(content); body = `评价：${'⭐'.repeat(Math.max(0,Math.min(5,rd.stars||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,rd.stars||0)))}`; } catch(e) { body = '做出了评价 ⭐'; } } 
     else if (type === 'voice') body = '[语音]'; 
     else body = '[消息]'; 
