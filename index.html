@@ -3946,7 +3946,7 @@ else if (m.type !== 'transfer') {
       emojiPanel.classList.add('hidden');
       if (window.ratingReplyTimer) clearTimeout(window.ratingReplyTimer);
       if (replyTimer) { clearTimeout(replyTimer); replyTimer = null; }
-      typingInd.textContent = `${state.otherName} 正在评价...`;
+      typingInd.textContent = `对方正在思考...`;
       window.ratingReplyTimer = setTimeout(async () => {
         typingInd.textContent = '';
         const stars = Math.floor(Math.random() * 6); // 0~5 星随机
