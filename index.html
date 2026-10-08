@@ -473,7 +473,7 @@
           <div class="setting-row"><label>主动最慢(分钟)</label><input id="autoMax" type="number" value="120"></div>
           <div class="setting-row"><label>💕 亲密互动</label><input type="checkbox" id="intimacyToggle" checked> <span style="font-size:13px;color:#888;">开启后左下角显示💞按钮</span></div>
           <div class="setting-row"><label>🧩 词典拼句</label><input type="checkbox" id="dictToggle" checked> <span style="font-size:13px;color:#888;">开启后对方可随机拼句回复</span></div>
-          <div class="setting-row"><label>拼句概率%</label><input id="dictProb" type="number" min="0" max="100" value="25"> <span style="font-size:12px;color:#888;">占字卡消息比例，剩余为字卡库</span></div>
+          <div class="setting-row"><label>拼句概率%</label><input id="dictProb" type="number" min="0" max="100" value="20"> <span style="font-size:12px;color:#888;">占字卡消息比例，剩余为字卡库</span></div>
           <div class="setting-row"><label>💗 ta主动添加字卡</label><input type="checkbox" id="taAddToggle" checked> <span style="font-size:13px;color:#888;">开启后对方可主动添加字卡</span></div>
           <div class="setting-row"><label>ta主动添加字卡的概率%</label><input id="taAddProb" type="number" min="0" max="100" value="3"> <span style="font-size:12px;color:#888;">对方收藏消息进ta字卡库的概率</span></div>
           <div class="setting-row"><label>使用ta添加的字卡概率%</label><input id="taUseProb" type="number" min="0" max="100" value="5"> <span style="font-size:12px;color:#888;">对方发文字消息时使用ta字卡库的比例</span></div>
@@ -1730,7 +1730,7 @@
     intimacyMode: 0,
     intimacyDuration: 10,
     dictEnabled: true,
-    dictProb: 25,
+    dictProb: 20,
     dictGroups: {},
     dictVersion: 0,
     taCards: [],
@@ -1806,12 +1806,10 @@ function renderGiftShop() {
   list.querySelectorAll('.gift-send-btn').forEach(b => b.onclick = () => { const i = +b.dataset.i; const num = list.querySelector('.gq-num[data-i="' + i + '"]'); sendGift(i, Math.max(1, +num.textContent || 1)); });
   list.querySelectorAll('.gift-edit-btn').forEach(b => b.onclick = async () => {
     const i = +b.dataset.i; const item = state.giftShop[i]; if (!item) return;
-    const newEmoji = await showPrompt('商品emoji', item.emoji);
-    if (newEmoji === null) return;
-    const newName = await showPrompt('商品名称', item.name);
-    if (newName === null) return;
-    if (newEmoji.trim()) item.emoji = newEmoji.trim();
-    if (newName.trim()) item.name = newName.trim();
+    const res = await showPromptDouble('✏️ 修改商品', '商品 emoji', item.emoji, '商品名称', item.name);
+    if (!res) return;
+    if (typeof res.v1 === 'string' && res.v1.trim()) item.emoji = res.v1.trim();
+    if (typeof res.v2 === 'string' && res.v2.trim()) item.name = res.v2.trim();
     saveAll(); renderGiftShop();
   });
   list.querySelectorAll('.gift-del-btn').forEach(b => b.onclick = async () => {
@@ -2581,6 +2579,33 @@ function showOpenGiftAnimation(msg, done) {
     });
   }
 
+  // 双输入弹窗：一次弹窗同时编辑两个字段（用于礼物商城修改商品 emoji + 名称）
+  function showPromptDouble(message, label1, value1, label2, value2) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1500;display:flex;justify-content:center;align-items:center;';
+      overlay.innerHTML = `
+        <div style="background:white;border-radius:16px;padding:24px;max-width:300px;width:90%;text-align:center;">
+          <p style="font-size:16px;margin-bottom:14px;color:#333;">${message}</p>
+          <div style="text-align:left;font-size:13px;color:#666;margin-bottom:6px;">${label1}</div>
+          <input type="text" class="prompt-input-1" value="${escapeHtml(value1)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:12px;">
+          <div style="text-align:left;font-size:13px;color:#666;margin-bottom:6px;">${label2}</div>
+          <input type="text" class="prompt-input-2" value="${escapeHtml(value2)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:20px;">
+          <div style="display:flex;gap:12px;justify-content:center;">
+            <button class="prompt-yes" style="background:#07c160;color:white;border:none;padding:8px 24px;border-radius:8px;font-size:16px;cursor:pointer;">确定</button>
+            <button class="prompt-no" style="background:#ccc;color:#333;border:none;padding:8px 24px;border-radius:8px;font-size:16px;cursor:pointer;">取消</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.prompt-input-1').focus();
+      overlay.querySelector('.prompt-input-1').select();
+      overlay.querySelector('.prompt-yes').onclick = () => { overlay.remove(); resolve({ v1: overlay.querySelector('.prompt-input-1').value, v2: overlay.querySelector('.prompt-input-2').value }); };
+      overlay.querySelector('.prompt-no').onclick = () => { overlay.remove(); resolve(null); };
+      overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); resolve(null); } };
+    });
+  }
+
   // 朋友圈渲染序号：用于丢弃过期的并发渲染，防止列表重复
   let momentRenderSeq = 0;
 
@@ -2601,7 +2626,7 @@ function showOpenGiftAnimation(msg, done) {
     if (state.intimacyDuration === undefined) state.intimacyDuration = 10;
     // 词典拼句字段默认值
     if (state.dictEnabled === undefined) state.dictEnabled = true;
-    if (state.dictProb === undefined) state.dictProb = 25;
+    if (state.dictProb === undefined) state.dictProb = 20;
     if (!state.dictGroups || typeof state.dictGroups !== 'object' || Array.isArray(state.dictGroups)) state.dictGroups = {};
     // ta添加的字卡 默认值
     if (!Array.isArray(state.taCards)) state.taCards = [];
@@ -2750,7 +2775,7 @@ function showOpenGiftAnimation(msg, done) {
     document.getElementById('autoMax').value = state.autoMax;
     document.getElementById('intimacyToggle').checked = state.intimacyEnabled;
     document.getElementById('dictToggle').checked = state.dictEnabled !== false;
-    document.getElementById('dictProb').value = state.dictProb === undefined ? 25 : state.dictProb;
+    document.getElementById('dictProb').value = state.dictProb === undefined ? 20 : state.dictProb;
     document.getElementById('taAddToggle').checked = state.taAddEnabled !== false;
     document.getElementById('taAddProb').value = state.taAddProb === undefined ? 3 : state.taAddProb;
     document.getElementById('taUseProb').value = state.taUseProb === undefined ? 5 : state.taUseProb;
