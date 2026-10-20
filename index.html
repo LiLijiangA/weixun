@@ -89,6 +89,10 @@
     .rating-card { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 14px; width: 240px; max-width: 100%; text-align: center; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative; }
     .rating-card .rating-question { font-size: 12px; opacity: 0.85; margin-bottom: 8px; word-break: break-all; }
     .rating-card .rating-stars { font-size: 26px; letter-spacing: 2px; line-height: 1.2; }
+    .rating-card .rating-score { font-size: 22px; font-weight: 600; letter-spacing: 1px; line-height: 1.2; }
+    .rating-mode-row { display: flex; gap: 8px; margin: 10px 0 14px; }
+    .rating-mode-btn { flex: 1; border: 1px solid #ddd; background: #f5f5f5; color: #555; border-radius: 10px; padding: 10px 8px; font-size: 13px; cursor: pointer; }
+    .rating-mode-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; }
     .transfer-label { font-size: 13px; opacity: 0.9; margin-bottom: 4px; }
     .transfer-amount { font-size: 24px; font-weight: bold; margin: 2px 0; }
     .transfer-status { font-size: 11px; margin-top: 6px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 6px; }
@@ -352,7 +356,7 @@
     .intimacy-passive-btn { flex: 1; padding: 10px 0; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.12); color: #ffd9e8; font-size: 14px; cursor: pointer; }
     .intimacy-passive-btn:disabled { opacity: 0.45; }
     /* 悬浮文字 */
-    .intimacy-floating-text { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); background: rgba(30, 5, 40, 0.9); border: 1px solid rgba(255, 120, 180, 0.6); color: #ffd9e8; padding: 14px 22px; border-radius: 14px; font-size: 15px; z-index: 9999; max-width: 86%; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.5); animation: floatTextIn 0.25s; }
+    .intimacy-floating-text { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #fff0f6, #ffe4ef); border: 2px solid #ff6b9d; color: #c2185b; padding: 14px 22px; border-radius: 14px; font-size: 15px; font-weight: 600; z-index: 9999; max-width: 86%; text-align: center; box-shadow: 0 8px 28px rgba(255, 77, 136, 0.45); animation: floatTextIn 0.25s; }
     @keyframes floatTextIn { from { opacity: 0; transform: translate(-50%, -55%); } to { opacity: 1; transform: translate(-50%, -50%); } }
     /* 弹窗 */
     .intimacy-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 1400; display: flex; justify-content: center; align-items: center; }
@@ -496,7 +500,7 @@
           <div class="setting-row"><label>主动挂断%</label><input id="patHangupProb" type="number" min="0" max="100" value="80"> <span style="font-size:12px;color:#888;">接通后对方随机在10-180分钟间挂断</span></div>
           <div class="setting-row"><label>对方引用消息%</label><input id="patQuoteProb" type="number" min="0" max="100" value="15"></div>
         </div>
-        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="5" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
+        <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="6" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option><option value="5">🔊 经典短音</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="taCards" checked> ta添加的字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="gifts" checked> 礼物</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
         <div class="setting-group"><h4>💾 存储空间</h4><div id="storageInfo" style="font-size:13px; color:#555; margin-bottom:8px;">计算中...</div><button id="refreshStorageBtn" style="background:#e9e9ef; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;">🔄 刷新</button></div>
         <div class="setting-group"><h4>🗑️ 数据管理</h4><button id="clearChatHistoryBtn" style="background:#ff3b30; color:white; border:none; padding:12px; border-radius:10px; width:100%;">清空聊天记录</button><p style="font-size:12px; color:#888; margin-top:6px;">仅清空聊天记录，保留字卡、表情包等设置</p><button id="wipeAllDataBtn" style="background:#8e0000; color:white; border:none; padding:12px; border-radius:10px; width:100%; margin-top:10px;">🗑️ 一键删除所有记录</button><p style="font-size:12px; color:#8e0000; margin-top:6px;">删除聊天记录、朋友圈、便签、收藏夹的全部内容，保留字卡、表情包、语音库、头像、背景等设置</p></div>
@@ -1559,7 +1563,8 @@
       giftShop: state.giftShop,
       giftCabinet: state.giftCabinet,
       patGiftProb: state.patGiftProb,
-      ratingThinkSeconds: state.ratingThinkSeconds
+      ratingThinkSeconds: state.ratingThinkSeconds,
+      ratingMode: state.ratingMode || 'star'
     };
     try { localStorage.setItem('wc_ultra_settings', JSON.stringify(s)); } catch (e) { console.warn('保存设置失败', e); }
   }
@@ -1741,6 +1746,7 @@
     giftCabinet: { mine: [], theirs: [] },
     patGiftProb: 4,
     ratingThinkSeconds: 10,
+    ratingMode: 'star',
     patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
@@ -1916,6 +1922,7 @@ function showOpenGiftAnimation(msg, done) {
   let incomingCallTimer = null;
   let currentIncomingOverlay = null;
   let choiceReplyTimer = null;   // 全局抉择定时器
+  let intimacyCardPopupLock = false;
 
   let visibleStart = 0;
   let momentStart = 0;
@@ -2100,23 +2107,88 @@ function showOpenGiftAnimation(msg, done) {
 
   const DEFAULT_EMOJIS = ['😀','😃','😄','😁','😆','😂','🤣','😊','😇','🙂','🙃','😉','😍','🥰','😘','😋','😛','😝','😜','🤪','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃'];
 
+  // 辅助：在指定时间点播放一个带包络的音
+  function playTone(ctx, dest, freq, start, dur, type, vol) {
+    const t = ctx.currentTime + 0.02 + start;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(g); g.connect(dest);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }
+
   function createSound(type) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const ctx = audioCtx;
-    const gain = ctx.createGain(); gain.gain.value = state.volume; gain.connect(ctx.destination);
-    const osc = ctx.createOscillator(); osc.connect(gain);
-    switch(type){
-      case 0: osc.frequency.value = 880; osc.type='sine'; break;
-      case 1: osc.frequency.value = 1200; osc.type='triangle'; break;
-      case 2: osc.frequency.value = 1400; osc.type='sine'; break;
-      case 3: osc.frequency.value = 1000; osc.type='sine'; break;
-      case 4: osc.frequency.value = 600; osc.type='sine'; break;
-    }
-    osc.start();
-    gain.gain.setValueAtTime(state.volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    osc.stop(ctx.currentTime + 0.15);
     if (ctx.state === 'suspended') ctx.resume();
+    const master = ctx.createGain();
+    master.gain.value = state.volume;
+    master.connect(ctx.destination);
+    const t0 = ctx.currentTime + 0.02;
+    const V = 0.6;
+
+    switch (Number(type)) {
+      case 0: // 微信风格：两声清脆高音「叮-叮」
+        playTone(ctx, master, 1318, 0,    0.09, 'sine', V); // E6
+        playTone(ctx, master, 1568, 0.10, 0.16, 'sine', V); // G6
+        break;
+
+      case 1: { // QQ 水滴：高到低的下滑音「啾——」
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1800, t0);
+        osc.frequency.exponentialRampToValueAtTime(700, t0 + 0.30);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.linearRampToValueAtTime(V, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.32);
+        osc.connect(g); g.connect(master);
+        osc.start(t0); osc.stop(t0 + 0.34);
+        break;
+      }
+
+      case 2: // 三全音：C-E-G 快速琶音「叮-咚-当」
+        playTone(ctx, master, 523, 0,    0.12, 'sine', V); // C5
+        playTone(ctx, master, 659, 0.08, 0.14, 'sine', V); // E5
+        playTone(ctx, master, 784, 0.16, 0.24, 'sine', V); // G5
+        break;
+
+      case 3: // 叮咚：高音短、低音长「叮——咚——」
+        playTone(ctx, master, 2093, 0,    0.12, 'sine', V); // C7
+        playTone(ctx, master, 1046, 0.12, 0.30, 'sine', V); // C6
+        break;
+
+      case 4: { // 啵：低频短促上扫，像气泡破裂
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, t0);
+        osc.frequency.exponentialRampToValueAtTime(1100, t0 + 0.12);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.linearRampToValueAtTime(V, t0 + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
+        osc.connect(g); g.connect(master);
+        osc.start(t0); osc.stop(t0 + 0.16);
+        break;
+      }
+
+      case 5: { // 经典短音：原版 600Hz 纯音短促
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, t0);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.linearRampToValueAtTime(V, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.15);
+        osc.connect(g); g.connect(master);
+        osc.start(t0); osc.stop(t0 + 0.16);
+        break;
+      }
+
+      default:
+        playTone(ctx, master, 880, 0, 0.15, 'sine', V);
+    }
   }
   function compressImage(file, max=600, q=0.7, forceType=null) {
     return new Promise(r => {
@@ -2199,8 +2271,10 @@ function showOpenGiftAnimation(msg, done) {
     else if (type === 'image' || type === 'sticker') body = '[图片]'; 
     else if (type === 'transfer') body = `转账 ¥${parseFloat(content).toFixed(2)}`; 
     else if (type === 'gift') body = '赠送了一个礼物 🎁';
-    else if (type === 'rating') { try { const rd = JSON.parse(content); body = `评价：${'⭐'.repeat(Math.max(0,Math.min(5,rd.stars||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,rd.stars||0)))}`; } catch(e) { body = '做出了评价 ⭐'; } } 
+    else if (type === 'rating') { try { const rd = JSON.parse(content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); body = `评价：${sc}分`; } else { body = `评价：${'⭐'.repeat(Math.max(0,Math.min(5,rd.stars||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,rd.stars||0)))}`; } } catch(e) { body = '做出了评价 ⭐'; } } 
     else if (type === 'voice') body = '[语音]'; 
+    else if (type === 'call') body = `📹 通话时长 ${content}`;
+    else if (type === 'tap') body = content;
     else body = '[消息]'; 
     showNotification(state.otherName, body, state.otherAvatar); 
   }
@@ -2367,6 +2441,7 @@ function showOpenGiftAnimation(msg, done) {
         if (s.taUseProb !== undefined) state.taUseProb = s.taUseProb;
         if (s.patGiftProb !== undefined) state.patGiftProb = s.patGiftProb;
         if (s.ratingThinkSeconds !== undefined) state.ratingThinkSeconds = s.ratingThinkSeconds;
+        if (s.ratingMode !== undefined) state.ratingMode = s.ratingMode;
         if (s.dictEnabled !== undefined) state.dictEnabled = s.dictEnabled;
         if (s.dictProb !== undefined) state.dictProb = s.dictProb;
         if (s.dictVersion !== undefined) state.dictVersion = s.dictVersion;
@@ -2405,6 +2480,7 @@ function showOpenGiftAnimation(msg, done) {
         if (s.taUseProb !== undefined) state.taUseProb = s.taUseProb;
         if (s.patGiftProb !== undefined) state.patGiftProb = s.patGiftProb;
         if (s.ratingThinkSeconds !== undefined) state.ratingThinkSeconds = s.ratingThinkSeconds;
+        if (s.ratingMode !== undefined) state.ratingMode = s.ratingMode;
         if (s.dictGroups && typeof s.dictGroups === 'object' && !Array.isArray(s.dictGroups)) {
           Object.keys(s.dictGroups).forEach(k => {
             const v = s.dictGroups[k];
@@ -2639,6 +2715,7 @@ function showOpenGiftAnimation(msg, done) {
     if (!state.giftCabinet || !Array.isArray(state.giftCabinet.mine)) state.giftCabinet = { mine: [], theirs: [] };
     if (state.patGiftProb === undefined) state.patGiftProb = 4;
     if (state.ratingThinkSeconds === undefined) state.ratingThinkSeconds = 10;
+    if (state.ratingMode !== 'star' && state.ratingMode !== 'score') state.ratingMode = 'star';
     if (state.dictVersion !== DICT_VERSION) {      // 版本升级：把新增的内置词语并入现有分组（用户自己添加的词不会丢）
       DICT_GROUPS_META.forEach(m => {
         const cur = Array.isArray(state.dictGroups[m.key]) ? state.dictGroups[m.key] : [];
@@ -3659,7 +3736,7 @@ function showOpenGiftAnimation(msg, done) {
         }
         else if (q.type === 'transfer') quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 💸 ¥${parseFloat(q.content).toFixed(2)}`;
         else if (q.type === 'gift') { try { const g = JSON.parse(q.content); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🎁 ${g.emoji || ''}${g.name || '礼物'}${g.count ? '×' + g.count : ''}`; } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': 🎁 礼物'); } }
-        else if (q.type === 'rating') { try { const rd = JSON.parse(q.content); const st = Math.max(0, Math.min(5, rd.stars || 0)); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: ⭐评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': ⭐评价'); } }
+        else if (q.type === 'rating') { try { const rd = JSON.parse(q.content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: ⭐评价 ${sc}分`; } else { const st = Math.max(0, Math.min(5, rd.stars || 0)); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: ⭐评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': ⭐评价'); } }
         else if (q.type === 'voice') quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🔊 ${q.duration}s`;
         else quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': [消息]');
         quoteHtml = `<div class="quote-attachment" data-quote-id="${q.id}">${quoteContent}</div>`;
@@ -3709,9 +3786,16 @@ if (canInteract && (!m.status || m.status === '待收款')) {
     } else if (m.type === 'rating') {
       let rd = {};
       try { rd = JSON.parse(m.content); } catch(e) {}
-      const stars = Math.max(0, Math.min(5, rd.stars || 0));
-      const starStr = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
-      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="rating-card"><div class="rating-question">${escapeHtml(rd.question || '')}</div><div class="rating-stars">${starStr}</div></div>${quoteHtml}</div></div>`;
+      let ratingBody = '';
+      if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) {
+        const score = Math.max(0, Math.min(100, Number(rd.score) || 0));
+        ratingBody = `<div class="rating-score">${score} 分</div>`;
+      } else {
+        const stars = Math.max(0, Math.min(5, rd.stars || 0));
+        const starStr = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
+        ratingBody = `<div class="rating-stars">${starStr}</div>`;
+      }
+      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="rating-card"><div class="rating-question">${escapeHtml(rd.question || '')}</div>${ratingBody}</div>${quoteHtml}</div></div>`;
       continue;
     }
     
@@ -3791,7 +3875,7 @@ else if (m.type !== 'transfer') {
       else if (msg.type === 'transfer') preview = `💸 ¥${parseFloat(msg.content).toFixed(2)}`;
       else if (msg.type === 'voice') preview = `🔊 ${msg.duration}s`;
       else if (msg.type === 'gift') { try { const g = JSON.parse(msg.content); preview = `🎁 ${g.emoji || ''}${g.name || '礼物'}`; } catch(e) { preview = '[礼物]'; } }
-      else if (msg.type === 'rating') { try { const rd = JSON.parse(msg.content); const st = Math.max(0, Math.min(5, rd.stars || 0)); preview = `⭐ 评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } catch(e) { preview = '[评价]'; } }
+      else if (msg.type === 'rating') { try { const rd = JSON.parse(msg.content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); preview = `⭐ 评价 ${sc}分`; } else { const st = Math.max(0, Math.min(5, rd.stars || 0)); preview = `⭐ 评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } } catch(e) { preview = '[评价]'; } }
       else preview = '[消息]';
       quotePreviewText.textContent = `${senderName}: ${preview}`;
       quotePreviewBar.classList.remove('hidden');
@@ -3931,9 +4015,26 @@ else if (m.type !== 'transfer') {
           <input type="number" id="ratingThinkSeconds" min="1" max="300" value="${state.ratingThinkSeconds || 10}" step="1">
           <button class="save-default-btn" id="saveDefaultRatingSeconds">💾 保存默认</button>
         </div>
+        <div class="rating-mode-row">
+          <button type="button" class="rating-mode-btn active" data-mode="star" id="ratingModeStar">⭐ 星级评价</button>
+          <button type="button" class="rating-mode-btn" data-mode="score" id="ratingModeScore">🔢 打分评价<br><span style="font-size:11px;opacity:.9;">满分100分</span></button>
+        </div>
         <button class="action-btn" id="submitRatingBtn">让 ${state.otherName} 评价</button>
       </div>`;
     document.body.appendChild(overlay);
+    let ratingMode = (state.ratingMode === 'score') ? 'score' : 'star';
+    const starBtn = overlay.querySelector('#ratingModeStar');
+    const scoreBtn = overlay.querySelector('#ratingModeScore');
+    const setMode = (mode) => {
+      ratingMode = mode;
+      state.ratingMode = mode;
+      starBtn.classList.toggle('active', mode === 'star');
+      scoreBtn.classList.toggle('active', mode === 'score');
+      saveAll();
+    };
+    setMode(ratingMode);
+    starBtn.onclick = () => setMode('star');
+    scoreBtn.onclick = () => setMode('score');
     overlay.querySelector('.close-x').onclick = () => overlay.remove();
     overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
     overlay.querySelector('#saveDefaultRatingSeconds').onclick = () => {
@@ -3953,9 +4054,15 @@ else if (m.type !== 'transfer') {
       typingInd.textContent = `对方正在思考...`;
       window.ratingReplyTimer = setTimeout(async () => {
         typingInd.textContent = '';
-        const stars = Math.floor(Math.random() * 6); // 0~5 星随机
-        await addMessage('other', 'rating', JSON.stringify({ question, stars }), null, { isRatingReply: true });
-        if (document.hidden) showNotification(state.otherName, `评价了你的问题（${stars}星）`, state.otherAvatar);
+        if (ratingMode === 'score') {
+          const score = Math.floor(Math.random() * 101); // 0~100
+          await addMessage('other', 'rating', JSON.stringify({ question, mode: 'score', score }), null, { isRatingReply: true });
+          if (document.hidden) showNotification(state.otherName, `评价了你的问题（${score}分）`, state.otherAvatar);
+        } else {
+          const stars = Math.floor(Math.random() * 6); // 0~5 星随机
+          await addMessage('other', 'rating', JSON.stringify({ question, mode: 'star', stars }), null, { isRatingReply: true });
+          if (document.hidden) showNotification(state.otherName, `评价了你的问题（${stars}星）`, state.otherAvatar);
+        }
       }, thinkSec * 1000);
     };
   }
@@ -4089,18 +4196,7 @@ function checkEasterEgg(text, sender) {
 }
 
 function startHeartRain() {
-  const layer = document.getElementById('effectLayer');
-  if (!layer) return;
-  for (let i = 0; i < 50; i++) {
-    const el = document.createElement('div');
-    el.className = 'floating-emoji';
-    el.textContent = '❤️';
-    el.style.left = Math.random() * 100 + '%';
-    el.style.bottom = '0';
-    el.style.animationDelay = Math.random() * 2 + 's';
-    layer.appendChild(el);
-    setTimeout(() => el.remove(), 5000);
-  }
+  startEmojiRain(['❤️'], 10);
 }
 
 function showDiamondProposal(myName) {
@@ -4612,6 +4708,7 @@ function startEmojiRain(emojis, duration = 5) {
         if (document.hidden && state.notifyEnabled && Notification.permission === 'granted') {
           showNotification(state.otherName, '📹视频通话未接通 📵', state.otherAvatar);
         }
+        triggerOtherReply();
       }
       incomingCallTimer = null;
     }, 120000);   // 未应答 2 分钟后才判定为未接听（原来是 60 秒）
@@ -4629,6 +4726,7 @@ function startEmojiRain(emojis, duration = 5) {
       overlay.remove(); 
       currentIncomingOverlay = null;
       addMessage('other','text','用户已拒绝视频通话');
+      triggerOtherReply();
     }; 
   }
   function startCall(isIncoming) { if (isIncoming) showIncomingCall(); else { typingInd.textContent = '等待对方接听...'; setTimeout(() => { typingInd.textContent = ''; if (Math.random() < 0.3) addMessage('other','text','对方正忙，暂时无法接听'); else showVideoWindow(); }, 2000); } }
@@ -4868,7 +4966,7 @@ async function handleTransferAction(msg, action) {
         patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion,
         taAddEnabled: state.taAddEnabled, taAddProb: state.taAddProb, taUseProb: state.taUseProb,
-        patGiftProb: state.patGiftProb, ratingThinkSeconds: state.ratingThinkSeconds
+        patGiftProb: state.patGiftProb, ratingThinkSeconds: state.ratingThinkSeconds, ratingMode: state.ratingMode || 'star'
       };
     }
     if (sections.includes('intimacy')) {
@@ -4998,6 +5096,13 @@ async function handleTransferAction(msg, action) {
     const el = document.createElement('div');
     el.className = 'intimacy-floating-text';
     el.textContent = text;
+    // 定位到人形轮廓中间
+    const figure = document.getElementById('intimacyFigure') || document.getElementById('intimacyFigureArea');
+    if (figure) {
+      const rect = figure.getBoundingClientRect();
+      el.style.left = (rect.left + rect.width / 2) + 'px';
+      el.style.top = (rect.top + rect.height / 2) + 'px';
+    }
     document.body.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.remove(); }, duration);
   }
@@ -5391,6 +5496,7 @@ async function handleTransferAction(msg, action) {
     const figure = document.getElementById('intimacyFigure');
     if (figure) {
       figure.onclick = (e) => {
+        if (intimacyCardPopupLock) return;
         // 每次点击：2% 概率 +5 分、5% 概率 +3 分、其余 +1 分
         const rr = Math.random();
         const gain = rr < 0.02 ? 5 : (rr < 0.07 ? 3 : 1);
@@ -5409,6 +5515,21 @@ async function handleTransferAction(msg, action) {
         if (area) {
           area.appendChild(plus);
           setTimeout(() => { if (plus.parentNode) plus.remove(); }, 2000);
+        }
+
+        // 5% 概率弹出字卡回应（仅文字：字卡库 / 词典拼句 / ta字卡）
+        if (Math.random() < 0.05) {
+          const card = buildTextFromLibrary();
+          const text = (card && card.content) ? String(card.content) : '';
+          if (text) {
+            intimacyCardPopupLock = true;
+            showIntimacyFloatingText(text, 5000);
+            const extra = {};
+            if (card.isDict) extra.isDict = true;
+            if (card.isTaCard) extra.isTaCard = true;
+            addMessage('other', 'text', text, null, extra);
+            setTimeout(() => { intimacyCardPopupLock = false; }, 5000);
+          }
         }
 
         if (state.intimacyScore >= INTIMACY_MAX_SCORE) {
@@ -5614,7 +5735,8 @@ async function handleTransferAction(msg, action) {
     document.getElementById('deleteChatBgBtn').onclick = async () => { if (state.bgImageId) await deleteImageFromDB(state.bgImageId); state.bgImageId = ''; state.bgImage = ''; chatBg.style.backgroundImage = ''; document.getElementById('chatBgPreview').src = ''; await saveAll(); };
     document.getElementById('videoBgUpload').onchange = async e => { const f = e.target.files[0]; if (f) { const u = await compressImage(f, 300, 0.9); const newId = `videoBg_${Date.now()}`; await saveImageToDB(newId, u); state.videoBgId = newId; state.videoBg = u; document.getElementById('videoBgPreview').src = u; saveAll(); } };
     document.getElementById('deleteVideoBgBtn').onclick = async () => { if (state.videoBgId) await deleteImageFromDB(state.videoBgId); state.videoBgId = ''; state.videoBg = ''; document.getElementById('videoBgPreview').src = ''; await saveAll(); };
-    document.getElementById('testSoundBtn').onclick = () => playSound(state.soundIndex);
+    document.getElementById('testSoundBtn').onclick = () => playSound(+document.getElementById('soundSelect').value);
+    document.getElementById('soundSelect').onchange = (e) => { state.soundIndex = +e.target.value; };
     document.getElementById('volumeSlider').oninput = e => state.volume = parseFloat(e.target.value);
     document.getElementById('exportBackupBtn').onclick = exportBackup;
     document.getElementById('importBackupBtn').onclick = () => document.getElementById('backupFileInput').click();
