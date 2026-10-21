@@ -90,6 +90,21 @@
     .rating-card .rating-question { font-size: 12px; opacity: 0.85; margin-bottom: 8px; word-break: break-all; }
     .rating-card .rating-stars { font-size: 26px; letter-spacing: 2px; line-height: 1.2; }
     .rating-card .rating-score { font-size: 22px; font-weight: 600; letter-spacing: 1px; line-height: 1.2; }
+    /* 音乐卡片样式 */
+    .music-card { background: linear-gradient(135deg, #2c2f36, #1a1c23); color: #fff; border-radius: 12px; width: 240px; max-width: 100%; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: relative; display: flex; flex-direction: column; gap: 8px; cursor: pointer; }
+    .music-card-top { display: flex; align-items: center; gap: 10px; }
+    .music-cover { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #333; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #888; }
+    .music-info { flex: 1; min-width: 0; }
+    .music-name { font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .music-artist { font-size: 11px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .music-play-btn { width: 36px; height: 36px; border-radius: 50%; background: #07c160; color: #fff; border: none; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+    .music-progress-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #aaa; }
+    .music-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2); outline: none; cursor: pointer; }
+    .music-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #07c160; cursor: pointer; }
+    /* 歌词弹窗 */
+    .music-lyric-modal .modal-content { max-width: 320px; width: 90%; background: #1c1c1e; color: #fff; border-radius: 16px; padding: 20px; text-align: center; max-height: 80vh; display: flex; flex-direction: column; }
+    .music-lyric-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    .music-lyric-body { flex: 1; overflow-y: auto; font-size: 13px; line-height: 1.8; color: #ddd; max-height: 50vh; padding: 4px 0; white-space: pre-wrap; word-break: break-all; text-align: center; }
     .rating-mode-row { display: flex; gap: 8px; margin: 10px 0 14px; }
     .rating-mode-btn { flex: 1; border: 1px solid #ddd; background: #f5f5f5; color: #555; border-radius: 10px; padding: 10px 8px; font-size: 13px; cursor: pointer; }
     .rating-mode-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; }
@@ -499,6 +514,10 @@
           <div class="setting-row"><label>主动来电 每小时%</label><input id="patVideoCallProb" type="number" min="0" max="100" value="6"></div>
           <div class="setting-row"><label>主动挂断%</label><input id="patHangupProb" type="number" min="0" max="100" value="80"> <span style="font-size:12px;color:#888;">接通后对方随机在10-180分钟间挂断</span></div>
           <div class="setting-row"><label>对方引用消息%</label><input id="patQuoteProb" type="number" min="0" max="100" value="15"></div>
+          <div class="setting-row"><label>分享音乐 每小时%</label><input id="patMusicProb" type="number" min="0" max="100" value="5">
+            <button id="testMusicShareBtn" style="margin-left:6px;padding:5px 12px;font-size:12px;background:linear-gradient(135deg,#07c160,#00a884);color:#fff;border:none;border-radius:16px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(7,193,96,0.35);">🎵 立即测试</button>
+          </div>
+          <div id="musicDebugInfo" style="font-size:11px;color:#888;margin-top:-4px;margin-bottom:6px;"></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="6" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option><option value="5">🔊 经典短音</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="taCards" checked> ta添加的字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="gifts" checked> 礼物</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
@@ -726,6 +745,7 @@
       <div class="fav-tabs">
         <div class="fav-tab active" data-favtab="messages">收藏的聊天记录<span id="favMsgCount"></span></div>
         <div class="fav-tab" data-favtab="photos">收藏的照片<span id="favPhotoCount"></span></div>
+        <div class="fav-tab" data-favtab="music">分享的歌曲<span id="favMusicCount"></span></div>
       </div>
       <div id="favMessagesWrap" class="fav-body">
         <div id="favMessages"></div>
@@ -735,6 +755,10 @@
         <div class="fav-manage-bar"><button id="favManageBtn">🗑️ 管理</button></div>
         <div id="favPhotos"></div>
         <div id="favPhotoLoadMore" class="fav-load-more hidden">↑ 加载更早的照片</div>
+      </div>
+      <div id="favMusicWrap" class="fav-body hidden">
+        <div id="favMusicList"></div>
+        <div id="favMusicLoadMore" class="fav-load-more hidden">↑ 加载更早的歌曲</div>
       </div>
     </div>
   </div>
@@ -1223,6 +1247,7 @@
           noteNextAt: noteNextAt || null,
           transferNextAt: transferNextAt || null,
           giftNextAt: giftNextAt || null,
+          musicNextAt: state.musicNextAt || null,
           intimacyOtherNextAt: intimacyOtherNextAt || null,
           moments: [],
           intimacy: intimacyRunning ? {
@@ -1319,6 +1344,7 @@
         }
       }
       // 恢复朋友圈评论自动回复
+      if (st.musicNextAt) { state.musicNextAt = st.musicNextAt; }
       if (st.moments && st.moments.length) {
         st.moments.forEach(item => {
           const moment = state.moments.find(m => m.id === item.momentId);
@@ -1545,7 +1571,7 @@
       choiceCustomAnswer: state.choiceCustomAnswer,
       lastMsgTime: lastMsgTime,
       lastNoteTime: state.lastNoteTime,
-      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb,
+      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb, patMusicProb: state.patMusicProb,
       intimacyEnabled: state.intimacyEnabled,
       intimacyActions: state.intimacyActions,
       intimacySelectedAction: state.intimacySelectedAction,
@@ -1747,7 +1773,8 @@
     patGiftProb: 4,
     ratingThinkSeconds: 10,
     ratingMode: 'star',
-    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15
+    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15, patMusicProb: 5,
+    musicNextAt: null
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
 const VALID_PINYIN = [
@@ -1986,38 +2013,166 @@ function showOpenGiftAnimation(msg, done) {
   const searchResults = document.getElementById('searchResults');
   const favOwnerNameEl = document.getElementById('favOwnerName');
   const favCloseBtn = document.getElementById('favCloseBtn');
+  // ==================== 音乐播放器（全局单例） ====================
+  let activeAudioInstance = null;
+  let activeAudioCardEl = null;
+
+  function stopActiveAudio() {
+    if (activeAudioInstance) {
+      try { activeAudioInstance.pause(); } catch (e) {}
+      activeAudioInstance = null;
+    }
+    if (activeAudioCardEl) {
+      const btn = activeAudioCardEl.querySelector('.music-play-btn');
+      if (btn) btn.textContent = '▶';
+      const slider = activeAudioCardEl.querySelector('.music-slider');
+      if (slider) slider.value = 0;
+      const currTime = activeAudioCardEl.querySelector('.music-time-curr');
+      if (currTime) currTime.textContent = '0:00';
+      activeAudioCardEl = null;
+    }
+  }
+
+  function formatAudioTime(sec) {
+    if (isNaN(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  function setupMusicCardEvents(cardEl) {
+    const previewUrl = cardEl.dataset.previewUrl;
+    let musicData = {};
+    try { musicData = JSON.parse(cardEl.dataset.musicJson || '{}'); } catch (e) {}
+
+    const playBtn = cardEl.querySelector('.music-play-btn');
+    const slider = cardEl.querySelector('.music-slider');
+    const timeCurr = cardEl.querySelector('.music-time-curr');
+    const timeTotal = cardEl.querySelector('.music-time-total');
+    let isDragging = false;
+
+    playBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (!previewUrl) { showAlert('试听链接不可用'); return; }
+      if (activeAudioInstance && activeAudioCardEl === cardEl) {
+        if (activeAudioInstance.paused) {
+          activeAudioInstance.play().catch(() => showAlert('播放失败'));
+          playBtn.textContent = '⏸';
+        } else {
+          activeAudioInstance.pause();
+          playBtn.textContent = '▶';
+        }
+        return;
+      }
+      stopActiveAudio();
+      activeAudioCardEl = cardEl;
+      const audio = new Audio(previewUrl);
+      activeAudioInstance = audio;
+      audio.onloadedmetadata = () => {
+        if (timeTotal) timeTotal.textContent = formatAudioTime(audio.duration);
+        if (slider) slider.max = audio.duration || 30;
+      };
+      audio.ontimeupdate = () => {
+        if (isDragging) return;
+        if (slider) slider.value = audio.currentTime;
+        if (timeCurr) timeCurr.textContent = formatAudioTime(audio.currentTime);
+      };
+      audio.onended = () => stopActiveAudio();
+      audio.onerror = () => { showAlert('试听暂时不可用'); stopActiveAudio(); };
+      audio.play().then(() => { playBtn.textContent = '⏸'; }).catch(() => { showAlert('播放失败或被拦截'); stopActiveAudio(); });
+    };
+
+    slider.onpointerdown = () => { isDragging = true; };
+    slider.onpointerup = () => {
+      isDragging = false;
+      if (activeAudioInstance && activeAudioCardEl === cardEl) {
+        try { activeAudioInstance.currentTime = parseFloat(slider.value) || 0; } catch (e) {}
+      }
+    };
+    slider.oninput = () => {
+      if (timeCurr) timeCurr.textContent = formatAudioTime(parseFloat(slider.value) || 0);
+    };
+
+    cardEl.onclick = (e) => {
+      if (e.target.closest('.music-play-btn') || e.target.closest('.music-slider')) return;
+      if (!musicData.lyrics && !musicData.lyricsPlain) { showAlert('暂无歌词'); return; }
+      showLyricModal(musicData);
+    };
+  }
+
+  function showLyricModal(musicData) {
+    const existing = document.querySelector('.music-lyric-modal');
+    if (existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'picker-overlay choice-modal music-lyric-modal';
+    overlay.style.zIndex = 905;
+    let lyricText = '';
+    if (musicData.lyrics) {
+      const lines = String(musicData.lyrics).split('\n');
+      const cleanLines = lines.map(l => l.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim()).filter(Boolean);
+      lyricText = cleanLines.length > 0 ? cleanLines.join('\n') : String(musicData.lyrics);
+    } else if (musicData.lyricsPlain) {
+      lyricText = String(musicData.lyricsPlain);
+    } else {
+      lyricText = '暂无歌词';
+    }
+    const coverHtml = musicData.coverUrl ? `<img src="${escapeHtml(musicData.coverUrl)}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;">` : `<div style="width:48px;height:48px;border-radius:8px;background:#333;display:flex;align-items:center;justify-content:center;font-size:22px;">🎵</div>`;
+    overlay.innerHTML = `
+      <div class="modal-content">
+        <button class="close-x">✕</button>
+        <div class="music-lyric-header">
+          ${coverHtml}
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:bold;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;">${escapeHtml(musicData.name || '未知歌曲')}</div>
+            <div style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(musicData.artist || '未知歌手')}</div>
+          </div>
+        </div>
+        <div class="music-lyric-body">${escapeHtml(lyricText)}</div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.close-x').onclick = () => overlay.remove();
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  }
+
   const favMessagesEl = document.getElementById('favMessages');
   const favMsgLoadMoreEl = document.getElementById('favMsgLoadMore');
   const favPhotosEl = document.getElementById('favPhotos');
   const favPhotoLoadMoreEl = document.getElementById('favPhotoLoadMore');
+  const favMusicLoadMoreEl = document.getElementById('favMusicLoadMore');
+  const favMusicListEl = document.getElementById('favMusicList');
   const favManageBtn = document.getElementById('favManageBtn');
   const favMessagesWrap = document.getElementById('favMessagesWrap');
   const favPhotosWrap = document.getElementById('favPhotosWrap');
+  const favMusicWrap = document.getElementById('favMusicWrap');
   let favCache = [];
-  let favMsgStart = 0, favPhotoStart = 0;
+  let favMsgStart = 0, favPhotoStart = 0, favMusicStart = 0;
   let favManageMode = false;
   const favSelected = new Set();
   const FAV_MSG_PAGE = 50, FAV_PHOTO_PAGE = 40;
 
   function updateFavTabCounts() {
-    const mc = document.getElementById('favMsgCount'), pc = document.getElementById('favPhotoCount');
+    const mc = document.getElementById('favMsgCount'), pc = document.getElementById('favPhotoCount'), muc = document.getElementById('favMusicCount');
     if (mc) mc.textContent = `（${favCache.filter(f => f.type === 'text').length}）`;
     if (pc) pc.textContent = `（${favCache.filter(f => f.type === 'image').length}）`;
+    if (muc) muc.textContent = `（${favCache.filter(f => f.type === 'music').length}）`;
   }
   async function openFavorites() {
     if (favOwnerNameEl) favOwnerNameEl.textContent = `📌 ${state.otherName} 的收藏夹`;
     favCache = (await loadFavoritesFromDB()).sort((a, b) => b.timestamp - a.timestamp);
-    favMsgStart = 0; favPhotoStart = 0; favManageMode = false; favSelected.clear();
+    favMsgStart = 0; favPhotoStart = 0; favMusicStart = 0; favManageMode = false; favSelected.clear();
     switchFavTab('messages');
     document.getElementById('favoritesOverlay').classList.remove('hidden');
   }
   function switchFavTab(tab) {
+    stopActiveAudio();
     document.querySelectorAll('.fav-tab').forEach(t => t.classList.toggle('active', t.dataset.favtab === tab));
     favMessagesWrap.classList.toggle('hidden', tab !== 'messages');
     favPhotosWrap.classList.toggle('hidden', tab !== 'photos');
+    favMusicWrap.classList.toggle('hidden', tab !== 'music');
     if (favManageBtn) favManageBtn.textContent = '🗑️ 管理';
     favManageMode = false; favSelected.clear();
     if (tab === 'messages') renderFavMessages(false);
+    else if (tab === 'music') renderFavMusic(false);
     else renderFavPhotos(false);
   }
   function renderFavMessages(append) {
@@ -2037,6 +2192,33 @@ function showOpenGiftAnimation(msg, done) {
       favMessagesEl.querySelectorAll('.fav-msg-delete').forEach(btn => btn.onclick = () => removeFavorite(btn.dataset.fid, false));
     }
     favMsgLoadMoreEl.classList.toggle('hidden', items.length <= favMsgStart + FAV_MSG_PAGE);
+  }
+  function renderFavMusic(append) {
+    const items = favCache.filter(f => f.type === 'music');
+    updateFavTabCounts();
+    const shown = items.slice(favMusicStart, favMusicStart + 10);
+    if (!append) favMusicListEl.innerHTML = '';
+    if (items.length === 0) {
+      favMusicListEl.innerHTML = '<div style="text-align:center;padding:30px;color:#999;">对方还没有分享过歌曲</div>';
+    } else {
+      shown.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'fav-msg-item';
+        const coverHtml = f.coverUrl ? `<img class="music-cover" src="${escapeHtml(f.coverUrl)}" onerror="this.outerHTML='<div class=\'music-cover\'>🎵</div>'">` : `<div class="music-cover">🎵</div>`;
+        div.innerHTML = `<div class="music-card" style="flex:1;" data-preview-url="${escapeHtml(f.previewUrl || '')}" data-music-json="${escapeHtml(JSON.stringify({ name: f.name, artist: f.artist, coverUrl: f.coverUrl, previewUrl: f.previewUrl, lyrics: f.lyrics, lyricsPlain: f.lyricsPlain }))}"><div class="music-card-top">${coverHtml}<div class="music-info"><div class="music-name">${escapeHtml(f.name || '未知歌曲')}</div><div class="music-artist">${escapeHtml(f.artist || '未知歌手')}</div></div><button class="music-play-btn" title="播放/暂停">▶</button></div><div class="music-progress-row"><span class="music-time-curr">0:00</span><input type="range" class="music-slider" min="0" max="30" value="0" step="0.1"><span class="music-time-total">0:30</span></div></div><button class="fav-msg-delete" data-fid="${f.id}">✕</button>`;
+        favMusicListEl.appendChild(div);
+      });
+      favMusicListEl.querySelectorAll('.music-card').forEach(c => setupMusicCardEvents(c));
+      favMusicListEl.querySelectorAll('.fav-msg-delete').forEach(btn => btn.onclick = async () => {
+        const ok = await confirmDialog('确定从收藏夹移除这首歌？');
+        if (!ok) return;
+        if (activeAudioCardEl && activeAudioCardEl.dataset && btn.dataset.fid && activeAudioCardEl.dataset.previewUrl) { stopActiveAudio(); }
+        await deleteFavoriteFromDB(btn.dataset.fid);
+        favCache = favCache.filter(f => f.id !== btn.dataset.fid);
+        renderFavMusic(false);
+      });
+    }
+    favMusicLoadMoreEl.classList.toggle('hidden', items.length <= favMusicStart + 10);
   }
   function renderFavPhotos(append) {
     const items = favCache.filter(f => f.type === 'image');
@@ -2272,6 +2454,7 @@ function showOpenGiftAnimation(msg, done) {
     else if (type === 'transfer') body = `转账 ¥${parseFloat(content).toFixed(2)}`; 
     else if (type === 'gift') body = '赠送了一个礼物 🎁';
     else if (type === 'rating') { try { const rd = JSON.parse(content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); body = `评价：${sc}分`; } else { body = `评价：${'⭐'.repeat(Math.max(0,Math.min(5,rd.stars||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,rd.stars||0)))}`; } } catch(e) { body = '做出了评价 ⭐'; } } 
+    else if (type === 'music') { try { const md = JSON.parse(content); body = `分享了一首歌 🎵 ${md.name || '音乐'} - ${md.artist || ''}`; } catch(e) { body = '分享了一首歌 🎵'; } }
     else if (type === 'voice') body = '[语音]'; 
     else if (type === 'call') body = `📹 通话时长 ${content}`;
     else if (type === 'tap') body = content;
@@ -2466,6 +2649,7 @@ function showOpenGiftAnimation(msg, done) {
         if (s.patVideoCallProb !== undefined) state.patVideoCallProb = s.patVideoCallProb;
         if (s.patHangupProb !== undefined) state.patHangupProb = s.patHangupProb;
         if (s.patQuoteProb !== undefined) state.patQuoteProb = s.patQuoteProb;
+        if (s.patMusicProb !== undefined) state.patMusicProb = s.patMusicProb;
         if (s.soundIndex !== undefined) state.soundIndex = s.soundIndex;
         if (s.volume !== undefined) state.volume = s.volume;
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
@@ -2713,6 +2897,7 @@ function showOpenGiftAnimation(msg, done) {
     if (!Array.isArray(state.giftShop)) state.giftShop = [];
     if (!state.giftShop.length) state.giftShop = DEFAULT_GIFT_SHOP.slice();
     if (!state.giftCabinet || !Array.isArray(state.giftCabinet.mine)) state.giftCabinet = { mine: [], theirs: [] };
+    if (state.patMusicProb === undefined) state.patMusicProb = 5;
     if (state.patGiftProb === undefined) state.patGiftProb = 4;
     if (state.ratingThinkSeconds === undefined) state.ratingThinkSeconds = 10;
     if (state.ratingMode !== 'star' && state.ratingMode !== 'score') state.ratingMode = 'star';
@@ -2831,6 +3016,7 @@ function showOpenGiftAnimation(msg, done) {
     document.getElementById('myAvatarPreview').src = state.myAvatar;
     document.getElementById('otherAvatarPreview').src = state.otherAvatar;
     document.getElementById('replyDelay').value = state.replyDelay;
+    document.getElementById('patMusicProb').value = state.patMusicProb !== undefined ? state.patMusicProb : 5;
     document.getElementById('probWord').value = state.probWord;
     document.getElementById('probSticker').value = state.probSticker;
     document.getElementById('probEmoji').value = state.probEmoji;
@@ -3737,6 +3923,7 @@ function showOpenGiftAnimation(msg, done) {
         else if (q.type === 'transfer') quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 💸 ¥${parseFloat(q.content).toFixed(2)}`;
         else if (q.type === 'gift') { try { const g = JSON.parse(q.content); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🎁 ${g.emoji || ''}${g.name || '礼物'}${g.count ? '×' + g.count : ''}`; } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': 🎁 礼物'); } }
         else if (q.type === 'rating') { try { const rd = JSON.parse(q.content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: ⭐评价 ${sc}分`; } else { const st = Math.max(0, Math.min(5, rd.stars || 0)); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: ⭐评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': ⭐评价'); } }
+        else if (q.type === 'music') { try { const md = JSON.parse(q.content); quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🎵 ${md.name || '音乐'} - ${md.artist || ''}`; } catch(e) { quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': 🎵 音乐'); } }
         else if (q.type === 'voice') quoteContent = `${escapeHtml(q.sender === 'me' ? state.myName : state.otherName)}: 🔊 ${q.duration}s`;
         else quoteContent = escapeHtml((q.sender === 'me' ? state.myName : state.otherName) + ': [消息]');
         quoteHtml = `<div class="quote-attachment" data-quote-id="${q.id}">${quoteContent}</div>`;
@@ -3797,6 +3984,12 @@ if (canInteract && (!m.status || m.status === '待收款')) {
       }
       html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="rating-card"><div class="rating-question">${escapeHtml(rd.question || '')}</div>${ratingBody}</div>${quoteHtml}</div></div>`;
       continue;
+    } else if (m.type === 'music') {
+      let md = {};
+      try { md = JSON.parse(m.content); } catch(e) {}
+      const coverHtml = md.coverUrl ? `<img class="music-cover" src="${escapeHtml(md.coverUrl)}" onerror="this.outerHTML='<div class=\'music-cover\'>🎵</div>'">` : `<div class="music-cover">🎵</div>`;
+      html += `<div class="message-row ${isMe ? 'me' : 'other'}" data-msg-id="${m.id}"><img class="message-avatar" src="${isMe ? state.myAvatar : state.otherAvatar}" data-sender="${m.sender}"><div class="message-bubble-wrapper"><div class="music-card" data-preview-url="${escapeHtml(md.previewUrl || '')}" data-music-json="${escapeHtml(m.content)}"><div class="music-card-top">${coverHtml}<div class="music-info"><div class="music-name">${escapeHtml(md.name || '未知歌曲')}</div><div class="music-artist">${escapeHtml(md.artist || '未知歌手')}</div></div><button class="music-play-btn" title="播放/暂停">▶</button></div><div class="music-progress-row"><span class="music-time-curr">0:00</span><input type="range" class="music-slider" min="0" max="30" value="0" step="0.1"><span class="music-time-total">0:30</span></div></div>${quoteHtml}</div></div>`;
+      continue;
     }
     
     // 普通消息行
@@ -3837,7 +4030,8 @@ else if (m.type !== 'transfer') {
     document.querySelectorAll('.voice-transcribed').forEach(el => { el.onclick = (e) => { e.stopPropagation(); const msgId = Number(el.dataset.msgId); const msg = messages.find(m => m.id === msgId); if (msg) { const scrollTop = chatMessages.scrollTop; msg.transcribedText = ''; renderMessages(false); chatMessages.scrollTop = scrollTop; saveMessagesOnly(); } }; });
     document.querySelectorAll('.message-avatar').forEach(av => av.ondblclick = (e) => { const sender = av.dataset.sender; if (sender === 'other') { addMessage('other', 'tap', `${state.myName}拍了拍${state.otherName}`); triggerOtherReply(); } });
     function addLongPress(el, msgId) { let pressTimer; const show = (e) => { e.preventDefault(); const msg = messages.find(m => m.id === msgId); if (msg) showContextMenu(e, msg); }; el.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => show(e), 500); }); el.addEventListener('touchend', () => clearTimeout(pressTimer)); el.addEventListener('touchmove', () => clearTimeout(pressTimer)); el.addEventListener('contextmenu', (e) => { e.preventDefault(); show(e); }); }
-    document.querySelectorAll('.message-row').forEach(row => { const msgId = Number(row.dataset.msgId); const bubble = row.querySelector('.message-bubble, .bubble-image, .transfer-card, .gift-card, .rating-card'); if (bubble) addLongPress(bubble, msgId); });
+    document.querySelectorAll('.message-row').forEach(row => { const msgId = Number(row.dataset.msgId); const bubble = row.querySelector('.message-bubble, .bubble-image, .transfer-card, .gift-card, .rating-card, .music-card'); if (bubble) addLongPress(bubble, msgId); });
+      chatMessages.querySelectorAll('.music-card').forEach(c => setupMusicCardEvents(c));
     document.querySelectorAll('.quote-attachment').forEach(q => { q.onclick = () => { const id = Number(q.dataset.quoteId); const el = document.querySelector(`.message-row[data-msg-id="${id}"]`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }; });
     document.querySelectorAll('.bubble-image').forEach(img => { img.addEventListener('click', () => { previewImage.src = img.dataset.fullImg || img.src; imagePreviewOverlay.classList.remove('hidden'); }); });
     
@@ -3875,7 +4069,8 @@ else if (m.type !== 'transfer') {
       else if (msg.type === 'transfer') preview = `💸 ¥${parseFloat(msg.content).toFixed(2)}`;
       else if (msg.type === 'voice') preview = `🔊 ${msg.duration}s`;
       else if (msg.type === 'gift') { try { const g = JSON.parse(msg.content); preview = `🎁 ${g.emoji || ''}${g.name || '礼物'}`; } catch(e) { preview = '[礼物]'; } }
-      else if (msg.type === 'rating') { try { const rd = JSON.parse(msg.content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); preview = `⭐ 评价 ${sc}分`; } else { const st = Math.max(0, Math.min(5, rd.stars || 0)); preview = `⭐ 评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } } catch(e) { preview = '[评价]'; } }
+      else if (msg.type === 'rating') { try { const rd = JSON.parse(msg.content); const st = Math.max(0, Math.min(5, rd.stars || 0)); preview = `⭐ 评价 ${'⭐'.repeat(st)}${'☆'.repeat(5 - st)}`; } catch(e) { preview = '[评价]'; } }
+      else if (msg.type === 'music') { try { const md = JSON.parse(msg.content); preview = `🎵 ${md.name || '音乐'} - ${md.artist || ''}`; } catch(e) { preview = '[音乐]'; } }
       else preview = '[消息]';
       quotePreviewText.textContent = `${senderName}: ${preview}`;
       quotePreviewBar.classList.remove('hidden');
@@ -4262,15 +4457,255 @@ function startEmojiRain(emojis, duration = 5) {
   }, 300);
 }
   
-  function triggerOtherReply() { 
-    if (replyTimer) clearTimeout(replyTimer); 
-    typingInd.textContent = '对方正在输入...'; 
-    replyTimer = setTimeout(() => { 
-      typingInd.textContent = ''; 
-      generateReplies(); 
-    }, state.replyDelay * 1000); 
+  // ==================== 音乐分享功能模块 ====================
+  const MUSIC_EMOTION_MAP = {
+    '累': ['治愈', '放松', '晚安'], '疲惫': ['治愈', '放松', '晚安'], '加班': ['治愈', '放松', '晚安'], '辛苦': ['治愈', '放松', '晚安'], '困': ['治愈', '放松', '晚安'],
+    '开心': ['快乐', 'happy', '好心情'], '高兴': ['快乐', 'happy', '好心情'], '爽': ['快乐', 'happy', '好心情'], '棒': ['快乐', 'happy', '好心情'], '好耶': ['快乐', 'happy', '好心情'],
+    '难过': ['伤感', '治愈', '安慰'], '伤心': ['伤感', '治愈', '安慰'], '哭': ['伤感', '治愈', '安慰'], '失落': ['伤感', '治愈', '安慰'], 'emo': ['伤感', '治愈', '安慰'],
+    '想你': ['想你', 'love', '心动'], '想念': ['想你', 'love', '心动'], '思念': ['想你', 'love', '心动'], '喜欢': ['想你', 'love', '心动'],
+    '生气': ['解压', '摇滚', '发泄'], '烦': ['解压', '摇滚', '发泄'], '气死': ['解压', '摇滚', '发泄'], '无语': ['解压', '摇滚', '发泄'],
+    '晚安': ['晚安', '助眠', '轻音乐'], '睡觉': ['晚安', '助眠', '轻音乐'], '困了': ['晚安', '助眠', '轻音乐'],
+    '饿': ['美食', '轻快', '小甜歌'], '吃': ['美食', '轻快', '小甜歌'], '美食': ['美食', '轻快', '小甜歌'], '火锅': ['美食', '轻快', '小甜歌'],
+    '下雨': ['雨天', '听雨'], '天气': ['雨天', '听雨'], '阴天': ['雨天', '听雨'],
+    '约会': ['甜蜜', '浪漫'], '见面': ['甜蜜', '浪漫'], '想你啦': ['甜蜜', '浪漫']
+  };
+
+  // 热歌池（第二层：60% 概率）
+  const MUSIC_ARTIST_POOLS = [
+    ['周杰伦', '林俊杰', '陈奕迅', '薛之谦', '邓紫棋', '李荣浩', '毛不易', '林宥嘉', '汪苏泷', '许嵩', '孙燕姿', '五月天', '陶喆', '蔡依林', '凤凰传奇'],
+    ['Taylor Swift', 'Ed Sheeran', 'Bruno Mars', 'Justin Bieber', 'Adele', 'Maroon 5', 'Billie Eilish', 'Charlie Puth'],
+    ['张学友', '王菲', '张信哲', '梁静茹', '刘若英', '陈粒', '赵雷', '李宗盛', '孙燕姿', '沈以诚', '林俊杰', '张惠妹', '邓丽君', '赵雷', '张韶涵'],
+    ['沈以诚', '王嘉尔', '蔡徐坤', '王心凌', 'IU', 'BLACKPINK', 'EXO', 'SEVENTEEN', '鹿晗', '宋雨琦', 'TFBOYS']
+  ];
+
+  function getMusicSearchTerm() {
+    // 第一层：情绪关键词映射（扫描最近 5 条 me 消息）
+    const meMsgs = messages.filter(m => m.sender === 'me' && m.type === 'text').slice(-5);
+    for (let i = meMsgs.length - 1; i >= 0; i--) {
+      const text = String(meMsgs[i].content || '');
+      for (const key in MUSIC_EMOTION_MAP) {
+        if (text.includes(key)) {
+          const pool = MUSIC_EMOTION_MAP[key];
+          return pool[Math.floor(Math.random() * pool.length)];
+        }
+      }
+    }
+    // 第二层（60%）：热歌池随机抽
+    if (Math.random() < 0.6) {
+      const pool = MUSIC_ARTIST_POOLS[Math.floor(Math.random() * MUSIC_ARTIST_POOLS.length)];
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    // 第三层（40%）：单字盲盒——字卡库第一字，为空则词典拼句第一字
+    if (state.wordCards && state.wordCards.length > 0) {
+      const card = state.wordCards[Math.floor(Math.random() * state.wordCards.length)];
+      const ch = String(card).trim().charAt(0);
+      if (ch) return ch;
+    }
+    const dictKeys = ['obj', 'place', 'objAct', 'loveVerb', 'missVerb'];
+    const validGroups = dictKeys.filter(k => state.dictGroups && Array.isArray(state.dictGroups[k]) && state.dictGroups[k].length > 0);
+    if (validGroups.length > 0) {
+      const gKey = validGroups[Math.floor(Math.random() * validGroups.length)];
+      const words = state.dictGroups[gKey];
+      const ch = String(words[Math.floor(Math.random() * words.length)]).trim().charAt(0);
+      if (ch) return ch;
+    }
+    // 最终兜底
+    return MUSIC_ARTIST_POOLS[Math.floor(Math.random() * MUSIC_ARTIST_POOLS.length)][0];
   }
-  
+
+  async function fetchWithTimeout(url, timeoutMs = 10000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(id);
+      return response;
+    } catch (e) {
+      clearTimeout(id);
+      throw e;
+    }
+  }
+
+  // 清洗歌名/歌手：去掉 (xxx)、[xxx]、feat. xxx 以及 " - xxx" 后面的内容
+  function cleanMusicText(s) {
+    let t = String(s || '');
+    t = t.replace(/\([^)]*\)/g, '');        // (xxx)
+    t = t.replace(/\[[^\]]*\]/g, '');       // [xxx]
+    t = t.replace(/\s*[-–]\s*[A-Za-z].*$/, ''); // " - xxx" 之后的内容（仅当后面是英文，避免误伤歌名里的破折号）
+    t = t.replace(/\s*(feat\.?|ft\.?|with)\s+.*$/i, ''); // feat. / ft. / with
+    return t.trim();
+  }
+
+  async function fetchLyrics(trackName, artistName) {
+    try {
+      const cleanName = cleanMusicText(trackName);
+      const cleanArtist = cleanMusicText(artistName);
+      // 优先：清洗后的「歌名 歌手」搜索接口（/api/get 对括号杂质匹配失败率高）
+      const q1 = `${cleanName} ${cleanArtist}`.trim();
+      let url = `https://lrclib.net/api/search?q=${encodeURIComponent(q1)}`;
+      let res = await fetchWithTimeout(url, 6000);
+      let list = res.ok ? await res.json() : [];
+      let hit = Array.isArray(list) && list.length > 0 ? list[0] : null;
+
+      // 兜底：纯歌名再搜一次
+      if (!hit || (!hit.syncedLyrics && !hit.plainLyrics)) {
+        const q2 = cleanName;
+        url = `https://lrclib.net/api/search?q=${encodeURIComponent(q2)}`;
+        res = await fetchWithTimeout(url, 6000);
+        list = res.ok ? await res.json() : [];
+        hit = Array.isArray(list) && list.length > 0 ? list[0] : null;
+      }
+
+      if (!hit) return { lyrics: null, lyricsPlain: null };
+      return { lyrics: hit.syncedLyrics || null, lyricsPlain: hit.plainLyrics || null };
+    } catch (e) {
+      return { lyrics: null, lyricsPlain: null };
+    }
+  }
+
+  const MUSIC_FALLBACK_TERMS = ['Taylor Swift', '周杰伦', 'Ed Sheeran', '周深', 'Katy Perry'];
+
+  async function searchAndShareMusicWithRetry(attempt = 1, forcedTerm = null) {
+    const debugEl = document.getElementById('musicDebugInfo');
+    try {
+      // 常规搜索词走三层策略；3 次常规搜索全空后，用热门艺人兜底（保证能命中带试听的歌曲）
+      const term = forcedTerm || getMusicSearchTerm();
+
+      // 先请求中国区（保留中文歌名/歌手），若中国区无试听再退回国际区
+      let results = [];
+      let usedCN = false;
+      const cnUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=musicTrack&limit=50&country=CN&lang=zh_cn`;
+      const cnRes = await fetchWithTimeout(cnUrl, 10000);
+      if (cnRes.ok) {
+        const cnData = await cnRes.json();
+        results = (cnData.results || []).filter(item => item.trackName && item.previewUrl);
+        usedCN = true;
+      }
+      // 中国区无结果或请求失败 → 退回国际区（去掉 country=CN&lang=zh_cn）
+      if (results.length === 0) {
+        const intlUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=musicTrack&limit=50`;
+        const intlRes = await fetchWithTimeout(intlUrl, 10000);
+        if (intlRes.ok) {
+          const intlData = await intlRes.json();
+          results = (intlData.results || []).filter(item => item.trackName && item.previewUrl);
+        }
+      }
+
+      if (results.length === 0) {
+        if (attempt < 3) {
+          const msg = '🎵 没搜到合适的歌曲，换关键词重试';
+          addTapMessage(msg, 'me');
+          if (debugEl) debugEl.textContent = '上次失败：无结果';
+          addTapMessage(`🎵 第 ${attempt + 1} 次重试中...`, 'me');
+          return await searchAndShareMusicWithRetry(attempt + 1);
+        }
+        // 3 次常规搜索全空：强制用热门艺人兜底（最后一次机会）
+        if (!forcedTerm) {
+          const fb = MUSIC_FALLBACK_TERMS[Math.floor(Math.random() * MUSIC_FALLBACK_TERMS.length)];
+          addTapMessage(`🎵 常规关键词没搜到，改用「${fb}」兜底搜索...`, 'me');
+          return await searchAndShareMusicWithRetry(attempt + 1, fb);
+        }
+        // 兜底也空 → 本次放弃
+        const msg = '🎵 没搜到合适的歌曲（含兜底），本次放弃';
+        addTapMessage(msg, 'me');
+        if (debugEl) debugEl.textContent = '上次失败：无结果（含兜底）';
+        return false;
+      }
+
+      // 去重
+      const recentNames = favCache.filter(f => f.type === 'music').slice(0, 10).map(f => f.name);
+      let candidates = results.filter(item => !recentNames.includes(item.trackName));
+      if (candidates.length === 0) candidates = results;
+
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      const name = chosen.trackName;
+      const artist = chosen.artistName;
+      const coverUrl = chosen.artworkUrl100 ? chosen.artworkUrl100.replace('100x100bb', '300x300bb') : '';
+      const previewUrl = chosen.previewUrl;
+
+      const lyricRes = await fetchLyrics(name, artist);
+
+      const musicObj = { name, artist, coverUrl, previewUrl, duration: 30, lyrics: lyricRes.lyrics, lyricsPlain: lyricRes.lyricsPlain };
+      await addMessage('other', 'music', JSON.stringify(musicObj));
+
+      await saveFavoriteToDB({
+        id: `fav_music_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        type: 'music', name, artist, coverUrl, previewUrl,
+        lyrics: lyricRes.lyrics, lyricsPlain: lyricRes.lyricsPlain,
+        timestamp: Date.now(), sender: 'other'
+      });
+
+      const successMsg = `🎵 已分享：${name} - ${artist}`;
+      addTapMessage(successMsg, 'me');
+      if (debugEl) debugEl.textContent = `上次成功：${name} - ${artist}`;
+      return true;
+
+    } catch (e) {
+      let msg = '🎵 音乐搜索失败';
+      let debugText = '未知错误';
+
+      if (e.name === 'AbortError') {
+        msg = '🎵 音乐搜索超时（10 秒无响应），60 秒后重试';
+        debugText = '超时';
+      } else if (e instanceof TypeError) {
+        // 网络层诊断
+        try {
+          const probe = await fetchWithTimeout('https://lrclib.net/api/search?q=test', 5000);
+          if (!probe.ok) throw new Error('probe failed');
+          msg = '🎵 音乐搜索失败：iTunes 接口被浏览器跨域拦截（CORS），需要代理才能访问';
+          debugText = 'CORS 被拦';
+        } catch (probeErr) {
+          msg = '🎵 音乐搜索失败：网络不通，请检查网络连接';
+          debugText = '网络不通';
+        }
+      } else if (e.message && e.message.includes('HTTP')) {
+        msg = `🎵 音乐搜索被拒绝，HTTP 状态码：${e.message.replace('iTunes HTTP ', '')}`;
+        debugText = 'HTTP 错误';
+      } else if (e instanceof SyntaxError) {
+        msg = '🎵 音乐搜索返回格式异常，无法解析 JSON';
+        debugText = 'JSON 异常';
+      }
+
+      addTapMessage(msg, 'me');
+      if (debugEl) debugEl.textContent = '上次失败：' + debugText;
+
+      if (attempt < 3) {
+        addTapMessage(`🎵 第 ${attempt + 1} 次重试中...`, 'me');
+        setTimeout(() => { searchAndShareMusicWithRetry(attempt + 1, forcedTerm); }, 60000);
+      }
+      return false;
+    }
+  }
+
+  // 主动分享音乐：每1小时按概率触发
+  function startMusicScheduler() {
+    if (window._musicInterval) clearInterval(window._musicInterval);
+    const checkMusic = () => {
+      if (!state.musicNextAt || Date.now() >= state.musicNextAt) {
+        state.musicNextAt = Date.now() + 60 * 60 * 1000;
+        saveRuntimeState();
+        const prob = Math.max(0, Math.min(100, Number(state.patMusicProb) || 5));
+        if (Math.random() * 100 < prob) {
+          searchAndShareMusicWithRetry();
+        }
+      }
+    };
+    if (!state.musicNextAt) {
+      state.musicNextAt = Date.now() + 60 * 60 * 1000;
+      saveRuntimeState();
+    }
+    window._musicInterval = setInterval(checkMusic, 60000);
+  }
+
+  function triggerOtherReply() {
+    if (replyTimer) clearTimeout(replyTimer);
+    typingInd.textContent = '对方正在输入...';
+    replyTimer = setTimeout(() => {
+      typingInd.textContent = '';
+      generateReplies();
+    }, state.replyDelay * 1000);
+  }
+
   // 生成单条对方回复（聊天回复与视频通话实时回复共用）
   // 对方文字消息来源：ta添加的字卡 / 词典拼句 / 字卡库 三通道概率（默认 5% / 25% / 70%）
   function buildTextFromLibrary() {
@@ -4963,7 +5398,7 @@ async function handleTransferAction(msg, action) {
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         lastNoteTime: state.lastNoteTime,
-        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb,
+        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb, patMusicProb: state.patMusicProb,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion,
         taAddEnabled: state.taAddEnabled, taAddProb: state.taAddProb, taUseProb: state.taUseProb,
         patGiftProb: state.patGiftProb, ratingThinkSeconds: state.ratingThinkSeconds, ratingMode: state.ratingMode || 'star'
@@ -5699,6 +6134,7 @@ async function handleTransferAction(msg, action) {
     startNoteScheduler();
     startTransferScheduler();
     startGiftScheduler();
+    startMusicScheduler();
     // 启动时检查 10 小时兜底便签
     checkIdleNote();
     notesBtn.onclick = async () => {
@@ -5748,6 +6184,7 @@ async function handleTransferAction(msg, action) {
       favManageBtn.onclick = toggleFavManage;
       favMsgLoadMoreEl.onclick = () => { favMsgStart += FAV_MSG_PAGE; renderFavMessages(true); };
       favPhotoLoadMoreEl.onclick = () => { favPhotoStart += FAV_PHOTO_PAGE; renderFavPhotos(true); };
+      document.getElementById('favMusicLoadMore').onclick = () => { favMusicStart += 10; renderFavMusic(true); };
       document.getElementById('headerAvatar').onclick = openFavorites;
       document.getElementById('headerName').onclick = openFavorites;
 
@@ -5755,6 +6192,7 @@ async function handleTransferAction(msg, action) {
       state.myName = document.getElementById('myNickname').value; 
       state.otherName = document.getElementById('otherNickname').value; 
       state.replyDelay = +document.getElementById('replyDelay').value; 
+      state.patMusicProb = +document.getElementById('patMusicProb').value; 
       state.probWord = +document.getElementById('probWord').value; 
       state.probSticker = +document.getElementById('probSticker').value; 
       state.probEmoji = +document.getElementById('probEmoji').value; 
@@ -5799,16 +6237,22 @@ async function handleTransferAction(msg, action) {
     document.getElementById('closeSettingsGeneral').onclick = saveSettings;
     document.getElementById('testNotifyBtn').onclick = async () => {
       if (!("Notification"in window)) { showAlert('当前浏览器不支持通知'); return; }
-      // 必须先在设置里打开「后台弹窗」开关（与转账等所有系统通知走同一道判断）
       if (!state.notifyEnabled) { showAlert('请先在「后台弹窗」打开开关，再发送测试通知'); return; }
       if (Notification.permission === "denied") { showAlert('通知已被拒绝，请在浏览器/系统设置中允许微讯发送通知'); return; }
       if (Notification.permission !== "granted") {
         const p = await Notification.requestPermission();
         if (p !== "granted") { showAlert('通知权限未授予，无法发送通知。请在浏览器设置中允许'); return; }
       }
-      // 复用与转账完全相同的通知路径（不带 silent，否则系统不弹横幅）
       showNotification(state.otherName, '这是一条测试通知，通知功能正常！', state.otherAvatar);
     };
+
+    // 音乐分享立即测试按钮（手动触发，不等5分钟）
+    const testMusicBtn = document.getElementById('testMusicShareBtn');
+    if (testMusicBtn) {
+      testMusicBtn.onclick = () => {
+        searchAndShareMusicWithRetry();
+      };
+    }
     document.getElementById('closeSettingsWordcard').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('closeSettingsTacards').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
     document.getElementById('taCardSearch').oninput = e => renderTaCardList(e.target.value);
