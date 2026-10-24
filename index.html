@@ -15,6 +15,7 @@
   <meta name="apple-mobile-web-app-title" content="微讯">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overscroll-behavior-y: none; overscroll-behavior-x: none; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #e5e5e5; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
     #app { width: 100%; height: 100vh; background: #ededed; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
     .chat-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; opacity: 1; pointer-events: none; z-index: 0; }
@@ -203,7 +204,7 @@
     .notes-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 600; display: flex; justify-content: center; align-items: center; }
     .notes-panel { background: #fffef0; width: 85%; max-width: 380px; height: 70%; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: relative; }
     /* 备忘提醒覆盖层与面板 */
-    .memo-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 1600; display: flex; justify-content: center; align-items: center; }
+    .memo-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 1600; display: flex; justify-content: center; align-items: center; overscroll-behavior: contain; }
     .memo-overlay.hidden { display: none; }
     .memo-panel { background: #fff; width: 88%; max-width: 400px; max-height: 86%; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; }
     .memo-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
@@ -226,7 +227,7 @@
     .memo-fab { position: absolute; right: 12px; bottom: 12px; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(102,126,234,0.5); z-index: 5; }
     /* 备忘时间：自定义上下滑动滚轮选择器（类似 iOS UIPickerView） */
     .memo-time-picker { display: flex; gap: 8px; align-items: center; width: 100%; }
-    .memo-wheel { position: relative; flex: 1; height: 120px; overflow: hidden; border: 1px solid #ddd; border-radius: 10px; background: #f7f7f9; -webkit-user-select: none; user-select: none; }
+    .memo-wheel { position: relative; flex: 1; height: 120px; overflow: hidden; border: 1px solid #ddd; border-radius: 10px; background: #f7f7f9; -webkit-user-select: none; user-select: none; touch-action: none; overscroll-behavior: contain; }
     .memo-wheel-inner { position: absolute; left: 0; right: 0; top: 0; transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1); }
     .memo-wheel-item { height: 40px; line-height: 40px; text-align: center; font-size: 18px; color: #999; }
     .memo-wheel-item.active { color: #333; font-weight: 700; font-size: 22px; }
@@ -829,6 +830,44 @@
 <script>
 (async function(){
   "use strict";
+  // ===== 全局禁用 iOS 15 及以下的下拉刷新（overscroll-behavior 不支持时的兜底）=====
+  (function disablePullToRefresh() {
+    let startY = 0;
+    let startScrollTop = 0;
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      startY = e.touches[0].clientY;
+      startScrollTop = 0;
+      let el = e.target;
+      while (el && el !== document.body) {
+        const s = getComputedStyle(el);
+        if (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight) {
+          startScrollTop = el.scrollTop;
+          break;
+        }
+        el = el.parentElement;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches.length !== 1) return;
+      if (!e.cancelable) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy <= 0) return; // 手指向上滑，不拦截
+      // 找当前触摸点附近的可滚动祖先，若其不在顶部，则允许正常滚动
+      let el = e.target;
+      while (el && el !== document.body) {
+        const s = getComputedStyle(el);
+        if (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight) {
+          if (el.scrollTop > 0) return; // 有内容可回滚，放行
+          break;
+        }
+        el = el.parentElement;
+      }
+      // 页面已到顶或本无可滚动内容 → 拦截，避免触发下拉刷新
+      e.preventDefault();
+    }, { passive: false });
+  })();
   // 全局图片缓存：避免每次渲染都全量加载 IndexedDB
   let imgCache = {};
   let imgCacheReady = false;
@@ -6548,6 +6587,7 @@ async function handleTransferAction(msg, action) {
       }, { passive: true });
       wheel.addEventListener('touchmove', (e) => {
         if (!dragging) return;
+        e.preventDefault();
         const y = e.touches[0].clientY;
         const now = Date.now();
         const dt = now - lastT;
@@ -6555,7 +6595,7 @@ async function handleTransferAction(msg, action) {
         moved = y - startY;
         lastY = y; lastT = now;
         inner.style.transform = `translateY(${-(startIdx * WHEEL_ITEM_H) + moved}px)`;
-      }, { passive: true });
+      }, { passive: false });
       wheel.addEventListener('touchend', () => {
         if (!dragging) return;
         dragging = false;
