@@ -43,7 +43,9 @@
     .message-bubble::before { content: ''; position: absolute; top: 10px; width: 0; height: 0; border-style: solid; }
     .me .message-bubble::before { right: -6px; border-width: 6px 0 6px 8px; border-color: transparent transparent transparent #95ec69; }
     .other .message-bubble::before { left: -6px; border-width: 6px 8px 6px 0; border-color: transparent white transparent transparent; }
-    .bubble-image { max-width: 200px; max-height: 200px; border-radius: 4px; display: block; cursor: pointer; }
+    .bubble-image { max-width: 220px; max-height: 220px; border-radius: 6px; display: block; cursor: pointer; object-fit: cover; }
+    /* 分享的生活照片：按比例裁剪，不拉伸变形（类似朋友圈九宫格裁切） */
+    .message-image { max-width: 220px; max-height: 220px; width: auto; height: auto; object-fit: cover; border-radius: 6px; display: block; cursor: pointer; }
     .bubble-emoji { font-size: 20px !important; padding: 6px 8px; }
     .transfer-card { background: #f39c12; color: white; padding: 8px 16px; border-radius: 8px; width: 240px; max-width: 100%; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
     .gift-card { background: linear-gradient(135deg, #ff6b6b, #c2185b); color: #fff; border-radius: 12px; width: 240px; max-width: 100%; min-height: 96px; padding: 10px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; justify-content: center; }
@@ -199,7 +201,37 @@
     .image-preview-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 950; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .image-preview-content { max-width: 90%; max-height: 90%; object-fit: contain; }
     .notes-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 600; display: flex; justify-content: center; align-items: center; }
-    .notes-panel { background: #fffef0; width: 85%; max-width: 380px; height: 70%; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; }
+    .notes-panel { background: #fffef0; width: 85%; max-width: 380px; height: 70%; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    /* 备忘提醒覆盖层与面板 */
+    .memo-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 1600; display: flex; justify-content: center; align-items: center; }
+    .memo-overlay.hidden { display: none; }
+    .memo-panel { background: #fff; width: 88%; max-width: 400px; max-height: 86%; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; }
+    .memo-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+    .memo-title { font-size: 16px; font-weight: 700; }
+    .memo-close { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; }
+    .memo-body { padding: 16px; overflow-y: auto; flex: 1; }
+    .memo-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #eee; }
+    .memo-form-row { display: flex; flex-direction: column; gap: 10px; }
+    .memo-form-row input[type="date"] { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .memo-form textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; min-height: 60px; resize: vertical; }
+    .memo-save-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 10px; padding: 11px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .memo-list-title { font-size: 13px; color: #888; margin-bottom: 8px; }
+    .memo-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; }
+    .memo-item-time { font-size: 13px; font-weight: 700; color: #667eea; white-space: nowrap; }
+    .memo-item-content { flex: 1; min-width: 0; font-size: 14px; color: #333; word-break: break-all; }
+    .memo-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .memo-item-actions button { border: none; background: none; font-size: 15px; cursor: pointer; padding: 2px; }
+    .memo-empty { text-align: center; color: #999; padding: 30px 0; }
+    /* 便签面板右下角备忘悬浮球入口（relative 父级内绝对定位） */
+    .memo-fab { position: absolute; right: 12px; bottom: 12px; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(102,126,234,0.5); z-index: 5; }
+    /* 备忘时间：自定义上下滑动滚轮选择器（类似 iOS UIPickerView） */
+    .memo-time-picker { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .memo-wheel { position: relative; flex: 1; height: 120px; overflow: hidden; border: 1px solid #ddd; border-radius: 10px; background: #f7f7f9; -webkit-user-select: none; user-select: none; }
+    .memo-wheel-inner { position: absolute; left: 0; right: 0; top: 0; transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1); }
+    .memo-wheel-item { height: 40px; line-height: 40px; text-align: center; font-size: 18px; color: #999; }
+    .memo-wheel-item.active { color: #333; font-weight: 700; font-size: 22px; }
+    .memo-wheel-mask { position: absolute; left: 0; right: 0; top: 0; height: 40px; border-top: 2px solid #667eea; border-bottom: 2px solid #667eea; pointer-events: none; }
+    .memo-time-colon { font-size: 20px; font-weight: 700; color: #667eea; }
     .notes-header { background: #f9f3d9; padding: 14px 16px; border-bottom: 1px solid #e8dca8; display: flex; justify-content: space-between; align-items: center; }
     .notes-title { font-weight: 600; font-size: 17px; color: #5c4a1f; }
     .notes-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #886; }
@@ -308,7 +340,7 @@
 }
     /* ==================== 亲密互动 ==================== */
     /* 左上角跳动的心脏 — 呼吸式舒张收缩，带虚影 */
-    #intimacyHeartWrap { position: absolute; top: 62px; left: 14px; z-index: 1250; pointer-events: none; text-align: center; }
+    #intimacyHeartWrap { position: fixed; top: 62px; left: 14px; z-index: 1300; pointer-events: none; text-align: center; }
     #intimacyHeart { position: relative; font-size: 32px; color: #ff4d88; display: block; width: 100%; max-width: 130px; text-align: center; filter: drop-shadow(0 0 6px rgba(255, 77, 136, 0.7)) drop-shadow(0 0 12px rgba(255, 50, 120, 0.35)); animation: heartPulse 1s ease-in-out infinite; }
     #intimacyTimer { display: inline-block; margin-top: 2px; font-size: 13px; font-weight: 700; color: #fff; background: rgba(255, 77, 136, 0.85); border-radius: 12px; padding: 2px 8px; text-align: center; white-space: nowrap; box-shadow: 0 0 8px rgba(255, 77, 136, 0.5); }
     #intimacyHeart.rate-slow { animation: heartPulse 1s ease-in-out infinite; }
@@ -416,7 +448,6 @@
         </div>
       </div>
     </div>
-    <div id="intimacyHeartWrap" class="hidden"><span id="intimacyHeart">❤</span><span id="intimacyTimer" class="intimacy-timer"></span></div>
     <div class="header-right">
       <span class="header-icon" id="momentsBtn" style="position:relative;">🛰️<span id="momentsBadge" class="badge hidden"></span></span>
       <span class="header-icon" id="notesBtn" style="position:relative;">✉️<span id="notesBadge" class="badge hidden"></span></span>
@@ -514,10 +545,15 @@
           <div class="setting-row"><label>主动来电 每小时%</label><input id="patVideoCallProb" type="number" min="0" max="100" value="6"></div>
           <div class="setting-row"><label>主动挂断%</label><input id="patHangupProb" type="number" min="0" max="100" value="80"> <span style="font-size:12px;color:#888;">接通后对方随机在10-180分钟间挂断</span></div>
           <div class="setting-row"><label>对方引用消息%</label><input id="patQuoteProb" type="number" min="0" max="100" value="15"></div>
+          <div class="setting-row"><label>分享照片 每小时%</label><input id="patPhotoProb" type="number" min="0" max="100" value="5">
+            <button id="testPhotoShareBtn" style="margin-left:6px;padding:5px 12px;font-size:12px;background:linear-gradient(135deg,#07c160,#00a884);color:#fff;border:none;border-radius:16px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(7,193,96,0.35);">📷 立即测试</button>
+          </div>
           <div class="setting-row"><label>分享音乐 每小时%</label><input id="patMusicProb" type="number" min="0" max="100" value="5">
             <button id="testMusicShareBtn" style="margin-left:6px;padding:5px 12px;font-size:12px;background:linear-gradient(135deg,#07c160,#00a884);color:#fff;border:none;border-radius:16px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(7,193,96,0.35);">🎵 立即测试</button>
           </div>
           <div id="musicDebugInfo" style="font-size:11px;color:#888;margin-top:-4px;margin-bottom:6px;"></div>
+          <div class="setting-row"><label>主动分享音乐</label><input type="checkbox" id="musicShareToggle" checked> <span style="font-size:13px;color:#888;">关闭后对方不再主动分享歌曲</span></div>
+          <div class="setting-row"><label>主动分享照片</label><input type="checkbox" id="photoShareToggle" checked> <span style="font-size:13px;color:#888;">关闭后对方不再主动分享生活照片</span></div>
         </div>
         <div class="setting-group"><h4>🔔 通知</h4><div class="setting-row"><label>提示音</label><select id="soundSelect" size="6" style="flex:1;"><option value="0">🔊 微信风格 (清脆)</option><option value="1">🔊 QQ风格 (水滴)</option><option value="2">🔊 三全音 (经典)</option><option value="3">🔊 叮咚 (柔和)</option><option value="4">🔊 啵 (气泡)</option><option value="5">🔊 经典短音</option></select></div><div class="setting-row"><label>试听</label><button id="testSoundBtn">▶ 播放</button></div><div class="setting-row"><label>音量</label><input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"></div><div class="setting-row"><label>后台弹窗</label><input type="checkbox" id="notifyEnabled"> <span>需授权</span></div><div class="setting-row"><label>后台保活</label><input type="checkbox" id="keepAliveEnabled"> <span style="font-size:13px;color:#888;">后台保活（通知栏会显示媒体条，人耳静音）</span></div><div class="setting-row"><label>测试通知</label><button id="testNotifyBtn" style="background:#07c160;color:white;border:none;border-radius:16px;padding:6px 14px;cursor:pointer;">🔔 发送测试通知</button></div></div>
         <div class="setting-group"><h4>📦 备份与恢复</h4><p style="font-size:13px; color:#555; margin-bottom:8px;">选择要导出的板块：</p><div class="backup-checkboxes" id="backupCheckboxes"><label><input type="checkbox" class="backup-cb" value="settings" checked> 系统设置</label><label><input type="checkbox" class="backup-cb" value="intimacy" checked> 亲密互动</label><label><input type="checkbox" class="backup-cb" value="wordCards" checked> 字卡</label><label><input type="checkbox" class="backup-cb" value="dictGroups" checked> 词典拼句</label><label><input type="checkbox" class="backup-cb" value="taCards" checked> ta添加的字卡</label><label><input type="checkbox" class="backup-cb" value="emojis" checked> Emoji</label><label><input type="checkbox" class="backup-cb" value="stickers" checked> 表情包</label><label><input type="checkbox" class="backup-cb" value="voiceLibrary" checked> 语音库</label><label><input type="checkbox" class="backup-cb" value="moments" checked> 朋友圈</label><label><input type="checkbox" class="backup-cb" value="notes" checked> 便签</label><label><input type="checkbox" class="backup-cb" value="favorites" checked> 收藏夹</label><label><input type="checkbox" class="backup-cb" value="gifts" checked> 礼物</label><label><input type="checkbox" class="backup-cb" value="messages" checked> 聊天记录</label></div><button id="exportBackupBtn" style="background:#07c160; color:white; border:none; padding:8px 16px; border-radius:8px; margin-right:10px;">📤 导出所选数据</button><button id="importBackupBtn" style="background:#007aff; color:white; border:none; padding:8px 16px; border-radius:8px;">📥 导入备份</button><p style="font-size:12px; color:#888; margin-top:6px;">导入时会询问覆盖还是追加。单个文件请勿超过500MB。</p></div>
@@ -625,6 +661,8 @@
 
   <div id="diceAnimate" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:300; display:none; justify-content:center; align-items:center;"><div style="background:white; padding:40px; border-radius:20px; font-size:80px;" id="diceFace">🎲</div></div>
   <div id="effectLayer" class="effect-layer"></div>
+  <!-- 亲密互动进行中：左上角跳动的心脏（body 直属，fixed 定位保证盖过亲密互动页面） -->
+  <div id="intimacyHeartWrap" class="hidden"><span id="intimacyHeart">❤</span><span id="intimacyTimer" class="intimacy-timer"></span></div>
   <!-- 钻戒求婚弹窗（初始隐藏） -->
 <div id="diamondPopup" class="diamond-popup" style="display:none;">
   <div class="diamond-card">
@@ -715,6 +753,30 @@
       <div class="notes-header"><span class="notes-title">📝 便签留言</span><button class="notes-close" id="notesCloseBtn">✕</button></div>
       <div class="notes-list" id="notesList"></div>
       <div class="notes-input-area"><textarea id="notesInput" placeholder="写点什么..."></textarea><button id="notesSaveBtn">💾 保存</button></div>
+      <button class="memo-fab" id="memoFabBtn" title="备忘提醒">📅</button>
+    </div>
+  </div>
+
+  <!-- 备忘提醒独立覆盖层 -->
+  <div id="memoOverlay" class="memo-overlay hidden">
+    <div class="memo-panel">
+      <div class="memo-header"><span class="memo-title">📅 备忘提醒</span><button class="memo-close" id="memoCloseBtn">✕</button></div>
+      <div class="memo-body">
+        <div class="memo-form">
+          <div class="memo-form-row">
+            <input type="date" id="memoDate">
+            <div class="memo-time-picker">
+              <div class="memo-wheel" id="memoHourWheel"><div class="memo-wheel-inner" id="memoHourInner"></div><div class="memo-wheel-mask"></div></div>
+              <span class="memo-time-colon">:</span>
+              <div class="memo-wheel" id="memoMinuteWheel"><div class="memo-wheel-inner" id="memoMinuteInner"></div><div class="memo-wheel-mask"></div></div>
+            </div>
+          </div>
+          <textarea id="memoContent" placeholder="输入备忘内容..."></textarea>
+          <button class="memo-save-btn" id="memoSaveBtn">➕ 添加提醒</button>
+        </div>
+        <div class="memo-list-title">待提醒事项</div>
+        <div id="memoList"></div>
+      </div>
     </div>
   </div>
   <div id="giftShopOverlay" class="gift-overlay hidden">
@@ -1248,6 +1310,7 @@
           transferNextAt: transferNextAt || null,
           giftNextAt: giftNextAt || null,
           musicNextAt: state.musicNextAt || null,
+          photoNextAt: state.photoNextAt || null,
           intimacyOtherNextAt: intimacyOtherNextAt || null,
           moments: [],
           intimacy: intimacyRunning ? {
@@ -1345,6 +1408,7 @@
       }
       // 恢复朋友圈评论自动回复
       if (st.musicNextAt) { state.musicNextAt = st.musicNextAt; }
+      if (st.photoNextAt) { state.photoNextAt = st.photoNextAt; }
       if (st.moments && st.moments.length) {
         st.moments.forEach(item => {
           const moment = state.moments.find(m => m.id === item.momentId);
@@ -1571,7 +1635,9 @@
       choiceCustomAnswer: state.choiceCustomAnswer,
       lastMsgTime: lastMsgTime,
       lastNoteTime: state.lastNoteTime,
-      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb, patMusicProb: state.patMusicProb,
+      patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb, patMusicProb: state.patMusicProb, patPhotoProb: state.patPhotoProb,
+      musicShareEnabled: state.musicShareEnabled,
+      photoShareEnabled: state.photoShareEnabled,
       intimacyEnabled: state.intimacyEnabled,
       intimacyActions: state.intimacyActions,
       intimacySelectedAction: state.intimacySelectedAction,
@@ -1773,8 +1839,13 @@
     patGiftProb: 4,
     ratingThinkSeconds: 10,
     ratingMode: 'star',
-    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15, patMusicProb: 5,
-    musicNextAt: null
+    patTapProb: 7, patLetterProb: 5, patMomentProb: 5, patNoteProb: 4, patIntimacyProb: 5, patTransferProb: 4, patVideoCallProb: 6, patHangupProb: 80, patQuoteProb: 15, patMusicProb: 5, patPhotoProb: 5,
+    musicShareEnabled: true,
+    photoShareEnabled: true,
+    musicNextAt: null,
+    photoNextAt: null,
+    recentPhotoPrompts: [],
+    memoReminders: []
   };
   // ====== 合法拼音字典（无音调，覆盖日常用语） ======
 const VALID_PINYIN = [
@@ -2009,6 +2080,18 @@ function showOpenGiftAnimation(msg, done) {
   const notesCloseBtn = document.getElementById('notesCloseBtn');
   const notesBtn = document.getElementById('notesBtn');
   const notesBadge = document.getElementById('notesBadge');
+  const memoOverlay = document.getElementById('memoOverlay');
+  const memoFabBtn = document.getElementById('memoFabBtn');
+  const memoCloseBtn = document.getElementById('memoCloseBtn');
+  const memoDate = document.getElementById('memoDate');
+  const memoHourWheel = document.getElementById('memoHourWheel');
+  const memoMinuteWheel = document.getElementById('memoMinuteWheel');
+  const memoHourInner = document.getElementById('memoHourInner');
+  const memoMinuteInner = document.getElementById('memoMinuteInner');
+  const memoContent = document.getElementById('memoContent');
+  const memoSaveBtn = document.getElementById('memoSaveBtn');
+  const memoList = document.getElementById('memoList');
+  let memoEditingId = null;
   const searchInput = document.getElementById('searchInput');
   const searchResults = document.getElementById('searchResults');
   const favOwnerNameEl = document.getElementById('favOwnerName');
@@ -2446,11 +2529,11 @@ function showOpenGiftAnimation(msg, done) {
       setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 4000);
     } catch (e) {}
   }
-  function notifyNewMessage(sender, type, content) { 
+  function notifyNewMessage(sender, type, content, extra = {}) { 
     let body = ''; 
     if (type === 'text') body = content; 
     else if (type === 'emoji') body = content; 
-    else if (type === 'image' || type === 'sticker') body = '[图片]'; 
+    else if (type === 'image' || type === 'sticker') body = (extra && extra.isPhotoShare) ? '分享了一张照片 📷' : '[图片]'; 
     else if (type === 'transfer') body = `转账 ¥${parseFloat(content).toFixed(2)}`; 
     else if (type === 'gift') body = '赠送了一个礼物 🎁';
     else if (type === 'rating') { try { const rd = JSON.parse(content); if (rd.mode === 'score' || (rd.score !== undefined && rd.stars === undefined)) { const sc = Math.max(0, Math.min(100, Number(rd.score) || 0)); body = `评价：${sc}分`; } else { body = `评价：${'⭐'.repeat(Math.max(0,Math.min(5,rd.stars||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,rd.stars||0)))}`; } } catch(e) { body = '做出了评价 ⭐'; } } 
@@ -2616,6 +2699,11 @@ function showOpenGiftAnimation(msg, done) {
         state.patVideoCallProb = s.patVideoCallProb !== undefined ? s.patVideoCallProb : 6;
         state.patHangupProb = s.patHangupProb !== undefined ? s.patHangupProb : 80;
         state.patQuoteProb = s.patQuoteProb !== undefined ? s.patQuoteProb : 15;
+        state.patMusicProb = s.patMusicProb !== undefined ? s.patMusicProb : 5;
+        state.patPhotoProb = s.patPhotoProb !== undefined ? s.patPhotoProb : 5;
+        state.musicShareEnabled = s.musicShareEnabled !== undefined ? s.musicShareEnabled : true;
+        state.photoShareEnabled = s.photoShareEnabled !== undefined ? s.photoShareEnabled : true;
+        state.memoReminders = Array.isArray(s.memoReminders) ? s.memoReminders : [];
         state.soundIndex = s.soundIndex || 0; state.volume = s.volume || 0.8; state.notifyEnabled = s.notifyEnabled !== undefined ? s.notifyEnabled : false; state.keepAliveEnabled = s.keepAliveEnabled !== undefined ? s.keepAliveEnabled : false;
         if (s.defaultChoiceThinkSeconds !== undefined) state.defaultChoiceThinkSeconds = s.defaultChoiceThinkSeconds;
         if (s.lastNoteTime !== undefined) state.lastNoteTime = s.lastNoteTime;
@@ -2650,6 +2738,10 @@ function showOpenGiftAnimation(msg, done) {
         if (s.patHangupProb !== undefined) state.patHangupProb = s.patHangupProb;
         if (s.patQuoteProb !== undefined) state.patQuoteProb = s.patQuoteProb;
         if (s.patMusicProb !== undefined) state.patMusicProb = s.patMusicProb;
+        if (s.patPhotoProb !== undefined) state.patPhotoProb = s.patPhotoProb;
+        if (s.musicShareEnabled !== undefined) state.musicShareEnabled = s.musicShareEnabled;
+        if (s.photoShareEnabled !== undefined) state.photoShareEnabled = s.photoShareEnabled;
+        if (Array.isArray(s.memoReminders)) state.memoReminders = s.memoReminders;
         if (s.soundIndex !== undefined) state.soundIndex = s.soundIndex;
         if (s.volume !== undefined) state.volume = s.volume;
         if (s.notifyEnabled !== undefined) state.notifyEnabled = s.notifyEnabled;
@@ -2779,7 +2871,7 @@ function showOpenGiftAnimation(msg, done) {
   function confirmDialog(message) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1500;display:flex;justify-content:center;align-items:center;';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;justify-content:center;align-items:center;';
       overlay.innerHTML = `
         <div style="background:white;border-radius:16px;padding:24px;max-width:280px;width:90%;text-align:center;">
           <p style="font-size:16px;margin-bottom:20px;color:#333;">${message}</p>
@@ -2800,7 +2892,7 @@ function showOpenGiftAnimation(msg, done) {
   function showAlert(message) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1500;display:flex;justify-content:center;align-items:center;';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;justify-content:center;align-items:center;';
       overlay.innerHTML = `
         <div style="background:white;border-radius:16px;padding:24px;max-width:280px;width:90%;text-align:center;">
           <p style="font-size:16px;margin-bottom:20px;color:#333;white-space:pre-wrap;">${message}</p>
@@ -2817,7 +2909,7 @@ function showOpenGiftAnimation(msg, done) {
   function showPrompt(message, defaultValue = '') {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1500;display:flex;justify-content:center;align-items:center;';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;justify-content:center;align-items:center;';
       overlay.innerHTML = `
         <div style="background:white;border-radius:16px;padding:24px;max-width:280px;width:90%;text-align:center;">
           <p style="font-size:16px;margin-bottom:16px;color:#333;">${message}</p>
@@ -2843,7 +2935,7 @@ function showOpenGiftAnimation(msg, done) {
   function showPromptDouble(message, label1, value1, label2, value2) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1500;display:flex;justify-content:center;align-items:center;';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;justify-content:center;align-items:center;';
       overlay.innerHTML = `
         <div style="background:white;border-radius:16px;padding:24px;max-width:300px;width:90%;text-align:center;">
           <p style="font-size:16px;margin-bottom:14px;color:#333;">${message}</p>
@@ -3017,6 +3109,9 @@ function showOpenGiftAnimation(msg, done) {
     document.getElementById('otherAvatarPreview').src = state.otherAvatar;
     document.getElementById('replyDelay').value = state.replyDelay;
     document.getElementById('patMusicProb').value = state.patMusicProb !== undefined ? state.patMusicProb : 5;
+    document.getElementById('patPhotoProb').value = state.patPhotoProb !== undefined ? state.patPhotoProb : 5;
+    document.getElementById('musicShareToggle').checked = state.musicShareEnabled !== false;
+    document.getElementById('photoShareToggle').checked = state.photoShareEnabled !== false;
     document.getElementById('probWord').value = state.probWord;
     document.getElementById('probSticker').value = state.probSticker;
     document.getElementById('probEmoji').value = state.probEmoji;
@@ -3937,7 +4032,8 @@ function showOpenGiftAnimation(msg, done) {
       bubbleContent = m.content;
     } else if (m.type === 'image' || m.type === 'sticker') {
       const imgUrl = imgCache[m.content] || m.content;
-      bubbleContent = `<img class="bubble-image" src="${imgUrl}" data-full-img="${m.fullImage ? (imgCache[m.fullImage] || m.fullImage) : imgUrl}">`;
+      // 照片消息（image）加 message-image 类按比例裁剪；表情包（sticker）保持原尺寸
+      bubbleContent = `<img class="bubble-image${m.type === 'image' ? ' message-image' : ''}" src="${imgUrl}" data-full-img="${m.fullImage ? (imgCache[m.fullImage] || m.fullImage) : imgUrl}">`;
     } else if (m.type === 'dice') {
       bubbleContent = `🎲 骰子摇到了 ${m.content}`;
     } else if (m.type === 'call') {      bubbleContent = `📹 通话时长 ${m.content}`;
@@ -4156,7 +4252,7 @@ else if (m.type !== 'transfer') {
     if (sender === 'other') { 
       playSound(state.soundIndex); 
       if (document.hidden) { 
-        notifyNewMessage(sender, type, content); 
+        notifyNewMessage(sender, type, content, extra); 
         flashTitle(); 
       } 
     }
@@ -4537,35 +4633,66 @@ function startEmojiRain(emojis, duration = 5) {
   }
 
   async function fetchLyrics(trackName, artistName) {
+    const cleanName = cleanMusicText(trackName);
+    const cleanArtist = cleanMusicText(artistName);
+
+    // ===== 第一优先级：网易云音乐歌词代理（歌词自带时间轴，直接当 LRC 用） =====
     try {
-      const cleanName = cleanMusicText(trackName);
-      const cleanArtist = cleanMusicText(artistName);
-      // 优先：清洗后的「歌名 歌手」搜索接口（/api/get 对括号杂质匹配失败率高）
-      const q1 = `${cleanName} ${cleanArtist}`.trim();
-      let url = `https://lrclib.net/api/search?q=${encodeURIComponent(q1)}`;
-      let res = await fetchWithTimeout(url, 6000);
-      let list = res.ok ? await res.json() : [];
-      let hit = Array.isArray(list) && list.length > 0 ? list[0] : null;
-
-      // 兜底：纯歌名再搜一次
-      if (!hit || (!hit.syncedLyrics && !hit.plainLyrics)) {
-        const q2 = cleanName;
-        url = `https://lrclib.net/api/search?q=${encodeURIComponent(q2)}`;
-        res = await fetchWithTimeout(url, 6000);
-        list = res.ok ? await res.json() : [];
-        hit = Array.isArray(list) && list.length > 0 ? list[0] : null;
+      const wyUrl = `https://api.vvhan.com/api/music/getLyric?name=${encodeURIComponent(cleanName)}&singer=${encodeURIComponent(cleanArtist)}`;
+      const wyRes = await fetchWithTimeout(wyUrl, 8000);
+      if (wyRes.ok) {
+        const wyData = await wyRes.json();
+        const wyLyric = wyData && wyData.data && wyData.data.lyric;
+        if (wyLyric && String(wyLyric).trim()) {
+          return { lyrics: String(wyLyric), lyricsPlain: null };
+        }
       }
+    } catch (e) { /* 网易云失败，继续走 LRCLIB */ }
 
-      if (!hit) return { lyrics: null, lyricsPlain: null };
-      return { lyrics: hit.syncedLyrics || null, lyricsPlain: hit.plainLyrics || null };
+    // ===== 第二优先级：LRCLIB 官方精确匹配 /api/get =====
+    try {
+      const getUrl = `https://lrclib.net/api/get?track_name=${encodeURIComponent(cleanName)}&artist_name=${encodeURIComponent(cleanArtist)}`;
+      const getRes = await fetchWithTimeout(getUrl, 6000);
+      if (getRes.ok) {
+        const data = await getRes.json();
+        if (data && (data.syncedLyrics || data.plainLyrics)) {
+          return { lyrics: data.syncedLyrics || null, lyricsPlain: data.plainLyrics || null };
+        }
+      }
+      // 404 / 无数据 → 进入模糊搜索
+    } catch (e) { /* 精确匹配失败，进入模糊搜索 */ }
+
+    // ===== 第三优先级：LRCLIB 模糊搜索 /api/search（遍历数组，不只取第一条） =====
+    try {
+      const searchUrl = `https://lrclib.net/api/search?q=${encodeURIComponent((cleanName + ' ' + cleanArtist).trim())}`;
+      let res = await fetchWithTimeout(searchUrl, 6000);
+      // 503 服务暂时不可用：等待 2 秒重试一次，不直接放弃
+      if (res.status === 503) {
+        await new Promise(r => setTimeout(r, 2000));
+        res = await fetchWithTimeout(searchUrl, 6000);
+      }
+      if (res.ok) {
+        const list = await res.json();
+        if (Array.isArray(list)) {
+          for (const item of list) {
+            if (item && (item.syncedLyrics || item.plainLyrics)) {
+              return { lyrics: item.syncedLyrics || null, lyricsPlain: item.plainLyrics || null };
+            }
+          }
+        }
+      }
     } catch (e) {
-      return { lyrics: null, lyricsPlain: null };
+      // 不再默默返回 null：把真实错误发到聊天里
+      addTapMessage('🎵 歌词获取网络错误：' + (e && e.message ? e.message : String(e)), 'me');
     }
+
+    return { lyrics: null, lyricsPlain: null };
   }
 
   const MUSIC_FALLBACK_TERMS = ['Taylor Swift', '周杰伦', 'Ed Sheeran', '周深', 'Katy Perry'];
 
   async function searchAndShareMusicWithRetry(attempt = 1, forcedTerm = null) {
+    if (state.musicShareEnabled === false) return false;
     const debugEl = document.getElementById('musicDebugInfo');
     try {
       // 常规搜索词走三层策略；3 次常规搜索全空后，用热门艺人兜底（保证能命中带试听的歌曲）
@@ -4695,6 +4822,208 @@ function startEmojiRain(emojis, duration = 5) {
       saveRuntimeState();
     }
     window._musicInterval = setInterval(checkMusic, 60000);
+  }
+
+  // ==================== 对方主动分享生活照片 ====================
+  // AI 生图随机词库矩阵：每次从各池随机抽取组合，保证高随机性 + 日常感
+  // 1. 主体池 (Subjects)
+  const PHOTO_SUBJECTS = [
+    'a half-empty mug of coffee', 'a messy desk with scattered notes', 'a cute cat sleeping', 'a bowl of instant noodles',
+    'a book lying open', 'a plate of sliced fruits', 'a pair of headphones resting', 'a cozy unmade bed',
+    'a glass of iced water', 'a takeout box', 'a potted green plant', 'a laptop screen glowing',
+    'a slice of cake', 'a worn-out notebook and a pen', 'a pair of sneakers by the door', 'a steaming cup of tea',
+    'a half-eaten sandwich', 'a fluffy pillow', 'a box of tissues', 'a video game controller',
+    'a street view', 'a cozy corner with a lamp', 'a bowl of cereal', 'a stack of books',
+    'a small mirror', 'a soft blanket', 'a cat paw reaching out', 'a spilled ink',
+    'a cup of bubble tea', 'a plate of cookies', 'a wall clock', 'a desk calendar',
+    'a houseplant with sunbeams', 'a cozy armchair', 'a stack of laundry', 'a glowing keyboard'
+  ];
+  // 2. 环境与位置池 (Environments)
+  const PHOTO_ENVIRONMENTS = [
+    'on a wooden table', 'on a messy desk', 'on a cozy couch', 'on the floor by the window',
+    'on a soft rug', 'next to a laptop', 'in a dimly lit room', 'on a windowsill',
+    'on a bedside table', 'on a kitchen counter', 'on a bookshelf', 'on a messy bed',
+    'in the corner of a room', 'on a small cafe table', 'in a car seat', 'on a park bench',
+    'on a balcony', 'on a tiled floor', 'in front of a mirror', 'on a shelf'
+  ];
+  // 3. 光影与时间池 (Lighting & Time)
+  const PHOTO_LIGHTINGS = [
+    'morning sunlight', 'warm afternoon light', 'dim room light', 'golden hour glow',
+    'soft window light', 'dusk lighting', 'night lamp light', 'overcast daylight',
+    'slightly dark', 'sunset glow', 'harsh noon sunlight', 'fluorescent room light'
+  ];
+  // 4. 真实感与镜头修饰池 (Realism & Camera) — 每次洗牌抽 3 个不重复
+  const PHOTO_STYLES = [
+    'POV', 'casual snapshot', 'shot on iPhone', 'slightly out of focus',
+    'realistic', 'unfiltered', 'candid photography', 'everyday life',
+    'slightly grainy', 'natural lighting', 'depth of field', 'macro photography',
+    'imperfect composition', 'quick photo'
+  ];
+  // 真实照片：带生活标签的图源关键词
+  const PHOTO_LIFE_TAGS = ['coffee,desk', 'cat,bed', 'breakfast', 'desk,laptop', 'cat,sofa', 'rain,window', 'book,bed', 'food,homemade'];
+
+  function photoSleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // Blob → Base64：先加载真实宽高，按比例等比缩放（最大边 600），绝不写死宽高导致变形
+  async function photoBlobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+      const objUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          let w = img.naturalWidth;
+          let h = img.naturalHeight;
+          const max = 600;
+          if (w > max || h > max) {
+            if (w > h) { h = h * max / w; w = max; }
+            else { w = w * max / h; h = max; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(objUrl);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        } catch (e) {
+          URL.revokeObjectURL(objUrl);
+          reject(e);
+        }
+      };
+      img.onerror = () => { URL.revokeObjectURL(objUrl); reject(new Error('图片加载失败')); };
+      img.src = objUrl;
+    });
+  }
+
+  // 类型1：真实照片（loremflickr 生活标签 → weserv 代理；vvhan 壁纸 → picsum 逐级兜底）
+  async function fetchRealPhoto() {
+    // 优先：带生活标签的真实照片（coffee,desk / cat,bed 等），经 weserv 代理保证稳定
+    try {
+      const tag = PHOTO_LIFE_TAGS[Math.floor(Math.random() * PHOTO_LIFE_TAGS.length)];
+      const res = await fetchWithTimeout(`https://images.weserv.nl/?url=loremflickr.com/600/400/${tag}`, 10000);
+      if (res.ok) {
+        const blob = await res.blob();
+        if (blob && blob.size > 1000) return await photoBlobToDataURL(blob);
+      }
+    } catch (e) { /* 降级 vvhan */ }
+    // 兜底1：vvhan 壁纸接口（返回 JSON 含 imgurl，国内访问快）
+    try {
+      const apiRes = await fetchWithTimeout('https://api.vvhan.com/api/wallpaper/views?type=json', 10000);
+      if (apiRes.ok) {
+        const apiData = await apiRes.json();
+        const imgurl = apiData && apiData.imgurl;
+        if (imgurl) {
+          const imgRes = await fetchWithTimeout(imgurl, 10000);
+          if (imgRes.ok) {
+            const blob = await imgRes.blob();
+            if (blob && blob.size > 1000) return await photoBlobToDataURL(blob);
+          }
+        }
+      }
+    } catch (e) { /* 降级 picsum */ }
+    // 兜底2：picsum 随机图（直接返回图片流）
+    const res = await fetchWithTimeout('https://picsum.photos/600/400', 10000);
+    if (!res.ok) throw new Error('photo HTTP ' + res.status);
+    const blob = await res.blob();
+    if (!blob || blob.size < 1000) throw new Error('empty photo');
+    return await photoBlobToDataURL(blob);
+  }
+
+  // 类型2：AI 生图 —— 随机词库矩阵拼装：镜头修饰(3个) + 主体 + 环境 + 光影 + 强制负向词
+  function buildPhotoPrompt() {
+    const recent = Array.isArray(state.recentPhotoPrompts) ? state.recentPhotoPrompts : [];
+    let prompt = '';
+    for (let round = 0; round < 6; round++) {
+      const subject = PHOTO_SUBJECTS[Math.floor(Math.random() * PHOTO_SUBJECTS.length)];
+      const env = PHOTO_ENVIRONMENTS[Math.floor(Math.random() * PHOTO_ENVIRONMENTS.length)];
+      const light = PHOTO_LIGHTINGS[Math.floor(Math.random() * PHOTO_LIGHTINGS.length)];
+      // 洗牌算法：从修饰池抽 3 个不重复的词
+      const shuffled = PHOTO_STYLES.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      const styleTags = shuffled.slice(0, 3).join(', ');
+      // 强制负向提示词：杜绝人脸
+      prompt = `${styleTags}, ${subject}, ${env}, ${light}, realistic, no people, no face, no humans, no portraits`;
+      if (!recent.includes(prompt)) break;
+    }
+    state.recentPhotoPrompts = [prompt, ...recent].slice(0, 10);
+    return prompt;
+  }
+
+  async function fetchAiPhoto() {
+    const prompt = buildPhotoPrompt();
+    // 随机 seed 防止服务端缓存同一张图；width/height 强制 3:4 竖屏，更像手机随手拍
+    const randomSeed = Math.floor(Math.random() * 99999999);
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=800&nologo=true&seed=${randomSeed}`;
+    const res = await fetchWithTimeout(url, 10000);
+    if (!res.ok) throw new Error('photo HTTP ' + res.status);
+    const blob = await res.blob();
+    if (!blob || blob.size < 1000) throw new Error('empty photo');
+    return await photoBlobToDataURL(blob);
+  }
+
+  // 单类型获取：失败等 60 秒重试，最多 3 次
+  async function fetchPhotoWithRetry(type) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        if (type === 'real') return await fetchRealPhoto();
+        return await fetchAiPhoto();
+      } catch (e) {
+        if (attempt < 3) {
+          addTapMessage(`📷 照片获取失败（第 ${attempt} 次），60 秒后重试...`, 'other');
+          await photoSleep(60000);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
+  // 主入口：50% 先真实图、失败降级 AI 图；成功后按用户设置的延迟触发常规主动文字回复
+  async function triggerSharePhoto() {
+    if (state.photoShareEnabled === false) return false;
+    let currentType = Math.random() < 0.5 ? 'real' : 'ai';
+    let imgDataURL = null;
+    try {
+      imgDataURL = await fetchPhotoWithRetry(currentType);
+    } catch (e) {
+      // 首选类型 3 次全失败 → 切换另一种类型再试
+      currentType = currentType === 'real' ? 'ai' : 'real';
+      try {
+        imgDataURL = await fetchPhotoWithRetry(currentType);
+      } catch (e2) {
+        await addTapMessage('⚠️ 照片分享失败：网络超时或接口异常，已放弃本次分享', 'other');
+        return;
+      }
+    }
+    if (!imgDataURL) {
+      await addTapMessage('⚠️ 照片分享失败：网络超时或接口异常，已放弃本次分享', 'other');
+      return;
+    }
+    await addMessage('other', 'image', imgDataURL, null, { fullImage: imgDataURL, isPhotoShare: true });
+    // 图片发完后走与普通回复完全相同的延迟机制：按用户设置的延迟秒数，期间顶部显示「对方正在输入...」
+    triggerOtherReply();
+  }
+
+  // 主动分享照片：每1小时按概率触发
+  function startPhotoScheduler() {
+    if (window._photoInterval) clearInterval(window._photoInterval);
+    const checkPhoto = () => {
+      if (!state.photoNextAt || Date.now() >= state.photoNextAt) {
+        state.photoNextAt = Date.now() + 60 * 60 * 1000;
+        saveRuntimeState();
+        const prob = Math.max(0, Math.min(100, Number(state.patPhotoProb) || 5));
+        if (Math.random() * 100 < prob) {
+          triggerSharePhoto();
+        }
+      }
+    };
+    if (!state.photoNextAt) {
+      state.photoNextAt = Date.now() + 60 * 60 * 1000;
+      saveRuntimeState();
+    }
+    window._photoInterval = setInterval(checkPhoto, 60000);
   }
 
   function triggerOtherReply() {
@@ -5398,7 +5727,9 @@ async function handleTransferAction(msg, action) {
         soundIndex: state.soundIndex, volume: state.volume, notifyEnabled: state.notifyEnabled, keepAliveEnabled: state.keepAliveEnabled,
         defaultChoiceThinkSeconds: state.defaultChoiceThinkSeconds,
         lastNoteTime: state.lastNoteTime,
-        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb, patMusicProb: state.patMusicProb,
+        patTapProb: state.patTapProb, patLetterProb: state.patLetterProb, patMomentProb: state.patMomentProb, patNoteProb: state.patNoteProb, patIntimacyProb: state.patIntimacyProb, patTransferProb: state.patTransferProb, patVideoCallProb: state.patVideoCallProb, patHangupProb: state.patHangupProb, patQuoteProb: state.patQuoteProb, patMusicProb: state.patMusicProb, patPhotoProb: state.patPhotoProb,
+      musicShareEnabled: state.musicShareEnabled,
+      photoShareEnabled: state.photoShareEnabled,
         dictEnabled: state.dictEnabled, dictProb: state.dictProb, dictVersion: state.dictVersion,
         taAddEnabled: state.taAddEnabled, taAddProb: state.taAddProb, taUseProb: state.taUseProb,
         patGiftProb: state.patGiftProb, ratingThinkSeconds: state.ratingThinkSeconds, ratingMode: state.ratingMode || 'star'
@@ -5531,12 +5862,20 @@ async function handleTransferAction(msg, action) {
     const el = document.createElement('div');
     el.className = 'intimacy-floating-text';
     el.textContent = text;
-    // 定位到人形轮廓中间
+    // 优先定位到人形轮廓中间；轮廓不可见（亲密互动页面未打开，rect 为 0）时回退到屏幕中央
     const figure = document.getElementById('intimacyFigure') || document.getElementById('intimacyFigureArea');
+    let placed = false;
     if (figure) {
       const rect = figure.getBoundingClientRect();
-      el.style.left = (rect.left + rect.width / 2) + 'px';
-      el.style.top = (rect.top + rect.height / 2) + 'px';
+      if (rect.width > 0 && rect.height > 0) {
+        el.style.left = (rect.left + rect.width / 2) + 'px';
+        el.style.top = (rect.top + rect.height / 2) + 'px';
+        placed = true;
+      }
+    }
+    if (!placed) {
+      el.style.left = (window.innerWidth / 2) + 'px';
+      el.style.top = (window.innerHeight / 2) + 'px';
     }
     document.body.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.remove(); }, duration);
@@ -6135,6 +6474,7 @@ async function handleTransferAction(msg, action) {
     startTransferScheduler();
     startGiftScheduler();
     startMusicScheduler();
+    startPhotoScheduler();
     // 启动时检查 10 小时兜底便签
     checkIdleNote();
     notesBtn.onclick = async () => {
@@ -6150,6 +6490,164 @@ async function handleTransferAction(msg, action) {
       }, 10);
     };
     notesCloseBtn.onclick = () => notesOverlay.classList.add('hidden');
+    // ===== 备忘提醒功能 =====
+    memoFabBtn.onclick = () => { memoOverlay.classList.remove('hidden'); renderMemoList(); };
+    memoCloseBtn.onclick = () => { memoOverlay.classList.add('hidden'); memoEditingId = null; };
+    memoOverlay.onclick = (e) => { if (e.target === memoOverlay) { memoOverlay.classList.add('hidden'); memoEditingId = null; } };
+    memoSaveBtn.onclick = () => {
+      const d = memoDate.value;
+      const hh = memoHourValue;
+      const mm = memoMinuteValue;
+      const c = memoContent.value.trim();
+      if (!d) { showAlert('请选择提醒的日期'); return; }
+      if (hh < 0 || hh > 23 || mm < 0 || mm > 59) { showAlert('请设置正确的提醒时间'); return; }
+      if (!c) { showAlert('请输入备忘内容'); return; }
+      const time = new Date(`${d}T${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`).getTime();
+      if (isNaN(time)) { showAlert('时间格式不正确'); return; }
+      if (memoEditingId) {
+        const idx = state.memoReminders.findIndex(m => m.id === memoEditingId);
+        if (idx !== -1) { state.memoReminders[idx].time = time; state.memoReminders[idx].content = c; }
+        memoEditingId = null;
+        memoSaveBtn.textContent = '➕ 添加提醒';
+      } else {
+        state.memoReminders.push({ id: Date.now().toString(), time, content: c });
+      }
+      memoDate.value = ''; memoContent.value = '';
+      setMemoWheel(0, 0);
+      saveAll();
+      renderMemoList();
+    };
+    // 时/分滚轮选择器（上下滑动）
+    const WHEEL_ITEM_H = 40;
+    let memoHourValue = 0, memoMinuteValue = 0;
+    function buildWheelItems(inner, count) {
+      let html = '';
+      for (let i = 0; i < count; i++) html += `<div class="memo-wheel-item">${String(i).padStart(2,'0')}</div>`;
+      inner.innerHTML = html;
+    }
+    function updateWheelActive(inner, idx) {
+      inner.querySelectorAll('.memo-wheel-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+    }
+    function renderWheel(inner, idx) {
+      inner.style.transform = `translateY(${-(idx * WHEEL_ITEM_H)}px)`;
+      updateWheelActive(inner, idx);
+    }
+    function initWheel(wheel, inner, count, onChange) {
+      buildWheelItems(inner, count);
+      let idx = 0, startY = 0, startIdx = 0, dragging = false, moved = 0, lastY = 0, lastT = 0, velocity = 0;
+      const setIndex = (i) => {
+        idx = Math.max(0, Math.min(count - 1, i));
+        renderWheel(inner, idx);
+        onChange(idx);
+      };
+      wheel.addEventListener('touchstart', (e) => {
+        dragging = true; moved = 0; velocity = 0;
+        startY = e.touches[0].clientY; lastY = startY; lastT = Date.now();
+        startIdx = idx;
+        inner.style.transition = 'none';
+      }, { passive: true });
+      wheel.addEventListener('touchmove', (e) => {
+        if (!dragging) return;
+        const y = e.touches[0].clientY;
+        const now = Date.now();
+        const dt = now - lastT;
+        if (dt > 0) velocity = (y - lastY) / dt; // 像素/毫秒，用于惯性
+        moved = y - startY;
+        lastY = y; lastT = now;
+        inner.style.transform = `translateY(${-(startIdx * WHEEL_ITEM_H) + moved}px)`;
+      }, { passive: true });
+      wheel.addEventListener('touchend', () => {
+        if (!dragging) return;
+        dragging = false;
+        inner.style.transition = 'transform 0.25s cubic-bezier(0.22,0.61,0.36,1)';
+        // 惯性：按松手速度额外滚动（灵敏度适中，系数 60）
+        const inertia = Math.round(velocity * 60);
+        const delta = Math.round(moved / WHEEL_ITEM_H) + inertia;
+        setIndex(startIdx - delta);
+      }, { passive: true });
+      wheel.addEventListener('click', (e) => {
+        const rect = wheel.getBoundingClientRect();
+        const rel = e.clientY - rect.top;
+        const tapIdx = Math.floor(rel / WHEEL_ITEM_H);
+        if (tapIdx >= 0 && tapIdx < count) setIndex(tapIdx);
+      });
+      return { setIndex };
+    }
+    function setMemoWheel(h, m) {
+      memoHourValue = Math.max(0, Math.min(23, h));
+      memoMinuteValue = Math.max(0, Math.min(59, m));
+      renderWheel(memoHourInner, memoHourValue);
+      renderWheel(memoMinuteInner, memoMinuteValue);
+    }
+    initWheel(memoHourWheel, memoHourInner, 24, (i) => { memoHourValue = i; });
+    initWheel(memoMinuteWheel, memoMinuteInner, 60, (i) => { memoMinuteValue = i; });
+    setMemoWheel(0, 0);
+    function renderMemoList() {
+      const sorted = state.memoReminders.slice().sort((a, b) => a.time - b.time);
+      if (sorted.length === 0) { memoList.innerHTML = '<div class="memo-empty">暂无备忘提醒</div>'; return; }
+      memoList.innerHTML = '';
+      sorted.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'memo-item';
+        const d = new Date(m.time);
+        const timeStr = `${(d.getMonth()+1)}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        div.innerHTML = `<span class="memo-item-time">${timeStr}</span><span class="memo-item-content">${escapeHtml(m.content)}</span><span class="memo-item-actions"><button data-id="${m.id}" class="memo-edit">✏️</button><button data-id="${m.id}" class="memo-del">🗑️</button></span>`;
+        memoList.appendChild(div);
+      });
+      memoList.querySelectorAll('.memo-edit').forEach(btn => btn.onclick = () => {
+        const m = state.memoReminders.find(x => x.id === btn.dataset.id);
+        if (!m) return;
+        const d = new Date(m.time);
+        memoDate.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        setMemoWheel(d.getHours(), d.getMinutes());
+        memoContent.value = m.content;
+        memoEditingId = m.id;
+        memoSaveBtn.textContent = '💾 保存修改';
+      });
+      memoList.querySelectorAll('.memo-del').forEach(btn => btn.onclick = async () => {
+        const ok = await confirmDialog('确定删除这条备忘提醒吗？');
+        if (!ok) return;
+        state.memoReminders = state.memoReminders.filter(x => x.id !== btn.dataset.id);
+        if (memoEditingId === btn.dataset.id) { memoEditingId = null; memoSaveBtn.textContent = '➕ 添加提醒'; }
+        saveAll();
+        renderMemoList();
+      });
+    }
+    // 网络时间校准：启动时读取 HTTP 响应头 Date 计算与本地时钟的偏移量（毫秒）
+    let timeOffset = 0;
+    async function calibrateTime() {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+        const res = await fetch('https://api.vvhan.com/api/wallpaper/views?type=json', { method: 'HEAD', signal: ctrl.signal });
+        clearTimeout(timer);
+        const serverDate = res.headers.get('Date');
+        if (serverDate) {
+          const serverMs = new Date(serverDate).getTime();
+          if (!isNaN(serverMs)) timeOffset = serverMs - Date.now();
+        }
+      } catch (e) { /* 校准失败则用本地时间 */ }
+    }
+    calibrateTime();
+    setInterval(calibrateTime, 5 * 60 * 1000); // 每 5 分钟重新校准一次
+    function nowAccurate() { return Date.now() + timeOffset; }
+    function checkMemoReminders() {
+      const now = nowAccurate();
+      const due = state.memoReminders.filter(m => m.time <= now);
+      if (due.length === 0) return;
+      due.forEach(m => {
+        addMessage('other', 'text', `【备忘提醒】\n${m.content}`);
+        if (document.hidden && state.notifyEnabled && Notification.permission === 'granted') {
+          showNotification(state.otherName, '发来了一条备忘提醒', state.otherAvatar);
+        }
+      });
+      const dueIds = new Set(due.map(m => m.id));
+      state.memoReminders = state.memoReminders.filter(m => !dueIds.has(m.id));
+      saveAll();
+      renderMemoList();
+    }
+    setInterval(checkMemoReminders, 30000);
+    checkMemoReminders(); // 启动时错峰补发：页面关闭期间错过的提醒立刻补发
     notesSaveBtn.onclick = async () => {
       const content = notesInput.value.trim();
       if (!content) return;
@@ -6193,6 +6691,9 @@ async function handleTransferAction(msg, action) {
       state.otherName = document.getElementById('otherNickname').value; 
       state.replyDelay = +document.getElementById('replyDelay').value; 
       state.patMusicProb = +document.getElementById('patMusicProb').value; 
+      state.patPhotoProb = +document.getElementById('patPhotoProb').value; 
+      state.musicShareEnabled = document.getElementById('musicShareToggle').checked;
+      state.photoShareEnabled = document.getElementById('photoShareToggle').checked;
       state.probWord = +document.getElementById('probWord').value; 
       state.probSticker = +document.getElementById('probSticker').value; 
       state.probEmoji = +document.getElementById('probEmoji').value; 
@@ -6250,7 +6751,16 @@ async function handleTransferAction(msg, action) {
     const testMusicBtn = document.getElementById('testMusicShareBtn');
     if (testMusicBtn) {
       testMusicBtn.onclick = () => {
+        if (state.musicShareEnabled === false) { showAlert('主动分享音乐已禁用，请先在设置中勾选启用'); return; }
         searchAndShareMusicWithRetry();
+      };
+    }
+    // 照片分享立即测试按钮
+    const testPhotoBtn = document.getElementById('testPhotoShareBtn');
+    if (testPhotoBtn) {
+      testPhotoBtn.onclick = () => {
+        if (state.photoShareEnabled === false) { showAlert('主动分享照片已禁用，请先在设置中勾选启用'); return; }
+        triggerSharePhoto();
       };
     }
     document.getElementById('closeSettingsWordcard').onclick = () => document.getElementById('settingsOverlay').classList.add('hidden');
